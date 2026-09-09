@@ -103,7 +103,23 @@
   client-side filters could only search half the catalogue. Shopify supports
   up to 250 items per paginate page; product images remain lazy-loaded.
 {% endcomment %}
-{% paginate collections[collection_source_handle].products by 250 %}
+{%- comment -%}
+  ═══ PAGINATE THE ARRAY THE GRID ACTUALLY RENDERS (2026-09-09) ═══
+
+  This read `collections[collection_source_handle].products` — the collection
+  looked up BY HANDLE, which is the UNFILTERED set — while the grid below loops
+  `collection.products`, the filtered view Shopify builds from the URL. So the
+  `paginate` object described one array and the page rendered another: page
+  counts and next/prev links came from the unfiltered collection.
+
+  Invisible today only because `by 250` exceeds the whole catalogue (64
+  products), so there has only ever been one page. It becomes a live pagination
+  bug the moment the catalogue passes 250.
+
+  `by 250` is kept deliberately — see the note below on showing a collection
+  whole. 250 is Shopify's documented maximum for the tag.
+{%- endcomment -%}
+{% paginate collection.products by 250 %}
 {%- comment -%}
   ═══ GRID SOURCE — MUST BE collection.products (2026-08-26) ═══
 
@@ -416,17 +432,14 @@
 </div>
 
 <style>
-.lbf{margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.028)}
-.lbf-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.lbf-chip{cursor:pointer;background:var(--ink2);font-family:inherit;transition:border-color .2s,color .2s}
-.lbf-chip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,154,14,.1)}
-.lbf-select{padding:8px 12px;border-radius:30px;border:1px solid var(--line);background:var(--ink2);color:var(--txt2);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
-.lbf-clear{cursor:pointer;background:transparent;font-family:inherit;color:#ff8a8a;border-color:rgba(255,107,107,.3)}
-.lbf-count{margin:8px 0 0;color:var(--txt3);font-size:12.5px;font-weight:800}
-.lbf-scope{margin:6px 0 0;color:var(--txt3);font-size:12px;font-weight:700;line-height:1.6}
+/* Every .lbf-* rule removed 2026-09-09. They styled a client-side filter UI that
+   was deleted when filtering moved to Shopify's native storefront filters
+   (snippets/lbass-collection-filters.liquid), and no markup emitted any of them.
+   .lbf-hide went with them — nothing sets that class either; the only surviving
+   JS in this file is vault-attribution tracking. #lbfGrid keeps its id because
+   that JS still looks it up. */
 .grid>.lbqa-wrap{order:1}
 .grid>.lb-sold{order:9;opacity:.75}
-.grid>.lbqa-wrap.lbf-hide{display:none}
 </style>
 <script>
 (function(){
@@ -435,7 +448,9 @@
   if (!grid) return;
   var wraps = Array.prototype.slice.call(grid.querySelectorAll('.lbqa-wrap'));
   if (!wraps.length) return;
-  var state = { avail:false, gender:null, brand:null, size:null, price:null };
+  // `state` (avail/gender/brand/size/price) removed 2026-09-09 — it was declared
+  // by the deleted client-side filter and never read again. The handler below is
+  // vault-attribution tracking only.
 
   grid.addEventListener('click', function(e){
     var card = e.target.closest('[data-collection-product]');
