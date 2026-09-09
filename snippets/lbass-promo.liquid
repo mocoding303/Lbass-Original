@@ -1,0 +1,91 @@
+{%- comment -%}
+  ═══ LBASS — CAMPAIGN ELIGIBILITY TEST (2026-09-09). Echoes "1" or "0". ═══
+
+  SINGLE SOURCE OF TRUTH for "is this product in the running promotion".
+  Every promotional surface in the theme asks THIS file and nothing else.
+
+  ── WHAT THE CAMPAIGN ACTUALLY IS ────────────────────────────────────────────
+  «‑30% على القطعة الثانية» — a real Shopify AUTOMATIC Buy-X-Get-Y discount.
+  The customer buys two eligible pieces and the cheaper one is 30% off at
+  checkout. Shopify applies it; the theme only announces it.
+
+  THE ITEM'S OWN PRICE IS NOT REDUCED. That is the whole point of choosing this
+  mechanism, and it dictates how the badge may be worded:
+
+      ALLOWED   «‑30% على الثانية»     — true, the 2nd item is 30% off
+      BANNED    «‑30%» on its own      — reads as "this item is 30% off". It is not.
+      BANNED    any strikethrough price driven by this campaign
+
+  A struck-through price on a card may ONLY come from a genuine Shopify
+  `compare_at_price` (see snippets/lbass-price.liquid). The campaign never
+  fabricates one. templates/product.liquid:700 already states the rule this
+  file obeys: a figure that was never our price is misrepresentation and risks
+  the Merchant Center listings.
+
+  ── WHY A TAG AND NOT A METAFIELD ────────────────────────────────────────────
+  The badge and the discount MUST cover exactly the same products, or the page
+  promises something checkout does not honour. Only a tag can drive all three
+  consumers at once:
+
+      tag `summer-sale`
+        ├─ smart collection `summer-sale`   (auto-updating, tag rule)
+        ├─ the automatic discount            (scoped to that collection)
+        └─ this file                         (product.tags contains …)
+
+  `lbass.promo_eligible` stays what it always was: the editorial "may this piece
+  be promoted at all" flag. The tag is the mechanical switch. Both must agree —
+  this file requires the tag and treats promo_eligible as a veto, so clearing
+  either one removes the product from the campaign.
+
+  ── AVAILABILITY ─────────────────────────────────────────────────────────────
+  Sold-out pieces never carry the badge. Everything here is one-of-one, so a
+  sold piece can never be the second item in anyone's basket. Announcing an
+  offer on it is a dead promise.
+
+  ── OFF BY DEFAULT ───────────────────────────────────────────────────────────
+  `settings.promo_enabled` is nil until config/settings_schema.json ships, and
+  nil is falsy, so the campaign renders nothing until a human switches it on in
+  the theme editor. That is the intended failure mode.
+
+  USAGE — render returns a string, so capture and strip it:
+
+      {% capture promo_s %}{% render 'lbass-promo', product: product %}{% endcapture %}
+      {% assign promo_s = promo_s | strip %}
+      {% assign is_promo = false %}{% if promo_s == '1' %}{% assign is_promo = true %}{% endif %}
+{%- endcomment -%}
+{%- liquid
+  assign lb_promo_on = false
+
+  if settings.promo_enabled and product != blank
+    assign lb_tag = settings.promo_tag | default: 'summer-sale' | downcase | strip
+
+    comment
+      Case-insensitive tag match. The catalogue mixes "black" and "Black", so
+      never compare product.tags directly — build a lowercased CSV index first.
+    endcomment
+    assign lb_index = ','
+    for t in product.tags
+      assign lb_index = lb_index | append: t | downcase | strip | append: ','
+    endfor
+    assign lb_needle = ',' | append: lb_tag | append: ','
+
+    if lb_index contains lb_needle
+      if product.available
+        comment
+          Editorial veto. Only an explicit `false` removes the piece; an unset
+          metafield leaves the tag in charge, so newly added stock that carries
+          the tag is not silently dropped from the campaign.
+        endcomment
+        unless product.metafields.lbass.promo_eligible.value == false
+          assign lb_promo_on = true
+        endunless
+      endif
+    endif
+  endif
+
+  if lb_promo_on
+    echo '1'
+  else
+    echo '0'
+  endif
+-%}

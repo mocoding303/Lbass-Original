@@ -267,103 +267,15 @@
 
   <div class="grid" id="lbfGrid">
     {% for product in collection_product_source %}
-      {% assign cv = product.selected_or_first_available_variant %}
-      {% assign card_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
-      {% assign card_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
-      {% assign card_inspection = product.metafields.lbass.inspection_status.value %}
-      {% assign card_has_ticket = product.metafields.lbass.has_original_ticket.value %}
-      {% assign card_notes = product.metafields.lbass.condition_notes.value %}
-      {% assign card_defects = product.metafields.lbass.visible_defects.value %}
-      {% assign card_condition = '' %}
-      {% assign card_confirmed = false %}
-      {% if card_inspection == 'inspected_confirmed' %}
-        {% if card_has_ticket == true and card_status == 'new_with_ticket' %}
-          {% if card_ticket == 'ticket_attached' or card_ticket == 'ticket_included' %}{% assign card_condition = 'جديد بالتّيكيت' %}{% assign card_confirmed = true %}{% endif %}
-        {% elsif card_has_ticket == false and card_ticket == 'no_ticket' and card_status == 'new_without_ticket' %}
-          {% assign card_condition = 'جديد بلا تيكيت' %}{% assign card_confirmed = true %}
-        {% elsif card_has_ticket == false and card_ticket == 'no_ticket' and card_status == 'excellent_almost_new' %}
-          {% assign card_condition = 'بحالة ممتازة · شبه جديد' %}{% assign card_confirmed = true %}
-        {% elsif card_status == 'very_good' %}
-          {% assign card_condition = 'بحالة مزيانة بزاف' %}{% assign card_confirmed = true %}
-        {% elsif card_status == 'good' %}
-          {% assign card_condition = 'بحالة مزيانة' %}{% assign card_confirmed = true %}
-        {% elsif card_status == 'needs_note' %}
-          {% if card_notes != blank or card_defects != blank %}{% assign card_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign card_confirmed = true %}{% endif %}
-        {% endif %}
-      {% endif %}
-      {% capture card_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign card_one_s = card_one_s | strip %}
-      {% assign card_one = false %}{% if card_one_s == '1' %}{% assign card_one = true %}{% endif %}
-      {% assign card_promo = false %}
-      {% if cv.available and card_confirmed and product.metafields.lbass.promo_eligible.value == true %}
-        {% if card_status == 'new_with_ticket' or card_status == 'new_without_ticket' or card_status == 'excellent_almost_new' %}{% assign card_promo = true %}{% endif %}
-      {% endif %}
-      {% capture card_alt %}{{ product.vendor }} {{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first }} second-hand original in Morocco{% unless product.has_only_default_variant %}, size {{ cv.title }}{% endunless %}{% if card_condition != blank %}, {{ card_condition }}{% endif %}, photographed by Lbass Original{% endcapture %}
-      {% assign p_gender = '' %}
-      {% for t in product.tags %}
-        {% assign td = t | downcase %}
-        {% if td == 'homme' or td == 'men' or td == 'رجال' %}{% assign p_gender = 'm' %}{% break %}{% endif %}
-        {% if td == 'femme' or td == 'women' or td == 'نساء' %}{% assign p_gender = 'f' %}{% break %}{% endif %}
-      {% endfor %}
-      <div class="lbqa-wrap{% unless product.available %} lb-sold{% endunless %}"
-           data-avail="{% if product.available %}1{% else %}0{% endif %}"
-           data-brand="{{ product.vendor | escape }}"
-           data-price="{{ product.price | divided_by: 100.0 }}"
-           data-gender="{{ p_gender }}"
-           data-sizes="{% for v in product.variants %}{{ v.title | escape }}|{% endfor %}">
-      <a class="card" href="{{ product.url }}" data-collection-product data-cro-product-card data-cro-placement="collection" data-product-id="{{ product.id }}" data-product-name="{{ product.title | escape }}">
-        <div class="card-img">
-          {% if card_one %}<span class="lb-stamp" aria-hidden="true">1/1</span>{% elsif product.available %}<span class="lb-stamp" aria-hidden="true">LIVE</span>{% else %}<span class="lb-stamp lb-stamp--sold" aria-hidden="true">SOLD</span>{% endif %}
-          {% if product.featured_image %}
-            <img src="{{ product.featured_image | image_url: width: 500 }}" alt="{{ product.featured_image.alt | default: card_alt | strip | escape }}" loading="lazy" decoding="async" width="500" height="625">
-          {% else %}
-            <span style="font-size:64px;opacity:.4">{% case product.product_type %}{% when 'Jackets' %}🧥{% when 'Jeans' %}👖{% when 'T-Shirts' %}👕{% when 'Shoes' %}👟{% when 'Hoodies' %}🧣{% when 'Accessories' %}🕶{% else %}👕{% endcase %}</span>
-          {% endif %}
-        </div>
-        <div class="card-body">
-          {%- comment -%}
-            ONE vendor + ONE title. Both were previously rendered TWICE — once
-            plain, once with itemprop — so every card on every collection page
-            showed the brand and product name doubled. The microdata pair is the
-            one kept; the plain pair was the leftover.
-
-            `dir="auto"` on the title matters here: these names mix Latin and
-            Arabic ("Adidas Copa Black Football Boots - Size 44 | سبادري كورة
-            أديداس"). Without it the browser applies the page's RTL direction to
-            the whole string and the Latin half lands in the wrong visual order.
-            `auto` lets each run resolve from its own first strong character.
-          {%- endcomment -%}
-          <div class="card-vendor" itemprop="brand">{{ product.vendor }}</div>
-          <div class="card-title" itemprop="name" dir="auto">{{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first }}</div>
-          <div class="card-price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-            <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
-            <meta itemprop="price" content="{{ product.price | divided_by: 100.0 }}">
-            <span itemprop="availability" content="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}"></span>
-            {{ product.price | money }}
-          </div>
-          {% if product.available %}<p style="margin:7px 0 0;color:var(--gold2);font-size:12px;font-weight:900">شوفها قبل ما تتباع ←</p>{% endif %}
-          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
-            {% unless product.has_only_default_variant %}<span class="chip chip-sz" style="font-size:11px;padding:3px 8px">{{ cv.title }}</span>{% endunless %}
-            {% if card_confirmed %}<span class="chip chip-cond" style="font-size:11px;padding:3px 8px">{{ card_condition }}</span>{% endif %}
-            {% if card_promo %}<span class="chip" style="font-size:11px;padding:3px 8px">عرض على منتجات مختارة</span>{% endif %}
-            {% if card_one %}<span class="chip lb-uniq" dir="auto">Pièce unique <i>· قطعة وحدة</i></span>{% elsif product.available %}<span class="chip" style="font-size:11px;padding:3px 8px">متوفرة دابا</span>{% else %}
       {%- comment -%}
-        No sold notice in the card body. The card keeps the SAME structure as an
-        available product — image, brand, title, price, size, condition — and the
-        only difference is the SOLD stamp on the image plus the muted sold button
-        rendered by snippets/lbass-quick-add.liquid.
-
-        Previously this spot held a full PDP sold-out <section> (h2 + paragraph +
-        related links) repeated on every sold card, which is what made the grid
-        look crowded. Replacing it with a one-line notice still left TWO sold
-        messages per card once the quick-add link was added, so the line is gone
-        entirely — one message, in the same place every card has its button.
+        Card markup lives in snippets/lbass-product-card.liquid as of 2026-09-09.
+        The ~100 lines that used to sit here were one of seven near-identical
+        copies, and this copy was the one that rendered NO compare-at price —
+        a reduced piece showed its discount on the homepage and hid it here.
+        Condition logic, the 1/1 stamp, chips and quick-add all moved with it,
+        unchanged. The campaign badge is added there once, not seven times.
       {%- endcomment -%}
-          {% endif %}
-          </div>
-        </div>
-      </a>
-      {% render 'lbass-quick-add', product: product %}
-      </div>
+      {% render 'lbass-product-card', product: product, placement: 'collection' %}
     {% else %}
       <div style="grid-column:1/-1;border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--ink2)">
         <p class="coll-empty-msg" role="status" style="margin-top:0;font-weight:600">ما كاينش منتجات دابا فهاد القسم.</p>

@@ -1,0 +1,104 @@
+{%- comment -%}
+  ═══ LBASS — CAMPAIGN BADGE (2026-09-09) ═══
+
+  Announces the running «‑30% على القطعة الثانية» offer. Renders nothing unless
+  snippets/lbass-promo.liquid says this product is in the campaign.
+
+  ── THE WORDING IS THE COMPLIANCE CONTROL, NOT DECORATION ────────────────────
+  The reference design that prompted this work showed a red circle reading
+  «‑33%» beside a struck-through price. That layout is correct ONLY when the
+  item itself is marked down. Under this campaign it is not — the discount lands
+  on the SECOND item in the basket. So the badge always carries its object:
+
+      RENDERED   «‑30% على الثانية»
+      RENDERED   «زيد قطعة ثانية وخد ‑30% عليها»
+      NEVER      «‑30%» alone, in a circle or anywhere else
+      NEVER      a struck-through price sourced from this campaign
+
+  Drop the words «على الثانية» and the badge becomes a claim that this piece is
+  30% off, which it is not, and the page stops matching checkout. If a future
+  campaign really does mark items down, that belongs in `compare_at_price` and
+  snippets/lbass-price.liquid renders it automatically — not here.
+
+  ── PERCENTAGE SYNC (MANUAL — READ THIS) ─────────────────────────────────────
+  Liquid cannot read an automatic discount, so `settings.promo_second_pct` is a
+  copy of the rate configured in Shopify Admin → Discounts. THEY MUST MATCH.
+  Change one, change the other in the same sitting. The number a shopper is
+  actually charged always comes from Shopify; this setting only controls what
+  the page claims. A mismatch is a false advertisement, not a cosmetic bug.
+
+  ── PARAMETERS ───────────────────────────────────────────────────────────────
+    product   required
+    format    'ribbon' (default) — corner ribbon for a card image
+              NOT `variant` — that word means a product variant everywhere
+              else in this theme, including snippets/lbass-price.liquid
+              'line'             — one-line note for a card body
+              'pdp'              — fuller explanation for the product page
+
+  CSS lives in snippets/lbass-promo-css.liquid, rendered once per document.
+
+  USAGE
+      {% render 'lbass-promo-badge', product: product, format: 'ribbon' %}
+{%- endcomment -%}
+
+{%- capture lb_promo_s %}{% render 'lbass-promo', product: product %}{% endcapture -%}
+{%- assign lb_promo_s = lb_promo_s | strip -%}
+
+{%- if lb_promo_s == '1' -%}
+  {%- liquid
+    assign lb_v = format | default: 'ribbon'
+    assign lb_pct = settings.promo_second_pct | default: 30
+    assign lb_campaign = settings.promo_label | default: 'تخفيضات الصيف'
+    assign lb_short = settings.promo_badge_short | default: 'على الثانية'
+    assign lb_long = settings.promo_badge_long | default: 'زيد قطعة ثانية وخد التخفيض'
+  -%}
+
+  {%- case lb_v -%}
+
+    {%- when 'ribbon' -%}
+      {%- comment -%}
+        Sits inside .card-img (position:relative). Uses inset-inline-start so it
+        mirrors to the right edge on the RTL storefront without a second rule.
+      {%- endcomment -%}
+      <span class="lb-promo-ribbon" aria-hidden="true">
+        <span class="lb-promo-ribbon__campaign">{{ lb_campaign }}</span>
+        <span class="lb-promo-ribbon__rate" dir="ltr">&minus;{{ lb_pct }}%</span>
+        <span class="lb-promo-ribbon__obj">{{ lb_short }}</span>
+      </span>
+
+    {%- when 'line' -%}
+      <p class="lb-promo-line" dir="auto">
+        <span class="lb-promo-line__rate" dir="ltr">&minus;{{ lb_pct }}%</span>
+        <span class="lb-promo-line__obj">{{ lb_short }}</span>
+      </p>
+
+    {%- when 'pdp' -%}
+      <div class="lb-promo-pdp" dir="auto">
+        <p class="lb-promo-pdp__head">
+          <span class="lb-promo-pdp__campaign">{{ lb_campaign }}</span>
+          <span class="lb-promo-pdp__rate" dir="ltr">&minus;{{ lb_pct }}%</span>
+          <span>{{ lb_short }}</span>
+        </p>
+        <p class="lb-promo-pdp__body">{{ lb_long }}</p>
+        {%- comment -%}
+          ⚠ WHICH ITEM SHOPIFY DISCOUNTS IS NOT ASSERTED HERE, ON PURPOSE.
+
+          Shopify's BXGY engine picks the qualifying line itself, and the
+          behaviour is not stated in the API reference. It is [Likely] the
+          lowest-priced eligible item, but "likely" is not good enough for a
+          sentence a customer reads before paying: if it resolves the other way,
+          the page has quietly overstated the offer.
+
+          So the default copy claims only what is true either way — it applies
+          automatically, without a code, to one item per order (which IS
+          guaranteed, by usesPerOrderLimit: 1 on the discount).
+
+          BEFORE LAUNCH: put two eligible pieces of DIFFERENT prices in a real
+          cart and read which line Shopify discounts. Once observed, this string
+          may be tightened in the theme editor — it is a setting, not code.
+        {%- endcomment -%}
+        <p class="lb-promo-pdp__note">{{ settings.promo_note | default: 'كيبان أوتوماتيكيا فالسلة بلا كود · كيتطبق على قطعة وحدة فكل طلب.' }}</p>
+      </div>
+
+  {%- endcase -%}
+{%- endif -%}

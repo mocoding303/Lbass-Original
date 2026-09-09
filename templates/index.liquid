@@ -862,6 +862,10 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 {{ content_for_header }}
 {% render 'lbass-ai-attribution' %}
 {% render 'lbass-stamp' %}
+{%- comment -%} Price + campaign styles. MUST stay after lbass-stamp: it reuses that
+     sheet's --lb-* tokens and relies on source order rather than !important to sit
+     on top of its `.grid .card .card-price` rules. {%- endcomment -%}
+{% render 'lbass-promo-css' %}
 {% render 'lbass-meta-pixel' %}
 </head>
 <body>

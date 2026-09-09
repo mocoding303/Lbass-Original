@@ -1,0 +1,187 @@
+{%- comment -%}
+  ═══ LBASS — PRICE + CAMPAIGN STYLES (2026-09-09) ═══
+
+  Rendered ONCE per document, never from inside a card. A card snippet runs up
+  to 250 times on a collection page; a <style> block in there would ship 250
+  copies of this sheet.
+
+  MUST BE RENDERED AFTER snippets/lbass-stamp.liquid, for two reasons:
+    1. It reuses that sheet's design tokens (--lb-ink-3, --lb-red, --lb-red-deep,
+       --lb-bone). Every use below carries a literal fallback so the components
+       still render correctly on templates/page.vault.liquid, which uses
+       {% layout none %} and does NOT include lbass-stamp.
+    2. That sheet carries 688 `!important` declarations and has already
+       flattened two earlier components — see the removal note at
+       templates/collection.liquid:174 and the anchoring note at
+       layout/theme.liquid:860.
+
+  The class names here (`lb-price__*`, `lb-promo-*`) collide with nothing in it,
+  so ordering alone is enough. No `!important` is used or needed. Keep it so.
+
+  ── WHY .lb-price__now CARRIES NO COLOUR OR FONT ─────────────────────────────
+  On a collection card the price container also carries `.card-price`, which
+  lbass-stamp:267 styles with the display face at 22px in --lb-ink, !important.
+  That is the live card design. The current price inherits it untouched; only
+  the NEW children below take their own type. A rule on a child element beats an
+  inherited value from its parent, so none of this needs !important either.
+
+  ── RTL ──────────────────────────────────────────────────────────────────────
+  The storefront renders `<html dir="rtl">`. Every offset here is logical
+  (inset-inline-start, padding-inline, text-align:start), so the ribbon mirrors
+  to the correct corner with no `[dir]` override anywhere.
+
+  The price ROW is deliberately left-to-right: both existing sheets force
+  `direction:ltr` on `.card-price`, and digits read LTR even in Arabic. The
+  savings line sits outside that container and follows the card's RTL flow.
+
+  ── MOBILE FIRST ─────────────────────────────────────────────────────────────
+  Sized for the 2-column grid at 360-430px first; the desktop step only grows
+  type. The ribbon is capped at the card width and wraps rather than overflowing.
+{%- endcomment -%}
+<style>
+/* Ribbon and 1/1 stamp both anchor here. lbass-stamp sets this for `.grid .card`
+   only, so declare it for every card context (search, rails, look cards). */
+.card-img{position:relative}
+
+/* ══════════ PRICE BLOCK ══════════ */
+.lb-price{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:5px 8px;
+}
+/* .lb-price__now intentionally sets nothing — see header note. */
+.lb-price__was{
+  font-family:var(--lb-body,inherit);
+  font-size:13px;
+  font-weight:600;
+  line-height:1.2;
+  color:var(--lb-ink-3,#6B6B6E);
+  text-decoration-thickness:1px;
+  text-underline-offset:2px;
+}
+.lb-price__off{
+  font-family:var(--lb-body,inherit);
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  padding:3px 7px;
+  border-radius:999px;
+  color:var(--lb-red,#BF2E15);
+  background:color-mix(in srgb,var(--lb-red,#BF2E15) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--lb-red,#BF2E15) 30%,transparent);
+}
+.lb-price__save{
+  margin:0;
+  font-family:var(--lb-body,inherit);
+  font-size:11.5px;
+  font-weight:800;
+  line-height:1.35;
+  letter-spacing:.01em;
+  color:var(--lb-red,#BF2E15);
+  text-align:start;
+}
+
+/* ══════════ CAMPAIGN RIBBON (card image) ══════════ */
+.lb-promo-ribbon{
+  position:absolute;
+  inset-block-start:10px;
+  inset-inline-start:10px;
+  z-index:3;
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+  max-inline-size:calc(100% - 20px);
+  padding:5px 9px;
+  background:var(--lb-red-deep,#8F1F0D);
+  color:var(--lb-bone,#fff);
+  font-family:var(--lb-body,inherit);
+  font-size:9.5px;
+  font-weight:800;
+  line-height:1.25;
+  letter-spacing:.04em;
+  pointer-events:none;
+}
+.lb-promo-ribbon__campaign{text-transform:uppercase}
+.lb-promo-ribbon__rate{
+  font-size:11px;
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+}
+.lb-promo-ribbon__obj{opacity:.92}
+
+/* ══════════ CAMPAIGN LINE (card body) ══════════ */
+.lb-promo-line{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+  margin:0;
+  font-family:var(--lb-body,inherit);
+  font-size:11px;
+  font-weight:800;
+  line-height:1.35;
+  color:var(--lb-red-deep,#8F1F0D);
+  text-align:start;
+}
+.lb-promo-line__rate{
+  padding:2px 6px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--lb-red,#BF2E15) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--lb-red,#BF2E15) 28%,transparent);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ══════════ CAMPAIGN BLOCK (product page) ══════════ */
+/* The PDP is the dark palette, so this block uses the gold tokens, not bone. */
+.lb-promo-pdp{
+  margin:14px 0 0;
+  padding:12px 14px;
+  border-radius:12px;
+  background:rgba(200,154,14,.07);
+  border:1px solid rgba(200,154,14,.26);
+  text-align:start;
+}
+.lb-promo-pdp__head{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:0;
+  font-size:14px;
+  font-weight:900;
+  color:var(--gold2,#E0B52A);
+}
+.lb-promo-pdp__campaign{text-transform:uppercase;letter-spacing:.03em}
+.lb-promo-pdp__rate{
+  padding:3px 8px;
+  border-radius:999px;
+  background:rgba(200,154,14,.16);
+  border:1px solid rgba(200,154,14,.34);
+  color:var(--gold,#C89A0E);
+  font-variant-numeric:tabular-nums;
+}
+.lb-promo-pdp__body{
+  margin:7px 0 0;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.6;
+  color:var(--txt2,#97928A);
+}
+.lb-promo-pdp__note{
+  margin:5px 0 0;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.6;
+  color:var(--txt3,#5E5A55);
+}
+
+@media(min-width:750px){
+  .lb-price__was{font-size:14px}
+  .lb-price__save{font-size:12px}
+  .lb-promo-ribbon{font-size:10px;padding:6px 10px}
+  .lb-promo-ribbon__rate{font-size:12px}
+  .lb-promo-line{font-size:11.5px}
+}
+</style>

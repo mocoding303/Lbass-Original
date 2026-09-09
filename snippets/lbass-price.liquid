@@ -1,0 +1,122 @@
+{%- comment -%}
+  ═══ LBASS — PRICE BLOCK (2026-09-09) ═══
+
+  SINGLE SOURCE OF TRUTH for rendering a price anywhere a product is listed.
+  Collection grid, search, homepage rails, look cards, vault — all of them.
+
+  ── WHY THIS EXISTS ──────────────────────────────────────────────────────────
+  Price markup was written independently in ~7 places and had already drifted.
+  Measured 2026-09-09: templates/index.liquid and templates/page.vault.liquid
+  rendered compare-at + savings, while templates/collection.liquid:341 rendered
+  `{{ product.price | money }}` and nothing else. A genuinely marked-down piece
+  showed its discount on the homepage and hid it on the collection grid — the
+  page a shopper actually browses. Same catalogue, two answers.
+
+  ── THE ONLY LEGITIMATE STRIKETHROUGH ────────────────────────────────────────
+  A struck-through price renders if and ONLY if Shopify's own
+  `variant.compare_at_price` is set AND is greater than the price being charged.
+  That is a former price the shop actually asked for. Nothing else qualifies.
+
+  The saving and the percentage are DERIVED from those two numbers, never passed
+  in and never stored. That is what makes «‑33%» and «199 DH  299 DH» incapable
+  of contradicting each other: one subtraction, one division, same source.
+
+  NEVER render a strikethrough from:
+    • the running campaign      — it discounts the 2nd item, not this one
+                                  (see snippets/lbass-promo.liquid)
+    • lbass.retail_ref          — what the model costs NEW. Plain text only.
+                                  templates/product.liquid:700 states the rule:
+                                  a figure that was never our price is
+                                  misrepresentation and risks Merchant Listings.
+
+  ── ROUNDING ─────────────────────────────────────────────────────────────────
+  Liquid's `divided_by` floors on integers, so a naive percentage reads low
+  (31.7% would print as 31). Percentages here go through per-mille and round
+  half-up, so the badge matches what a shopper gets dividing the two printed
+  numbers themselves.
+
+  ── INHERITING THE CARD TYPOGRAPHY, NOT FIGHTING IT ──────────────────────────
+  On a collection card the container keeps its `card-price` class on purpose.
+  snippets/lbass-stamp.liquid:267 styles `.grid .card .card-price` with the
+  display face at 22px in `--lb-ink` on the bone card, all `!important`. That is
+  the live design, so the current price INHERITS it — this file sets no colour
+  and no font on `.lb-price__now`. Only the new children (struck price, percent
+  pill, savings line) carry their own type, and a rule on a child beats an
+  inherited value from the parent without needing `!important`.
+
+  Both existing sheets also force `direction:ltr` on `.card-price`, so the row
+  lays out now → was → percent left-to-right. That is correct and matches the
+  reference design; digits read LTR even on the RTL storefront. The savings line
+  sits OUTSIDE the container so it follows the card's RTL flow.
+
+  ── CURRENCY ─────────────────────────────────────────────────────────────────
+  `divided_by: 100.0` converts centimes to the schema.org decimal. It assumes a
+  two-decimal currency, which MAD is. Centralised HERE so a future zero-decimal
+  market is one edit, not seven. ISO code comes from `cart.currency.iso_code` —
+  never the hardcoded "MAD" the old collection schema emitted.
+
+  ── PARAMETERS ───────────────────────────────────────────────────────────────
+    product    required
+    variant    optional — defaults to selected_or_first_available_variant
+    microdata  optional — true (default) emits schema.org/Offer
+    context    optional — 'card' (default) | 'plain'
+
+  USAGE
+      {% render 'lbass-price', product: product %}
+      {% render 'lbass-price', product: product, variant: v, microdata: false %}
+{%- endcomment -%}
+
+{%- liquid
+  assign lb_v = variant | default: product.selected_or_first_available_variant
+  assign lb_price = lb_v.price | default: product.price
+  assign lb_cap = lb_v.compare_at_price
+
+  assign lb_on_sale = false
+  if lb_cap and lb_cap > lb_price
+    assign lb_on_sale = true
+    assign lb_save = lb_cap | minus: lb_price
+    comment
+      Per-mille, then round half-up. 6000/18900 = 31.7% -> 32, not 31.
+    endcomment
+    assign lb_pct_x10 = lb_save | times: 1000 | divided_by: lb_cap
+    assign lb_pct = lb_pct_x10 | plus: 5 | divided_by: 10
+  endif
+
+  assign lb_micro = microdata
+  if microdata == blank
+    assign lb_micro = true
+  endif
+
+  assign lb_ctx = context | default: 'card'
+  assign lb_cls = 'lb-price'
+  if lb_ctx == 'card'
+    assign lb_cls = 'card-price lb-price'
+  endif
+  if lb_on_sale
+    assign lb_cls = lb_cls | append: ' is-sale'
+  endif
+-%}
+
+<div class="{{ lb_cls }}"
+  {%- if lb_micro %} itemprop="offers" itemscope itemtype="https://schema.org/Offer"{% endif -%}>
+  {%- if lb_micro -%}
+    <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
+    <meta itemprop="price" content="{{ lb_price | divided_by: 100.0 }}">
+    <span itemprop="availability" content="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}"></span>
+  {%- endif -%}
+
+  <span class="lb-price__now">{{ lb_price | money }}</span>
+
+  {%- if lb_on_sale -%}
+    <s class="lb-price__was">{{ lb_cap | money }}</s>
+    <span class="lb-price__off">&minus;{{ lb_pct }}%</span>
+  {%- endif -%}
+</div>
+
+{%- if lb_on_sale -%}
+  {%- comment -%}
+    Outside the price container so it inherits the card's RTL direction rather
+    than the container's forced ltr. The amount itself stays ltr.
+  {%- endcomment -%}
+  <p class="lb-price__save" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ lb_save | money }}</span></p>
+{%- endif -%}

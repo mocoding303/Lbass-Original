@@ -729,6 +729,16 @@
         {%- endif -%}
       </span>
       {%- endif -%}
+      {%- comment -%}
+        Campaign announcement. Sits AFTER the retail reference on purpose, so the
+        page reads: what you pay -> what it costs new -> what the campaign adds.
+        Renders nothing unless snippets/lbass-promo says this piece is in the
+        campaign, and it never touches the price above it — the offer discounts the
+        SECOND item in the basket, which is why the badge always carries its object
+        («-30% على الثانية», never a bare «-30%»). The NEW-RETAIL REFERENCE rule
+        above stands unchanged: no fabricated compare-at, here or anywhere.
+      {%- endcomment -%}
+      {% render 'lbass-promo-badge', product: product, format: 'pdp' %}
       <p class="pdp-ship-line">🚚 التوصيل: <b>20 درهم داخل مراكش</b> (اختار «التوصيل المحلي» فالشيكاوت) · <b>40 درهم خارج مراكش</b> · مجاني من 500 درهم</p>
       {% comment %}
         ═══ PAYMENT CHOICE (2026-08-10) ═══

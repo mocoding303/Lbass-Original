@@ -861,6 +861,10 @@ strong{color:var(--cream)}
 {%- comment -%} Must come AFTER lbass-stamp: that sheet sets .chip{...!important}
      and would otherwise flatten the pièce-unique plate. {%- endcomment -%}
 {% render 'lbass-unique-badge' %}
+{%- comment -%} Price + campaign styles. MUST stay after lbass-stamp: it reuses that
+     sheet's --lb-* tokens and relies on source order rather than !important to sit
+     on top of its `.grid .card .card-price` rules. {%- endcomment -%}
+{% render 'lbass-promo-css' %}
 {% render 'lbass-meta-pixel' %}
 </head>
 <body>

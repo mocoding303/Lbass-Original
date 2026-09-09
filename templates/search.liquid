@@ -37,53 +37,16 @@
       <div class="grid">
         {% for item in search.results %}
           {% if item.object_type == 'product' %}
-            {% assign sv = item.selected_or_first_available_variant %}
-            {% assign s_title = item.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
-            {% assign s_ticket = item.metafields.lbass.ticket_status.value | default: 'unknown' %}
-            {% assign s_status = item.metafields.lbass.condition_status.value | default: 'unknown' %}
-            {% assign s_inspection = item.metafields.lbass.inspection_status.value %}
-            {% assign s_has_ticket = item.metafields.lbass.has_original_ticket.value %}
-            {% assign s_notes = item.metafields.lbass.condition_notes.value %}
-            {% assign s_defects = item.metafields.lbass.visible_defects.value %}
-            {% assign s_condition = '' %}
-            {% if s_inspection == 'inspected_confirmed' %}
-              {% if s_has_ticket == true and s_status == 'new_with_ticket' %}
-                {% if s_ticket == 'ticket_attached' or s_ticket == 'ticket_included' %}{% assign s_condition = 'جديد بالتّيكيت' %}{% endif %}
-              {% elsif s_has_ticket == false and s_ticket == 'no_ticket' and s_status == 'new_without_ticket' %}
-                {% assign s_condition = 'جديد بلا تيكيت' %}
-              {% elsif s_has_ticket == false and s_ticket == 'no_ticket' and s_status == 'excellent_almost_new' %}
-                {% assign s_condition = 'بحالة ممتازة · شبه جديد' %}
-              {% elsif s_status == 'very_good' %}
-                {% assign s_condition = 'بحالة مزيانة بزاف' %}
-              {% elsif s_status == 'good' %}
-                {% assign s_condition = 'بحالة مزيانة' %}
-              {% elsif s_status == 'needs_note' %}
-                {% if s_notes != blank or s_defects != blank %}{% assign s_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% endif %}
-              {% endif %}
-            {% endif %}
-            {% capture s_one_s %}{% render 'lbass-one-of-one', product: item %}{% endcapture %}{% assign s_one_s = s_one_s | strip %}{% assign s_one = false %}{% if s_one_s == '1' %}{% assign s_one = true %}{% endif %}
-            <div class="lbqa-wrap">
-            <a class="card" href="{{ item.url }}">
-              <div class="card-img">
-                {% if item.featured_image %}
-                  <img src="{{ item.featured_image | image_url: width: 500 }}" alt="{{ item.featured_image.alt | default: s_title | escape }} — {% assign it_cs = item.metafields.lbass.condition_status.value %}{% if it_cs == 'new_with_ticket' or it_cs == 'new_without_ticket' %}new{% else %}second-hand{% endif %} original in Morocco, photographed by Lbass Original" loading="lazy" decoding="async" width="500" height="625">
-                {% else %}
-                  <span style="font-size:64px;opacity:.4">👕</span>
-                {% endif %}
-              </div>
-              <div class="card-body">
-                <div class="card-vendor">{{ item.vendor }}</div>
-                <div class="card-title">{{ s_title }}</div>
-                <div class="card-price">{{ item.price | money }}</div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
-                  {% unless item.has_only_default_variant %}<span class="chip chip-sz" style="font-size:11px;padding:3px 8px">{{ sv.title }}</span>{% endunless %}
-                  <span class="chip" style="font-size:11px;padding:3px 8px">{{ s_condition }}</span>
-                  {% if s_one %}<span class="chip lb-uniq" dir="auto">Pièce unique <i>· قطعة وحدة</i></span>{% elsif item.available %}<span class="chip" style="font-size:11px;padding:3px 8px;background:rgba(66,216,121,.12);border-color:rgba(66,216,121,.32);color:#37c97a">🟢 متوفرة دابا</span>{% else %}<span class="chip" style="font-size:11px;padding:3px 8px;background:rgba(255,107,107,.10);border-color:rgba(255,107,107,.30);color:#ff8a8a">مباعة</span>{% endif %}
-                </div>
-              </div>
-            </a>
-            {% render 'lbass-quick-add', product: item %}
-            </div>
+            {%- comment -%}
+              Was a reduced copy of the collection card: no compare-at price, no
+              microdata, no CRO placement, and its own slightly different
+              availability chips. Consolidated onto snippets/lbass-product-card
+              2026-09-09, so search now shows the same condition logic, 1/1 stamp
+              and pricing as every other grid. `filter_data: false` — the data-*
+              attributes exist for the collection grid's JS and nothing reads
+              them here.
+            {%- endcomment -%}
+            {% render 'lbass-product-card', product: item, placement: 'search', filter_data: false %}
           {% else %}
             <a class="card" href="{{ item.url }}">
               <div class="card-body">

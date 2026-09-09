@@ -2,9 +2,90 @@
   {
     "name": "theme_info",
     "theme_name": "Lbass Original",
-    "theme_version": "1.0.0",
+    "theme_version": "1.1.0",
     "theme_author": "Lbass Original",
     "theme_documentation_url": "https://www.lbassoriginal.com",
     "theme_support_url": "https://www.lbassoriginal.com"
+  },
+  {
+    "name": "Promotion — 2nd item",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "This ONLY controls what the storefront says. The money is discounted by the automatic discount in Shopify Admin → Discounts. If the two disagree, the page is advertising a rate the customer will not get."
+      },
+      {
+        "type": "checkbox",
+        "id": "promo_enabled",
+        "label": "Campaign is running",
+        "default": false,
+        "info": "Turn on ONLY while the matching automatic discount is active in Shopify Admin. Off = no badge renders anywhere."
+      },
+      {
+        "type": "text",
+        "id": "promo_tag",
+        "label": "Participation tag",
+        "default": "summer-sale",
+        "info": "Must be the SAME tag used by the smart collection the automatic discount is scoped to. That is what keeps the badge and the checkout price covering identical products."
+      },
+      {
+        "type": "range",
+        "id": "promo_second_pct",
+        "label": "Discount on 2nd item",
+        "min": 5,
+        "max": 50,
+        "step": 5,
+        "unit": "%",
+        "default": 30,
+        "info": "Copy of the rate set in Shopify Admin → Discounts. Liquid cannot read an automatic discount, so change BOTH in the same sitting."
+      },
+      {
+        "type": "header",
+        "content": "Wording"
+      },
+      {
+        "type": "paragraph",
+        "content": "The discount applies to the CHEAPER of two items, not to the item on screen. Every label must keep its object — «-30% على الثانية», never «-30%» alone, which would read as this piece being 30% off."
+      },
+      {
+        "type": "text",
+        "id": "promo_label",
+        "label": "Campaign name",
+        "default": "تخفيضات الصيف"
+      },
+      {
+        "type": "text",
+        "id": "promo_badge_short",
+        "label": "Badge — what the rate applies to",
+        "default": "على الثانية",
+        "info": "Rendered directly after the percentage. Never leave this blank."
+      },
+      {
+        "type": "text",
+        "id": "promo_badge_long",
+        "label": "Product page — how it works",
+        "default": "زيد قطعة ثانية وخد التخفيض"
+      },
+      {
+        "type": "text",
+        "id": "promo_note",
+        "label": "Product page — small print",
+        "default": "كيبان أوتوماتيكيا فالسلة بلا كود · كيتطبق على قطعة وحدة فكل طلب."
+      },
+      {
+        "type": "header",
+        "content": "Markdown wording"
+      },
+      {
+        "type": "paragraph",
+        "content": "Used when a product carries a genuine Shopify compare-at price. Independent of the campaign above — the saving and the percentage are always calculated from the two real prices."
+      },
+      {
+        "type": "text",
+        "id": "promo_save_label",
+        "label": "Savings label",
+        "default": "وفّر"
+      }
+    ]
   }
 ]
