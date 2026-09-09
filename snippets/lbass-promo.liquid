@@ -65,7 +65,14 @@
     endcomment
     assign lb_index = ','
     for t in product.tags
-      assign lb_index = lb_index | append: t | downcase | strip | append: ','
+      comment
+        Normalise EACH tag before appending. Chaining `| downcase | strip` onto
+        the accumulator instead would strip only the ends of the whole string,
+        so a tag stored as " summer-sale " kept its inner spaces and never
+        matched. Caught by the render harness 2026-09-09.
+      endcomment
+      assign lb_t = t | downcase | strip
+      assign lb_index = lb_index | append: lb_t | append: ','
     endfor
     assign lb_needle = ',' | append: lb_tag | append: ','
 

@@ -34,6 +34,23 @@
               else in this theme, including snippets/lbass-price.liquid
               'line'             — one-line note for a card body
               'pdp'              — fuller explanation for the product page
+    active    optional — 'yes' | 'no'. A verdict the caller ALREADY got from
+              lbass-promo. Omit it and this file asks lbass-promo itself.
+
+  ── WHY `active` EXISTS ──────────────────────────────────────────────────────
+  Shopify's performance guidance is to flatten nested renders, especially inside
+  loops (shopify.dev → "Flatten nested render calls"). A collection page loops up
+  to 250 cards, and each card shows TWO badges (ribbon + line). Self-checking
+  both would run lbass-promo twice per card — 500 extra nested renders per page
+  for a verdict that cannot change between them.
+
+  So lbass-product-card asks ONCE and passes the answer down. lbass-promo stays
+  the single source of truth: this file never re-implements the rule, it only
+  accepts an answer that came from there.
+
+  STRINGS, NOT BOOLEANS, on purpose. In Liquid `false == blank` is true, so a
+  boolean `active: false` is indistinguishable from "argument not passed" and
+  the fallback would fire on exactly the products meant to be excluded.
 
   CSS lives in snippets/lbass-promo-css.liquid, rendered once per document.
 
@@ -41,10 +58,23 @@
       {% render 'lbass-promo-badge', product: product, format: 'ribbon' %}
 {%- endcomment -%}
 
-{%- capture lb_promo_s %}{% render 'lbass-promo', product: product %}{% endcapture -%}
-{%- assign lb_promo_s = lb_promo_s | strip -%}
+{%- liquid
+  if active == 'yes'
+    assign lb_on = true
+  elsif active == 'no'
+    assign lb_on = false
+  else
+    assign lb_on = nil
+  endif
+-%}
+{%- if lb_on == nil -%}
+  {%- capture lb_promo_s %}{% render 'lbass-promo', product: product %}{% endcapture -%}
+  {%- assign lb_promo_s = lb_promo_s | strip -%}
+  {%- assign lb_on = false -%}
+  {%- if lb_promo_s == '1' -%}{%- assign lb_on = true -%}{%- endif -%}
+{%- endif -%}
 
-{%- if lb_promo_s == '1' -%}
+{%- if lb_on -%}
   {%- liquid
     assign lb_v = format | default: 'ribbon'
     assign lb_pct = settings.promo_second_pct | default: 30

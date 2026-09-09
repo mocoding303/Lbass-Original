@@ -96,6 +96,39 @@ nothing while the campaign is off.
 
 ---
 
+## Verification status
+
+Executed against Shopify's own Liquid engine (gem 5.13.0) and rendered in
+Chromium. See `test/render/`.
+
+| Verified | How |
+|---|---|
+| 9 eligibility cases | tag / availability / editorial veto / case-insensitivity / substring / whitespace |
+| Price across 6 price points | percentages derived and self-consistent, half-up rounded |
+| Card in 6 states | campaign, markdown, both, sold out, veto, plain |
+| Off switch | no promotional markup leaks; untagged product renders byte-identically on/off |
+| **Refactor is behaviour-preserving** | new component diffed against the pre-refactor inline markup (commit `e1be0c4`) on vendor, title, stamp, href, chips, price, microdata, data-attributes, alt text, quick-add — **identical in all 4 scenarios** |
+| RTL | ribbon measured 10px from the **right** edge of its own image on every campaign card; `direction: rtl` confirmed on body |
+| Mobile 390px / desktop 1280px | no horizontal page overflow, no child overflowing any card, ribbon contained |
+| Design tokens | price `--lb-ink`, struck `--lb-ink-3`, savings/percent `--lb-red`, ribbon `--lb-red-deep` — all resolved |
+
+Three real bugs were caught this way and fixed:
+
+1. **Filters in an `if` condition** (`{% if x | strip == '1' %}`) — invalid Liquid.
+   Shopify would have rejected the theme upload.
+2. **Tag normalisation applied to the accumulator, not each tag**, so a tag stored
+   with surrounding whitespace never matched.
+3. **Two competing percentages on one card.** A piece with a genuine markdown showed
+   «−25%» and «−30%» as near-identical red pills meaning different things. The
+   campaign line was removed from the card body; the ribbon already carries it.
+
+### Still NOT verified
+
+- **Cart and checkout.** No order was placed. The discount is scheduled and the
+  collection is empty, so nothing could be tested end to end.
+- **Real product imagery.** The preview used flat colour placeholders.
+- **Which item Shopify discounts** — see below.
+
 ## The one open question
 
 **Which of the two items does Shopify discount?**
@@ -153,6 +186,7 @@ campaign, with the saving and the percentage derived from the two real prices.
 | `snippets/lbass-product-card.liquid` | **The** product card — replaced ~7 copies |
 | `snippets/lbass-promo-css.liquid` | Styles. Render once, **after** `lbass-stamp` |
 | `config/settings_schema.json` | Campaign settings (first merchant-editable controls in this theme) |
+| `test/render/` | Liquid render + Chromium layout tests. Run these before any change to the card or price components. |
 
 Wired into: `templates/collection.liquid`, `templates/search.liquid`,
 `templates/product.liquid` (PDP block), `layout/theme.liquid` + `templates/index.liquid`

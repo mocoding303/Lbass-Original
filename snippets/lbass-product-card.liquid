@@ -107,6 +107,17 @@
 {%- assign card_one_s = card_one_s | strip -%}
 {%- assign card_one = false -%}{%- if card_one_s == '1' -%}{%- assign card_one = true -%}{%- endif -%}
 
+{%- comment -%}
+  Campaign verdict, asked ONCE and reused by both badges below. Shopify's
+  guidance is to flatten nested renders inside loops, and this loop runs up to
+  250 times. Letting each badge self-check would double the nested renders for
+  an answer that cannot differ between them.
+{%- endcomment -%}
+{%- capture card_promo_s %}{% render 'lbass-promo', product: product %}{% endcapture -%}
+{%- assign card_promo_s = card_promo_s | strip -%}
+{%- assign card_promo = 'no' -%}
+{%- if card_promo_s == '1' -%}{%- assign card_promo = 'yes' -%}{%- endif -%}
+
 {%- capture card_alt -%}
 {{ product.vendor }} {{ card_title }} second-hand original in Morocco{% unless product.has_only_default_variant %}, size {{ cv.title }}{% endunless %}{% if card_condition != blank %}, {{ card_condition }}{% endif %}, photographed by Lbass Original
 {%- endcapture -%}
@@ -133,7 +144,7 @@
       {%- else -%}
         <span class="lb-stamp lb-stamp--sold" aria-hidden="true">SOLD</span>
       {%- endif -%}
-      {%- render 'lbass-promo-badge', product: product, format: 'ribbon' -%}
+      {%- if card_promo == 'yes' -%}{%- render 'lbass-promo-badge', product: product, format: 'ribbon', active: card_promo -%}{%- endif -%}
       {%- if product.featured_image -%}
         <img src="{{ product.featured_image | image_url: width: 500 }}"
              alt="{{ product.featured_image.alt | default: card_alt | strip | escape }}"
@@ -158,7 +169,22 @@
       <div class="card-title" itemprop="name" dir="auto">{{ card_title }}</div>
 
       {%- render 'lbass-price', product: product, variant: cv -%}
-      {%- render 'lbass-promo-badge', product: product, format: 'line' -%}
+      {%- comment -%}
+        NO campaign line in the card body — the ribbon on the image already says
+        «تخفيضات الصيف −30% على الثانية» and repeating it here caused two
+        problems, both visible in the 2026-09-09 render test:
+
+          1. Pure duplication on every campaign card.
+          2. On a card that ALSO has a genuine markdown, the campaign pill sat
+             directly under the markdown pill — «−25%» above «−30%», two red
+             percentages meaning completely different things (this item is 25%
+             off / a second item would be 30% off). A shopper reading quickly
+             takes the bigger number as this item's discount, which is exactly
+             the misreading this whole design exists to prevent.
+
+        The markdown pill keeps the card body to itself. The `line` format still
+        exists in lbass-promo-badge for surfaces with no room for a ribbon.
+      {%- endcomment -%}
 
       {%- if product.available -%}
         <p style="margin:0;color:var(--gold2);font-size:12px;font-weight:900">شوفها قبل ما تتباع ←</p>
