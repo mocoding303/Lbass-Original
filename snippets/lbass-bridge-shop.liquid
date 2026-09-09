@@ -1,0 +1,61 @@
+<style>
+.lb-bridge-shop {
+  max-width: var(--max, 1100px);
+  margin: 40px auto;
+  padding: 24px;
+  background: rgba(200, 154, 14, 0.05);
+  border: 1px solid rgba(200, 154, 14, 0.3);
+  border-radius: 12px;
+  text-align: center;
+}
+.lb-bridge-shop h3 {
+  margin: 0 0 10px;
+  color: var(--cream, #F4EFE6);
+  font-size: 20px;
+}
+.lb-bridge-shop p {
+  margin: 0 0 20px;
+  color: var(--txt2, #97928A);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.lb-bridge-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.lb-bridge-btns a {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.lb-bridge-btn-primary {
+  background: var(--gold, #c89a0e);
+  color: #000;
+}
+.lb-bridge-btn-outline {
+  background: transparent;
+  border: 1px solid rgba(200, 154, 14, 0.4);
+  color: var(--gold2, #E0B52A);
+}
+.lb-bridge-btn-wa {
+  background: transparent;
+  border: 0;
+  color: #25D366;
+  padding-inline: 8px !important;
+  text-decoration: underline !important;
+  text-underline-offset: 4px;
+}
+</style>
+<div class="lb-bridge-shop" aria-label="Shop Now Bridge">
+  <h3>شوف الدروب المتوفر دابا</h3>
+  <p>قطع أصلية مختارة، صور حقيقية، وخلص غير ملي توصلك.</p>
+  <div class="lb-bridge-btns">
+    <a href="{{ routes.all_products_collection_url }}" class="lb-bridge-btn-primary" data-cro-event="available_now_click" data-cro-label="guide_end_primary">تسوق القطع المتوفرة →</a>
+    <a href="https://wa.me/491754264425?text={{ 'سلام، ما عارفش القياس المناسب ليا وبغيت المساعدة.' | url_encode }}" target="_blank" rel="noopener" class="lb-bridge-btn-wa" data-cro-event="click_whatsapp" data-cro-label="guide_size_help">ما عارفش القياس؟ سولنا فالواتساب.</a>
+  </div>
+</div>

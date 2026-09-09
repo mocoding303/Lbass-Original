@@ -1,0 +1,259 @@
+{%- comment -%}
+  Reusable, server-rendered rail for informational and low-stock pages.
+
+  Inputs:
+    heading       visible heading
+    intro         short supporting copy
+    placement     analytics placement/list name
+    limit         maximum cards (default 4)
+    one_only      when true, require total inventory == 1
+    min_price     optional price floor in cents
+    max_price     optional price ceiling in cents
+    exclude_ids   comma-wrapped product ids, e.g. ",123,456,"
+    compact       two-column compact layout for a PDP buy panel
+    prefer_collection  a collection object whose in-stock products are offered FIRST
+    prefer_vendor      a vendor name used as the second-choice tier
+
+  RELEVANCE TIERS (added 2026-08-29)
+    Until this change the pool was `collections.all.products | where: 'available'`
+    with no relevance filter at all — not collection, not type, not vendor. On a
+    sold-out PDP that meant the "شوف البدائل" rail offered whatever the store
+    happened to list first.
+
+    Measured on the live storefront 2026-08-29: the sold-out
+    adidas-black-3-stripes-track-pants PDP holds 83 impressions for
+    «بنطال تراك أسود للرجال» (pos 9–18) and offered football boots, three pairs of
+    shorts and a crossbody bag — while FOUR in-stock black track pants sat in the
+    same collection (two Nike joggers at 349, a Jordan at 599, an Adidas at 499).
+    Someone searching for black track pants was shown a bag.
+
+    Order is now: same collection → same vendor → store-wide. The store-wide tier
+    is kept as the last resort so the rail can never render empty, which is the
+    behaviour every other caller of this snippet relies on.
+
+  Only available products render. No product or condition claim is invented:
+  the condition label appears only when the inspection metafield confirms it.
+{%- endcomment -%}
+
+{%- liquid
+  assign lr_heading = heading | default: 'قطع متوفرة دابا'
+  assign lr_intro = intro | default: 'صور حقيقية، القياس والحالة واضحين، والمخزون كيتحدث من Shopify.'
+  assign lr_placement = placement | default: 'live_products'
+  assign lr_limit = limit | default: 4
+  assign lr_exclude = exclude_ids | default: ','
+
+  comment
+    Build the pool in relevance tiers, then concatenate. `concat` needs arrays,
+    so every tier is filtered with `where` (which returns an array) rather than
+    built by hand. Duplicates across tiers are harmless: the card loop already
+    skips a product it has drawn once via lr_exclude, and the same guard is
+    extended below to cover repeats.
+  endcomment
+  assign lr_pool = ''
+  assign lr_all = collections.all.products | where: 'available', true
+
+  comment
+    TYPE is the first tier, not collection. Measured 2026-08-29: for the sold-out
+    adidas-black-3-stripes-track-pants PDP, product.liquid's `first_collection`
+    resolves to adidas-originals (it takes the first non-brand- collection in
+    product.collections order), NOT track-pants — so a collection-first pool
+    returned Adidas shorts. Type answers "same kind of thing" directly and
+    survives a product sitting in several collections.
+
+    Use `type`, not `product_type`: product_type reads empty from
+    collections[].products on this storefront (see the Adidas snippet block in
+    layout/theme.liquid for the same trap).
+  endcomment
+  comment
+    Tier 0 is type AND vendor — the closest possible substitute. Type alone put
+    H&M grey cargo pants ahead of an in-stock black Adidas track pant for a
+    shopper who searched «بنطال تراك أسود للرجال»: right category, wrong answer.
+  endcomment
+  if prefer_type != blank and prefer_vendor != blank
+    assign lr_tier0 = lr_all | where: 'type', prefer_type | where: 'vendor', prefer_vendor
+    assign lr_pool = lr_tier0
+  endif
+
+  if prefer_type != blank
+    assign lr_tier1 = lr_all | where: 'type', prefer_type
+    if lr_pool == ''
+      assign lr_pool = lr_tier1
+    else
+      assign lr_pool = lr_pool | concat: lr_tier1
+    endif
+  endif
+
+  if prefer_collection != blank and prefer_collection.products.size > 0
+    assign lr_tier2 = prefer_collection.products | where: 'available', true
+    if lr_pool == ''
+      assign lr_pool = lr_tier2
+    else
+      assign lr_pool = lr_pool | concat: lr_tier2
+    endif
+  endif
+
+  if prefer_vendor != blank
+    assign lr_tier3 = lr_all | where: 'vendor', prefer_vendor
+    if lr_pool == ''
+      assign lr_pool = lr_tier3
+    else
+      assign lr_pool = lr_pool | concat: lr_tier3
+    endif
+  endif
+
+  if lr_pool == ''
+    assign lr_pool = lr_all
+  else
+    assign lr_pool = lr_pool | concat: lr_all
+  endif
+  assign lr_count = 0
+  assign lr_one_only_count = 0
+  if one_only
+    for lr_candidate in lr_pool
+      if lr_candidate.total_inventory == 1
+        assign lr_one_only_count = lr_one_only_count | plus: 1
+      endif
+      if lr_one_only_count >= lr_limit
+        break
+      endif
+    endfor
+    if lr_one_only_count == 0
+      assign lr_heading = 'قطع مختارة متوفرة دابا'
+      assign lr_intro = 'المخزون كيتبدل بسرعة. هادو قطع متوفرة دابا بصورها الحقيقية، القياس والحالة واضحين قبل الطلب.'
+    endif
+  endif
+-%}
+
+{%- capture lr_cards -%}
+  {%- for lr_product in lr_pool -%}
+    {%- if lr_count >= lr_limit -%}{%- break -%}{%- endif -%}
+    {%- capture lr_pid -%},{{ lr_product.id }},{%- endcapture -%}
+    {%- if lr_exclude contains lr_pid -%}{%- continue -%}{%- endif -%}
+    {%- if one_only and lr_one_only_count > 0 and lr_product.total_inventory != 1 -%}{%- continue -%}{%- endif -%}
+    {%- if min_price != blank and lr_product.price < min_price -%}{%- continue -%}{%- endif -%}
+    {%- if max_price != blank and lr_product.price > max_price -%}{%- continue -%}{%- endif -%}
+
+    {%- liquid
+      assign lr_variant = lr_product.selected_or_first_available_variant
+      assign lr_title = lr_product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first
+      assign lr_status = lr_product.metafields.lbass.condition_status.value | default: 'unknown'
+      assign lr_inspection = lr_product.metafields.lbass.inspection_status.value
+      assign lr_ticket = lr_product.metafields.lbass.ticket_status.value | default: 'unknown'
+      assign lr_has_ticket = lr_product.metafields.lbass.has_original_ticket.value
+      assign lr_notes = lr_product.metafields.lbass.condition_notes.value
+      assign lr_defects = lr_product.metafields.lbass.visible_defects.value
+      assign lr_condition = ''
+      if lr_inspection == 'inspected_confirmed'
+        if lr_has_ticket == true and lr_status == 'new_with_ticket'
+          if lr_ticket == 'ticket_attached' or lr_ticket == 'ticket_included'
+            assign lr_condition = 'جديد بالتّيكيت'
+          endif
+        elsif lr_has_ticket == false and lr_ticket == 'no_ticket' and lr_status == 'new_without_ticket'
+          assign lr_condition = 'جديد بلا تيكيت'
+        elsif lr_has_ticket == false and lr_ticket == 'no_ticket' and lr_status == 'excellent_almost_new'
+          assign lr_condition = 'بحالة ممتازة · شبه جديد'
+        elsif lr_status == 'very_good'
+          assign lr_condition = 'بحالة مزيانة بزاف'
+        elsif lr_status == 'good'
+          assign lr_condition = 'بحالة مزيانة'
+        elsif lr_status == 'needs_note'
+          if lr_notes != blank or lr_defects != blank
+            assign lr_condition = 'شوف ملاحظات الحالة'
+          endif
+        endif
+      endif
+      comment
+        Tiered pools can list the same product twice (collection tier and
+        store-wide tier). Adding each drawn id to lr_exclude reuses the guard
+        that already runs at the top of this loop, so a repeat is skipped
+        instead of rendering a duplicate card.
+      endcomment
+      assign lr_exclude = lr_exclude | append: lr_product.id | append: ','
+      assign lr_count = lr_count | plus: 1
+    -%}
+
+    <div class="lblr-card-wrap">
+      <a class="lblr-card"
+         href="{{ lr_product.url }}"
+         data-cro-product-card
+         data-cro-placement="{{ lr_placement | escape }}"
+         data-product-id="{{ lr_product.id }}"
+         data-product-name="{{ lr_title | escape }}"
+         data-product-handle="{{ lr_product.handle | escape }}">
+        <span class="lblr-media">
+          {%- if lr_product.featured_image -%}
+            <img src="{{ lr_product.featured_image | image_url: width: 640 }}"
+                 alt="{{ lr_product.featured_image.alt | default: lr_title | escape }}"
+                 loading="lazy" decoding="async" width="640" height="800">
+          {%- else -%}
+            <span class="lblr-no-image">{{ lr_product.vendor | escape }}</span>
+          {%- endif -%}
+          <span class="lblr-live">متوفرة دابا</span>
+        </span>
+        <span class="lblr-body">
+          <span class="lblr-brand">{{ lr_product.vendor | escape }}</span>
+          <strong class="lblr-title" dir="auto">{{ lr_title }}</strong>
+          <span class="lblr-row">
+            <b>{{ lr_variant.price | money_without_trailing_zeros }}</b>
+            {%- unless lr_variant.title == 'Default Title' -%}<span>{{ lr_variant.title }}</span>{%- endunless -%}
+          </span>
+          {%- if lr_condition != blank -%}<span class="lblr-condition">{{ lr_condition }}</span>{%- endif -%}
+        </span>
+      </a>
+      {% render 'lbass-quick-add', product: lr_product %}
+    </div>
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if lr_count > 0 -%}
+<section class="lblr{% if compact %} lblr--compact{% endif %}"
+         aria-labelledby="lblr-{{ lr_placement | handleize }}-h"
+         data-cro-list
+         data-cro-list-name="{{ lr_placement | escape }}">
+  <div class="lblr-head">
+    <div>
+      <p class="lblr-kicker">AVAILABLE NOW</p>
+      <h2 id="lblr-{{ lr_placement | handleize }}-h">{{ lr_heading }}</h2>
+      <p>{{ lr_intro }}</p>
+    </div>
+    <a href="{{ routes.all_products_collection_url }}"
+       data-cro-event="available_now_click"
+       data-cro-label="{{ lr_placement | escape }}"
+       data-source-section="{{ lr_placement | escape }}">شوف الكل →</a>
+  </div>
+  <div class="lblr-grid" role="list">{{ lr_cards }}</div>
+</section>
+
+<style>
+.lblr{max-width:1100px;margin:24px 0;padding:20px;border:1px solid rgba(200,154,14,.28);border-radius:16px;background:rgba(200,154,14,.055)}
+.lblr-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:0 0 16px}
+.lblr-kicker{margin:0 0 5px!important;color:var(--gold,#c89a0e)!important;font:800 10px/1.2 ui-monospace,monospace!important;letter-spacing:.18em!important;direction:ltr}
+.lblr-head h2{margin:0 0 5px!important;color:var(--cream,#F4EFE6)!important;font-size:clamp(20px,2.5vw,28px)!important;line-height:1.35!important}
+.lblr-head p:not(.lblr-kicker){margin:0!important;color:var(--txt2,#97928A)!important;font-size:13px!important;line-height:1.7!important}
+.lblr-head>a{flex:none;color:var(--gold2,#E0B52A);font-size:13px;font-weight:900;text-decoration:none}
+.lblr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.lblr-card-wrap{min-width:0;display:flex;flex-direction:column;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:13px;background:var(--ink2,#151518);overflow:hidden}
+.lblr-card{display:flex;flex:1;flex-direction:column;color:inherit;text-decoration:none;min-width:0}
+.lblr-media{display:block;position:relative;aspect-ratio:4/5;overflow:hidden;background:#171719}
+.lblr-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease}
+.lblr-card:hover .lblr-media img{transform:scale(1.025)}
+.lblr-live{position:absolute;top:9px;right:9px;padding:5px 8px;border-radius:999px;background:#176d3a;color:#fff;font-size:10px;font-weight:900}
+.lblr-no-image{height:100%;display:grid;place-items:center;color:#fff;font-weight:900}
+.lblr-body{display:flex;flex:1;flex-direction:column;padding:12px}
+.lblr-brand{color:var(--gold,#c89a0e);font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;direction:ltr}
+.lblr-title{display:block;margin:5px 0 9px;color:var(--cream,#F4EFE6);font-size:13.5px;line-height:1.45}
+.lblr-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;color:var(--cream,#F4EFE6);font-size:12px;direction:ltr}
+.lblr-row b{font-size:14px;color:var(--gold2,#E0B52A)}
+.lblr-condition{display:block;margin-top:7px;color:var(--txt2,#97928A);font-size:10.5px;line-height:1.4}
+.lblr .lbqa-btn{margin:0 10px 10px}
+.lblr--compact{margin:12px 0;padding:13px}
+.lblr--compact .lblr-head{align-items:start;margin-bottom:11px}
+.lblr--compact .lblr-head h2{font-size:16px!important}
+.lblr--compact .lblr-head p:not(.lblr-kicker){display:none}
+.lblr--compact .lblr-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lblr--compact .lblr-title{font-size:11.5px}.lblr--compact .lblr-condition{display:none}
+.lblr--compact .lblr-body{padding:9px}.lblr--compact .lbqa-btn{font-size:11px!important;margin:0 7px 7px!important;padding:8px!important;min-height:38px!important}
+@media(max-width:780px){.lblr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.lblr{padding:14px;margin:18px 0}.lblr-head{align-items:start}.lblr-head>a{font-size:12px}.lblr-grid{gap:9px}.lblr-title{font-size:12px}}
+</style>
+{%- endif -%}

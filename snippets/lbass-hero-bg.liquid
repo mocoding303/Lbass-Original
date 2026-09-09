@@ -1,0 +1,119 @@
+{%- comment -%}
+  LBASS HERO — BACKGROUND PHOTO (2026-08-01, rev3)
+  Rendered by sections/lbass-hero.liquid, behind the particles and copy.
+
+  PURPOSE: the hero was type-only, so nothing above the fold said "clothing".
+  A garment photo supplies that in under a second, before a word is read.
+
+  THE CONFLICT: the headline is ~115px of INK on a light ground. A photo behind
+  it destroys the contrast that makes it readable. rev1 handled that by fading
+  the WHOLE image — which protected the type but flattened the picture into
+  abstract texture, so it stopped reading as clothing at all. It solved the
+  legibility problem by discarding the reason the image was added.
+
+  rev2 DECOUPLED THE TWO. The scrim is locked near-opaque at the centre where
+  the type sits (0.92, independent of the setting) and "visibility" now only
+  opens the OUTER stops. The headline keeps a constant contrast floor while the
+  goods stay legible around it, so the default could move 22 -> 42.
+
+  Desaturation defaults low (12%): colour is what makes a garment recognisable
+  at a glance. Denim blue and sneaker tan do more work than any contrast tuning.
+
+  rev3 — DEFAULT IMAGE. Was hero-lifestyle-3b (one pair of folded jeans plus
+  roses, a lantern, sunglasses). Cropped into a wide hero it reads as a vintage
+  still-life, not a clothing shop — the props outweigh the single garment.
+  hero-lifestyle-1 is now the default: Jordan sneakers, Levi's denim, belt, bag
+  and jewellery on Moroccan zellige. Sneakers + denim + accessories is exactly
+  the category Lbass sells, and the tilework carries the Moroccan half of the
+  brand without a word of copy.
+  If you swap this, judge the WIDE crop — a picture that works as a square
+  thumbnail can lose its subject entirely at 1280x880.
+
+  PERF: eager + fetchpriority=high — this is the LCP element. Explicit
+  width/height prevent layout shift. Shopify-uploaded images get a srcset;
+  the presets are already hand-optimised webp (107-222KB).
+{%- endcomment -%}
+
+{%- liquid
+  assign v = section.settings.bg_visibility | default: 42
+  assign a0 = 92
+  assign a1 = v | times: 45 | divided_by: 100
+  assign a1 = 90 | minus: a1 | at_least: 0
+  assign a2 = v | times: 105 | divided_by: 100
+  assign a2 = 78 | minus: a2 | at_least: 0
+  assign a3 = v | times: 105 | divided_by: 100
+  assign a3 = 62 | minus: a3 | at_least: 0
+  assign gray = section.settings.bg_grayscale | default: 12
+  assign focal = section.settings.bg_position | default: 'center'
+  assign preset = section.settings.bg_asset | default: 'hero-lifestyle-1.webp'
+-%}
+
+<div class="lbh-bg" aria-hidden="true">
+  {%- if section.settings.bg_image != blank -%}
+    <img src="{{ section.settings.bg_image | image_url: width: 2200 }}"
+         srcset="{{ section.settings.bg_image | image_url: width: 900 }} 900w,
+                 {{ section.settings.bg_image | image_url: width: 1400 }} 1400w,
+                 {{ section.settings.bg_image | image_url: width: 2200 }} 2200w"
+         sizes="100vw"
+         width="{{ section.settings.bg_image.width }}"
+         height="{{ section.settings.bg_image.height }}"
+         alt="" loading="eager" fetchpriority="high" decoding="async">
+  {%- else -%}
+    <img src="{{ preset | asset_url }}"
+         width="1264" height="848"
+         alt="" loading="eager" fetchpriority="high" decoding="async">
+  {%- endif -%}
+</div>
+<div class="lbh-scrim" aria-hidden="true"></div>
+
+<style>
+.lbh-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.lbh-bg img{width:100%;height:100%;object-fit:cover;object-position:{{ focal }};display:block;
+  filter:grayscale({{ gray }}%) contrast(1.04) saturate(1.05)}
+
+/* Centre stop is LOCKED at .92 — it is the headline's contrast floor and must
+   not follow the visibility setting. Only the outer stops open up. */
+.lbh-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 58% 54% at 50% 44%,
+      rgba(252,251,248,{{ a0 | divided_by: 100.0 }}) 0%,
+      rgba(252,251,248,{{ a1 | divided_by: 100.0 }}) 36%,
+      rgba(252,251,248,{{ a2 | divided_by: 100.0 }}) 68%,
+      rgba(252,251,248,{{ a3 | divided_by: 100.0 }}) 100%),
+    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(241,238,231,.46) 100%);
+}
+.lbh--ink .lbh-scrim{
+  background:
+    radial-gradient(ellipse 58% 54% at 50% 44%,
+      rgba(8,7,10,{{ a0 | divided_by: 100.0 }}) 0%,
+      rgba(8,7,10,{{ a1 | divided_by: 100.0 }}) 36%,
+      rgba(8,7,10,{{ a2 | divided_by: 100.0 }}) 68%,
+      rgba(8,7,10,{{ a3 | divided_by: 100.0 }}) 100%),
+    linear-gradient(180deg, rgba(8,7,10,.34) 0%, rgba(8,7,10,.56) 100%);
+}
+.lbh--ink .lbh-bg img{filter:grayscale({{ gray }}%) contrast(1.06) brightness(.8)}
+
+/* particles ride above the scrim, copy above everything */
+.lbh .lbh-fx{z-index:2}
+.lbh .lbh-wrap,.lbh .lbh-cue{z-index:3}
+
+@media(max-width:767px){
+  /* a phone crop of a wide flat-lay is mostly surface — bias toward the goods */
+  .lbh-bg img{object-position:center 34%}
+  /* the copy is left-aligned on mobile, so move the protected zone with it */
+  .lbh-scrim{background:
+    radial-gradient(ellipse 86% 52% at 30% 40%,
+      rgba(252,251,248,{{ a0 | divided_by: 100.0 }}) 0%,
+      rgba(252,251,248,{{ a1 | divided_by: 100.0 }}) 42%,
+      rgba(252,251,248,{{ a2 | divided_by: 100.0 }}) 76%,
+      rgba(252,251,248,{{ a3 | divided_by: 100.0 }}) 100%),
+    linear-gradient(180deg, rgba(255,255,255,.34) 0%, rgba(241,238,231,.50) 100%)}
+  .lbh--ink .lbh-scrim{background:
+    radial-gradient(ellipse 86% 52% at 30% 40%,
+      rgba(8,7,10,{{ a0 | divided_by: 100.0 }}) 0%,
+      rgba(8,7,10,{{ a1 | divided_by: 100.0 }}) 42%,
+      rgba(8,7,10,{{ a2 | divided_by: 100.0 }}) 76%,
+      rgba(8,7,10,{{ a3 | divided_by: 100.0 }}) 100%),
+    linear-gradient(180deg, rgba(8,7,10,.38) 0%, rgba(8,7,10,.60) 100%)}
+}
+</style>

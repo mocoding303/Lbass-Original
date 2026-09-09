@@ -1,0 +1,145 @@
+{%- comment -%}
+  LBASS HERO FX — NUR hero mechanics, adapted for Arabic + RTL.
+
+  1. WORD REVEAL, NOT CHAR REVEAL. Arabic is cursive — each glyph reshapes based
+     on its neighbours — so wrapping every character in its own <span> severs
+     the joins and "قطع" renders as three isolated letterforms. Word level
+     preserves joining. NEVER reintroduce per-character splitting on Darija.
+     The masked-rise mechanic lives in snippets/lbass-hero-type.liquid.
+
+  2. NUR's visibilitychange BUG IS NOT PORTED. Their loop calls loop() again on
+     tab return while the rAF chain is already self-continuing, so every return
+     starts an ADDITIONAL concurrent chain. Here the chain is single and simply
+     skips painting while hidden.
+
+  3. PERF GUARDS: canvas skipped for prefers-reduced-motion and coarse
+     pointers, DPR capped at 1.5, particle count scaled to viewport, loop
+     halted when the hero leaves the viewport.
+
+  4. IDEMPOTENT + RE-RUNNABLE. On the homepage the hero is inserted by
+     lbass-hero-swap AFTER this script runs, so init happens twice: once
+     normally, once on `lbass:hero-ready`. Guards make the second call a no-op.
+
+  5. WHY THE START WAITS FOR TWO ANIMATION FRAMES (fixed 2026-08-02)
+     The reveal was reported as "not moving" three times while every check said
+     it was correctly bound and running. The cause was not the CSS.
+
+     lbass-hero-swap INSERTS the hero at DOMContentLoaded, and the reveal then
+     started on that same tick. `void el.offsetWidth` forces a style/layout
+     flush, but it does NOT guarantee the browser has PAINTED the from-state.
+     Starting an animation in the same frame the element is inserted means the
+     opening frames are dropped, so the words appear already-arrived — the
+     animation genuinely ran, it was just never visible.
+
+     Two nested requestAnimationFrame calls guarantee one committed paint of
+     the from-state before animation-name is applied. The safety timer below
+     covers the case where rAF never fires (background tab).
+
+  6. FAIL VISIBLE. If anything above goes wrong the headline must never stay
+     invisible, so a timer force-shows it. It is set well past the end of the
+     sequence (last delay ~1.05s + 1.1s duration = ~2.15s) so it can never
+     truncate the animation.
+{%- endcomment -%}
+
+{% render 'lbass-hero-type' %}
+{% render 'lbass-hero-mobile' %}
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  function initReveal(){
+    var lines = document.querySelectorAll('[data-lbh-reveal]:not([data-lbh-done])');
+    Array.prototype.forEach.call(lines, function(el, wi){
+      var text = (el.getAttribute('data-lbh-reveal') || el.textContent || '').trim();
+      if(!text) return;
+      el.setAttribute('data-lbh-done','1');
+      el.setAttribute('aria-label', text);
+
+      if(reduce){ el.classList.add('lbh-shown'); return; }
+
+      el.textContent = '';
+      text.split(' ').forEach(function(w, i){
+        var s = document.createElement('span');
+        s.className = 'lbh-w';
+        s.textContent = w;
+        s.setAttribute('aria-hidden','true');
+        /* fewer units than a per-char split, so each step is spaced wider */
+        s.style.animationDelay = (0.35 + wi*0.28 + i*0.14).toFixed(2) + 's';
+        el.appendChild(s);
+        el.appendChild(document.createTextNode(' '));
+      });
+
+      /* see note 5 — one committed PAINT of the from-state, then start */
+      void el.offsetWidth;
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ el.classList.add('lbh-go'); });
+      });
+
+      /* fail visible — see note 6 */
+      setTimeout(function(){ el.classList.add('lbh-shown'); }, 3200);
+    });
+  }
+
+  function initParticles(){
+    var canvas = document.getElementById('lbhParticles');
+    if(!canvas || canvas.getAttribute('data-lbh-fx')) return;
+    canvas.setAttribute('data-lbh-fx','1');
+    if(reduce || matchMedia('(pointer:coarse)').matches){ canvas.remove(); return; }
+
+    var ctx = canvas.getContext('2d'), W = 0, H = 0, pts = [], visible = true;
+    var tint = canvas.getAttribute('data-tint') || '11,11,12';
+
+    function seed(){
+      var n = Math.round(Math.min(70, Math.max(24, innerWidth / 22)));
+      pts = Array.from({length:n}, function(){
+        return { x:Math.random()*W, y:Math.random()*H,
+                 r:Math.random()*1.25 + .3,
+                 dx:(Math.random()-.5)*.10,
+                 dy:-Math.random()*.20 - .03,
+                 o:Math.random()*.26 + .05 };
+      });
+    }
+    function resize(){
+      var dpr = Math.min(devicePixelRatio || 1, 1.5);
+      var r = canvas.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+    }
+    function loop(){
+      requestAnimationFrame(loop);              /* single chain — see note 2 */
+      if(document.hidden || !visible) return;   /* skip PAINT, not the chain */
+      ctx.clearRect(0, 0, W, H);
+      for(var i=0;i<pts.length;i++){
+        var p = pts[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(' + tint + ',' + p.o + ')';
+        ctx.fill();
+        p.x += p.dx; p.y += p.dy;
+        if(p.y < -4){ p.y = H + 4; p.x = Math.random()*W; }
+        if(p.x < -4) p.x = W + 4; else if(p.x > W + 4) p.x = -4;
+      }
+    }
+
+    var ro = window.ResizeObserver ? new ResizeObserver(resize) : null;
+    if(ro) ro.observe(canvas); else addEventListener('resize', resize);
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(function(es){ visible = es[0].isIntersecting; },
+        {threshold:0}).observe(canvas);
+    }
+    resize();
+    loop();
+  }
+
+  function init(){ initReveal(); initParticles(); }
+
+  document.addEventListener('lbass:hero-ready', init);
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
+})();
+</script>

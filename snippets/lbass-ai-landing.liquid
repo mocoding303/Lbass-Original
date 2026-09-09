@@ -1,0 +1,163 @@
+{%- comment -%}
+  LBASS — AI-REFERRAL LANDING STRIP + CATEGORY DISCOVERY (2026-08-19)
+  Homepage only. Rendered from snippets/lbass-cro-tracking.liquid AFTER
+  lbass-home-density and lbass-home-answer, so the order rules below win.
+
+  ═══ WHY ═══
+  GA4: chatgpt.com / ai-assistant → 246 sessions, 66% engaged, 45s average,
+  0 key events. Assistant-referred visitors arrive mid-question ("is it legit",
+  "do they deliver", "can I pay cash") and previously met a hero with no answer.
+
+  A direct-answer block existed here until 2026-08-10 and was removed on the
+  owner's call because the homepage read as crowded. That judgement stands —
+  so this is deliberately NOT a restoration of the old block:
+      old: three stacked paragraphs (AR + FR + EN), ~170px
+      new: ONE answer line + a row of shopping cards
+  The facts are the same; the page cost is a fraction, and the cards are
+  shopping UI rather than SEO prose.
+
+  ═══ NO CLOAKING ═══
+  The markup below is IDENTICAL for every visitor and every crawler. The only
+  thing `document.referrer` changes is one greeting line ("جا من ChatGPT؟"),
+  and it is added on top of copy that is already present and already visible.
+  Nothing is hidden from Google that a user sees, and nothing is shown to a
+  user that a crawler cannot read. Do not extend this to swap real content.
+
+  ═══ EVENTS ═══
+  Published through Shopify.analytics.publish, same bus as lbass-cro-tracking.
+  ⚠️ Those custom events currently reach NOTHING: gtag() is not defined on the
+  storefront (GA4 arrives via Shopify's Google & YouTube channel, not a theme
+  snippet) and no Web Pixel subscribes to the bus. The bridge is a custom pixel
+  — see seo-system/ai-traffic/custom-web-pixel.js. Until that pixel is added in
+  Admin → Settings → Customer events, every event below is unobservable.
+{%- endcomment -%}
+
+<section class="lbai" aria-labelledby="lbai-h">
+  <p class="lbai-answer" id="lbai-h">
+    <strong>Lbass Original</strong> متجر مغربي أونلاين من <strong>مراكش</strong> — حوايج براند أصلية second-hand، صبابط، إكسسوارات وstreetwear مختارة من <strong>ألمانيا</strong> ومفحوصة <strong>فمراكش</strong>. كل قطعة مصورة بنفسها وغالباً <strong>وحدة فقط</strong>.
+    التوصيل <strong>20 درهم فمراكش</strong> · <strong>40 درهم لباقي المغرب</strong> · مجاني من 500 · <strong>الدفع عند الاستلام</strong> ولا PayPal.
+  </p>
+
+  <div class="lbai-head">
+    <h2 class="lbai-t" id="lbai-cards-h">لقى شي حاجة عجباتك؟</h2>
+    <a class="lbai-primary" href="{{ routes.all_products_collection_url }}" data-ai-cta="available_now" data-cro-event="available_now_click" data-cro-label="homepage_ai_strip">شوف القطع المتوفرة دابا →</a>
+  </div>
+</section>
+
+<style>
+/* Dark text on the LIGHT bone page (#F2F0EB). The tokens are inverted sitewide
+   by lbass-stamp (--cream resolves to #0B0B0C); writing against token names
+   here renders light-on-light. Literal hex only. */
+.lbai{max-width:1180px;margin:14px auto 0;padding:0 20px}
+.lbai-answer{
+  margin:0 0 14px;padding:12px 16px;
+  border:1px solid rgba(200,154,14,.45);border-radius:12px;
+  background:rgba(200,154,14,.08);
+  color:#2E2E31;font-size:13px;font-weight:700;line-height:1.75;letter-spacing:normal;
+}
+.lbai-answer strong{color:#6B5307}
+.lbai-answer.is-ai::before{
+  content:attr(data-ai-greet);display:block;margin-bottom:5px;
+  color:#0B0B0C;font-size:13.5px;font-weight:900;
+}
+.lbai-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 10px}
+.lbai .lbai-head h2.lbai-t{margin:0!important;color:#0B0B0C!important;font-size:18px!important;font-weight:900!important;letter-spacing:normal!important}
+.lbai-sh{color:#0B0B0C;font-size:12.5px;font-weight:800;text-decoration:none;border-bottom:2px solid rgba(200,154,14,.85);padding-bottom:2px;white-space:nowrap}
+.lbai-primary{display:inline-flex;min-height:42px;align-items:center;justify-content:center;padding:9px 15px;border-radius:9px;background:#0B0B0C;color:#F4EFE6;font-size:12.5px;font-weight:900;text-decoration:none;white-space:nowrap}
+.lbai-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px}
+.lbai-card{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:11px 13px;border:1px solid rgba(0,0,0,.14);border-radius:11px;
+  background:rgba(0,0,0,.02);text-decoration:none;transition:border-color .18s;
+}
+.lbai-card:hover{border-color:rgba(200,154,14,.75)}
+.lbai-card-t{color:#1A1A1C;font-size:12.5px;font-weight:800;letter-spacing:normal}
+.lbai-card-n{color:#6B5307;font-size:11px;font-weight:800;direction:ltr}
+@media(max-width:767px){
+  .lbai{padding:0 14px;margin-top:10px}
+  .lbai-answer{font-size:12.5px;padding:11px 13px}
+  .lbai-head{align-items:stretch;flex-direction:column}.lbai-primary{width:100%}
+}
+
+/* Products first; this compact answer/CTA follows the live drop. */
+main > #drop{order:2}
+main > .lbai{order:3}
+main > .lbhc{order:4}
+main > .trust-strip{order:5}
+main > .intent-moments{order:6}
+main > #inspection{order:7}
+</style>
+
+<script>
+(function(){
+  'use strict';
+  if(window.__lbassAiLanding) return;
+  window.__lbassAiLanding = true;
+
+  function pub(name, params){
+    params = params || {};
+    params.landing_page = location.pathname;
+    params.page_type = {{ request.page_type | json }};
+    try{
+      if(window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function'){
+        Shopify.analytics.publish(name, params);
+      }
+    }catch(e){}
+  }
+
+  /* ── AI referrer detection ───────────────────────────────────────────────
+     Referrer only decides ONE greeting line. Never gate content on this. */
+  var AI = [
+    {re:/(^|\.)chatgpt\.com$/i,        s:'chatgpt',    label:'جا من ChatGPT؟ بدا من هنا 👇'},
+    {re:/(^|\.)openai\.com$/i,         s:'chatgpt',    label:'جا من ChatGPT؟ بدا من هنا 👇'},
+    {re:/(^|\.)perplexity\.ai$/i,      s:'perplexity', label:'جا من Perplexity؟ بدا من هنا 👇'},
+    {re:/(^|\.)claude\.ai$/i,          s:'claude',     label:'جا من Claude؟ بدا من هنا 👇'},
+    {re:/copilot\.microsoft\.com$/i,   s:'copilot',    label:'جا من Copilot؟ بدا من هنا 👇'},
+    {re:/(^|\.)gemini\.google\.com$/i, s:'gemini',     label:'جا من Gemini؟ بدا من هنا 👇'}
+  ];
+  var src = null, host = '';
+  try{ host = document.referrer ? new URL(document.referrer).hostname : ''; }catch(e){}
+  for(var i=0;i<AI.length;i++){ if(host && AI[i].re.test(host)){ src = AI[i]; break; } }
+
+  var answer = document.querySelector('.lbai-answer');
+  if(src && answer){
+    answer.setAttribute('data-ai-greet', src.label);
+    answer.classList.add('is-ai');
+    try{ sessionStorage.setItem('lbass_ai_src', src.s); }catch(e){}
+    pub('ai_referral_detected', {referrer: host, source_type: src.s});
+  }
+
+  function aiSrc(){
+    if(src) return src.s;
+    try{ return sessionStorage.getItem('lbass_ai_src') || ''; }catch(e){ return ''; }
+  }
+
+  /* ── click instrumentation ───────────────────────────────────────────── */
+  document.addEventListener('click', function(ev){
+    var s = aiSrc(); if(!s) return;           /* AI-scoped events only */
+    var cat = ev.target.closest('[data-ai-cat]');
+    if(cat) pub('ai_category_click', {source_type:s, collection_handle:cat.getAttribute('data-ai-cat'), clicked_element:'category_card'});
+    var cta = ev.target.closest('[data-ai-cta]');
+    if(cta) pub('ai_start_here_click', {source_type:s, clicked_element:cta.getAttribute('data-ai-cta')});
+    var card = ev.target.closest('[data-cro-product-card]');
+    if(card) pub('ai_product_click', {source_type:s, product_handle:(card.getAttribute('href')||'').split('/products/')[1]||'', product_id:card.getAttribute('data-product-id')||'', clicked_element:'product_card'});
+    var wa = ev.target.closest('a[href*="wa.me/"]');
+    if(wa) pub('ai_whatsapp_click', {source_type:s, clicked_element:'whatsapp'});
+    var atc = ev.target.closest('#pdpAdd, [data-cro-event="add_to_cart_click"]');
+    if(atc) pub('ai_add_to_cart', {source_type:s, clicked_element:'add_to_cart'});
+  }, {passive:true});
+
+  /* ── scroll depth, fired once each ───────────────────────────────────── */
+  var hit50=false, hit90=false;
+  function onScroll(){
+    var s = aiSrc(); if(!s) return;
+    var d=document.documentElement, b=document.body;
+    var h=Math.max(d.scrollHeight,b.scrollHeight)-window.innerHeight;
+    if(h<=0) return;
+    var p=(window.scrollY||window.pageYOffset)/h*100;
+    if(!hit50 && p>=50){ hit50=true; pub('ai_scroll_50',{source_type:s}); }
+    if(!hit90 && p>=90){ hit90=true; pub('ai_scroll_90',{source_type:s}); window.removeEventListener('scroll',onScroll); }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+})();
+</script>

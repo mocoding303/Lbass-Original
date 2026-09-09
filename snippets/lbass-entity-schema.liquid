@@ -1,0 +1,172 @@
+{% comment %}
+  Core entity schema for Lbass Original.
+  Keep this factual: no street address, awards, certifications, or review data
+  unless verified by the owner.
+
+  ── LOCATION (confirmed by owner 2026-08-03: Marrakech) ──
+  addressLocality is set to Marrakech with NO streetAddress. That is the honest
+  shape: it states where the business actually is without claiming a walk-in
+  storefront at a specific door. Locality alone is a genuine local-relevance
+  signal for "friperie marrakech" / "حوايج مستعملة مراكش" style queries.
+
+  ── WHY OnlineStore AND NOT Store ──
+  This used to declare @type "Store" with openingHoursSpecification 09:00–22:00
+  daily. Both of those assert a physical shop the public can walk into during
+  those hours — which has never been verified. Google treats Store/LocalBusiness
+  as a bricks-and-mortar claim, and an unverifiable one costs trust rather than
+  buying it.
+
+  OnlineStore is the accurate type for a store that sells online and ships
+  nationally. No opening or support hours are declared: the owner confirmed
+  on 2026-08-20 that customers may send a WhatsApp message at any time, but
+  that does not mean a guaranteed 24/7 response window.
+
+  IF a walk-in shop in Marrakech genuinely exists, this should become a second
+  LocalBusiness node WITH streetAddress + geo + a Google Business Profile — that
+  is a large local-SEO win, but it needs the real address first. Do not add it
+  speculatively.
+
+  This snippet is ALSO the fix-injection point for the homepage. templates/index.liquid
+  uses {% layout none %}, so layout/theme.liquid never wraps the homepage — but
+  index.liquid does render THIS snippet, which makes it the only server-side hook
+  available there. The renders at the bottom rely on that.
+{% endcomment %}
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "{{ shop.url }}/#organization",
+    "name": "Lbass Original",
+    {%- comment -%}
+      Spellings extended 2026-08-23 from 90 days of Search Console. People search
+      this brand in Arabic and in Latin transliteration, and the site was ranking
+      39-48 for its OWN name — a brand should not be on page 4 for itself:
+          البس    10 impr  pos 39.0      labass  2 impr  pos 40.0
+          لاباس    4 impr  pos 48.0      labas   2 impr  pos 48.0
+          متجر البس 4 impr  pos  6.2
+      Every value below is a spelling OBSERVED in GSC for this domain, not an
+      invented synonym. Do not pad this list with generic words.
+    {%- endcomment -%}
+    "alternateName": ["Lbass", "Labas", "Labass", "لباس اوريجينال", "لاباس اوريجينال", "لاباس", "البس", "لباس"],
+    "url": {{ shop.url | json }},
+    "logo": "https:{{ 'lbass-wordmark-horizontal.svg' | asset_url }}",
+    "description": "Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، كتتشيك وكتتصور فمراكش، وكتتوصل لكل المغرب.",
+    "telephone": "+491754264425",
+    "email": "contact@lbassoriginal.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Marrakech",
+      "addressRegion": "Marrakech-Safi",
+      "addressCountry": "MA"
+    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+491754264425",
+        "email": "contact@lbassoriginal.com",
+        "url": "{{ shop.url }}/pages/contact",
+        "contactType": "customer support",
+        "areaServed": "MA",
+        "availableLanguage": ["ar-MA", "ar", "fr", "en"]
+      }
+    ],
+    "areaServed": {
+      "@type": "Country",
+      "name": "Morocco"
+    },
+    "sameAs": [
+      "https://www.instagram.com/lbas.original/",
+      "https://www.facebook.com/lbassoriginal"
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "{{ shop.url }}/#website",
+    "url": {{ shop.url | json }},
+    "name": "Lbass Original",
+    "inLanguage": "ar-MA",
+    "publisher": {
+      "@id": "{{ shop.url }}/#organization"
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{ shop.url }}{{ routes.search_url }}?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "OnlineStore",
+    "@id": "{{ shop.url }}/#store",
+    "name": "Lbass Original",
+    "url": {{ shop.url | json }},
+    "image": "https:{{ 'hero-lifestyle-1.webp' | asset_url }}",
+    "description": "Lbass Original est une friperie en ligne basée à Marrakech, spécialisée dans les vêtements de marque second hand, sneakers, accessoires et streetwear sélectionnés en Allemagne, vérifiés et photographiés à Marrakech. Livraison au Maroc: 20 MAD à Marrakech et 40 MAD ailleurs; COD ou PayPal.",
+    "email": "contact@lbassoriginal.com",
+    "currenciesAccepted": "MAD",
+    "paymentAccepted": ["Cash on delivery", "PayPal"],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Marrakech",
+      "addressRegion": "Marrakech-Safi",
+      "addressCountry": "MA"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Morocco"
+    },
+    "parentOrganization": {
+      "@id": "{{ shop.url }}/#organization"
+    }
+  }
+]
+</script>
+
+{%- comment -%}
+  FAQPage for any PAGE carrying a lbass.faq metafield — see
+  snippets/lbass-page-faq-schema.liquid. Gated: no metafield, no markup.
+  templates/page.liquid only hardcodes FAQ schema for a few legacy handles, so
+  new pages (e.g. /pages/faq) would otherwise ship visible Q&A with no schema.
+{%- endcomment -%}
+{% render 'lbass-page-faq-schema' %}
+
+{%- comment -%} Marquee loop repair — see snippets/lbass-marquee-fix.liquid. {%- endcomment -%}
+{% render 'lbass-marquee-fix' %}
+
+{%- comment -%} Product badge system — see snippets/lbass-badge-fix.liquid. {%- endcomment -%}
+{% render 'lbass-badge-fix' %}
+
+{%- comment -%}
+  The runtime shipping-copy patch (snippets/lbass-copy-fix.liquid) was rendered
+  here and is now DELETED — 2026-08-05. Every figure it corrected at runtime is
+  fixed at source, so nothing needs patching after paint:
+
+    templates/index.liquid       announcement strip 299 → 500  (line ~883)
+                                 delivery accordion  40 → 30   (line ~1782)
+                                 FAQPage JSON-LD     40 → 30   (line ~1899)
+    templates/product.liquid     .pdpx-note          40 → 30   (line ~356)
+                                 .acc-body           40 → 30   (line ~574)
+    snippets/lbass-cart-drawer   .lbdr-ship          40 → 30   (line ~150)
+
+  The JSON-LD instance is why deleting the patch mattered rather than being
+  cosmetic. A DOM patch can only rewrite text nodes; it could never reach an
+  answer string inside <script type="application/ld+json">. So while the
+  visible page was being corrected to 30, the homepage's structured data still
+  told Google 40 — schema disagreeing with the page it describes.
+
+  These were only editable because the theme was pulled with the Shopify CLI
+  and edited on disk. The Admin API has no partial write, so changing one line
+  in a 226KB template means round-tripping all of it. If a rate changes again,
+  use `shopify theme pull` — do not reintroduce a runtime patch.
+{%- endcomment -%}
+
+{%- comment -%}
+  Homepage hero swap — see snippets/lbass-hero-swap.liquid. Self-gates on
+  template == 'index' and bails if a .lbh already exists, so it is inert
+  everywhere else and cannot double-render.
+  STOPGAP: delete this render call the moment index.liquid gets
+  {% section 'lbass-hero' %} at source.
+{%- endcomment -%}
+{% render 'lbass-hero-swap' %}

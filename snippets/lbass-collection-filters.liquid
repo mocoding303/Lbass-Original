@@ -1,0 +1,779 @@
+{%- comment -%}
+  LBASS COLLECTION FILTERS — audited and rewritten 2026-09-02
+
+  Uses Shopify's NATIVE storefront filtering (`collection.filters`) end to end.
+  Nothing here filters client-side, so results survive refresh, the back button,
+  deep links and pagination for free.
+
+  ── WHAT WAS REMOVED AND WHY ─────────────────────────────────────────────────
+  The previous version rendered SEVEN fake filter pills after the real ones:
+
+      Colour, Campaigns, Specialty sizes, Savings, Material, Fit, Collar
+
+  None had a `name` attribute, so none could ever submit anything. Six said
+  "Coming soon...". Colour was worse — it drew seven real-looking swatches from
+  a hardcoded list (Black/Brown/Beige/Grey/White/Blue/Petrol) with every row
+  `is-disabled`. A shopper could open it, see their colour, and click nothing.
+  That is a broken promise on the page, so all seven are gone.
+
+  Also removed: the fake price slider (`.lb-slider-fake` — a static bar with two
+  knobs that did not move or bind to anything) and the fake "Deals" toggle (a
+  permanently disabled checkbox).
+
+  Real colour/condition data DOES exist in product tags (black, white, grey,
+  blue, brown, beige, purple, neon-green, multicolor, sage; condition:new /
+  :excellent / :very-good / :good). It cannot become a filter from Liquid —
+  storefront filters are configured in Shopify Search & Discovery, not the theme.
+  Enable them there and they appear here automatically via the loop below, in
+  Arabic, because the label map handles them. Verified 2026-09-02:
+  `?filter.p.tag=black` returns all 64 products, i.e. the tag filter is not
+  enabled, so the parameter is ignored.
+
+  ── ARABIC ───────────────────────────────────────────────────────────────────
+  Every customer-facing string is Arabic. Native filter LABELS and VALUES arrive
+  from Shopify in English, so `lb_label_map` / `lb_value_map` below translate
+  them at render time. Add a pair when a new filter is enabled; unmapped labels
+  fall through to Shopify's own text rather than breaking.
+
+  ── RTL ──────────────────────────────────────────────────────────────────────
+  The old file hardcoded `direction: ltr` on the wrapper, forcing the whole
+  filter bar left-to-right on an `<html dir="rtl" lang="ar-MA">` page. Removed.
+  Layout now uses logical properties (inset-inline, margin-inline, text-align:
+  start) so it mirrors correctly. Number inputs keep `dir="ltr"` on purpose —
+  digits and currency read left-to-right even inside Arabic.
+{%- endcomment -%}
+
+{%- comment -%} ── Arabic label map for native filter titles ── {%- endcomment -%}
+{%- assign lb_filter_title = '' -%}
+
+{%- comment -%} ── CONTEXT ──────────────────────────────────────────────────
+     Renders for a collection (default) or for the search results page:
+       {%- raw -%}{% render 'lbass-collection-filters', mode: 'search' %}{%- endraw -%}
+     Search exposes the same native filter objects, but it has no path-tag
+     view (/collections/handle/tag), so the Colour and Gender pills — which are
+     path tags — are collection-only. Everything else is identical.
+──────────────────────────────────────────────────────────────── {%- endcomment -%}
+{%- assign lb_mode = mode | default: 'collection' -%}
+{%- if lb_mode == 'search' -%}
+  {%- assign lb_filters = search.filters -%}
+  {%- assign lb_sorts   = search.sort_options -%}
+  {%- assign lb_sortby  = search.sort_by -%}
+  {%- assign lb_count   = search.results_count -%}
+  {%- assign lb_base    = routes.search_url -%}
+{%- else -%}
+  {%- assign lb_filters = collection.filters -%}
+  {%- assign lb_sorts   = collection.sort_options -%}
+  {%- assign lb_sortby  = collection.sort_by -%}
+  {%- comment -%} audited-drop renders the whole catalogue, so its displayed count
+      is passed in; everywhere else this is just collection.products_count. {%- endcomment -%}
+  {%- assign lb_count   = collection.products_count -%}
+  {%- if count_override != blank -%}{%- assign lb_count = count_override -%}{%- endif -%}
+  {%- assign lb_base    = collection.url -%}
+{%- endif -%}
+
+{%- comment -%} ── Colour & Gender are stored as product TAGS, filtered through
+     Shopify's native path-tag view (/collections/handle/tag) which combines with
+     the query-param filters. Build lowercased CSV indices so matching is
+     case-insensitive (the catalog mixes "black" and "Black"). ── {%- endcomment -%}
+{%- comment -%} If a NATIVE (Search & Discovery) colour/gender filter exists, the
+     custom path-tag pill below must not render or the shopper sees the filter
+     twice. This retires each custom pill automatically the moment its native
+     equivalent is switched on in the S&D admin. {%- endcomment -%}
+{%- assign has_native_colour = false -%}
+{%- assign has_native_gender = false -%}
+{%- for f in lb_filters -%}
+  {%- assign fpl = f.param_name | downcase -%}
+  {%- assign fll = f.label | downcase -%}
+  {%- comment -%} `lbass.color` is free-text PDP copy, not a controlled vocabulary
+      (26 values, 24 of them returning a single product), so it does NOT count as
+      a real colour facet and the clean path-tag pill stays in charge. A proper
+      colour filter (e.g. shopify.color-pattern) WILL be detected and take over. {%- endcomment -%}
+  {%- unless fpl contains 'lbass.color' -%}
+    {%- if fpl contains 'color' or fpl contains 'colour' or fll contains 'color' or fll contains 'colour' -%}{%- assign has_native_colour = true -%}{%- endif -%}
+  {%- endunless -%}
+  {%- if fpl contains 'gender' or fll contains 'gender' -%}{%- assign has_native_gender = true -%}{%- endif -%}
+{%- endfor -%}
+
+{%- assign lc_all = ',' -%}
+{%- for t in collection.all_tags -%}{%- assign lc_all = lc_all | append: t | downcase | append: ',' -%}{%- endfor -%}
+{%- assign lc_cur = ',' -%}
+{%- for t in current_tags -%}{%- assign lc_cur = lc_cur | append: t | downcase | append: ',' -%}{%- endfor -%}
+
+<div class="lb-facets-wrapper">
+  <form id="LbassCollectionFilters" class="lb-facets-form" onsubmit="return false;"
+          data-collection-url="{{ lb_base }}" data-current-tags="{{ current_tags | join: '+' | downcase | escape }}">
+
+    {%- if lb_mode == 'search' -%}<input type="hidden" name="q" value="{{ search.terms | escape }}">{%- endif -%}
+
+    <div class="lb-facets-scroll">
+      {%- comment -%} ── SORT ── {%- endcomment -%}
+      <details class="lb-facet-pill lb-facet-sort">
+        <summary>
+          <span class="lb-fs-text">الترتيب حسب</span>
+          <svg class="lb-fs-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </summary>
+        <div class="lb-facet-dropdown">
+          <div class="lb-facet-body">
+            {%- for option in lb_sorts -%}
+              {%- comment -%}
+                Shopify returns sort names in the shop's default locale (English).
+                Map by the stable `value`, never by the display name.
+              {%- endcomment -%}
+              {%- case option.value -%}
+                {%- when 'manual' -%}              {%- assign sort_ar = 'مميز' -%}
+                {%- when 'best-selling' -%}        {%- assign sort_ar = 'الأكثر مبيعاً' -%}
+                {%- when 'most-relevant' or 'relevance' -%}{%- assign sort_ar = 'الأكثر صلة' -%}
+                {%- when 'title-ascending' -%}     {%- assign sort_ar = 'أبجدياً: من أ إلى ي' -%}
+                {%- when 'title-descending' -%}    {%- assign sort_ar = 'أبجدياً: من ي إلى أ' -%}
+                {%- when 'price-ascending' -%}     {%- assign sort_ar = 'السعر: من الأقل إلى الأعلى' -%}
+                {%- when 'price-descending' -%}    {%- assign sort_ar = 'السعر: من الأعلى إلى الأقل' -%}
+                {%- when 'created-ascending' -%}   {%- assign sort_ar = 'الأقدم' -%}
+                {%- when 'created-descending' -%}  {%- assign sort_ar = 'الأحدث' -%}
+                {%- else -%}                       {%- assign sort_ar = option.name -%}
+              {%- endcase -%}
+              <label class="lb-facet-row{% if option.value == lb_sortby %} is-selected{% endif %}">
+                <input type="radio" name="sort_by" value="{{ option.value | escape }}"{% if option.value == lb_sortby %} checked{% endif %}>
+                <span class="lb-row-text">{{ sort_ar }}</span>
+                <svg class="lb-check" width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true"><path d="M1 5L5 9L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </label>
+            {%- endfor -%}
+          </div>
+          <div class="lb-facet-footer">
+            <button type="button" class="lb-btn-reset">مسح</button>
+            <button type="button" class="lb-btn-save">تطبيق</button>
+          </div>
+        </div>
+      </details>
+
+      {%- comment -%} ── GENDER (path-tag, single-select) ── {%- endcomment -%}
+      {%- comment -%} Count the genders actually present. A single-option gender pill
+          cannot narrow anything (e.g. /collections/women offers only نساء and
+          filtering by it returns the same set), so only show it when there is a
+          real choice. {%- endcomment -%}
+      {%- assign gender_n = 0 -%}
+      {%- if lc_all contains ',gender:men,' -%}{%- assign gender_n = gender_n | plus: 1 -%}{%- endif -%}
+      {%- if lc_all contains ',gender:women,' -%}{%- assign gender_n = gender_n | plus: 1 -%}{%- endif -%}
+      {%- if lc_all contains ',gender:unisex,' -%}{%- assign gender_n = gender_n | plus: 1 -%}{%- endif -%}
+      {%- assign has_gender = false -%}
+      {%- if gender_n > 1 -%}{%- assign has_gender = true -%}{%- endif -%}
+      {%- comment -%} but keep it visible if one is currently applied, so it can be undone {%- endcomment -%}
+      {%- if lc_cur contains ',gender:' -%}{%- assign has_gender = true -%}{%- endif -%}
+      {%- if has_native_gender -%}{%- assign has_gender = false -%}{%- endif -%}
+      {%- assign gender_active = false -%}
+      {%- if lc_cur contains ',gender:men,' or lc_cur contains ',gender:women,' or lc_cur contains ',gender:unisex,' -%}{%- assign gender_active = true -%}{%- endif -%}
+      {%- if has_gender -%}
+        <details class="lb-facet-pill{% if gender_active %} has-active{% endif %}">
+          <summary>
+            <span class="lb-fs-text">النوع</span>
+            {%- if gender_active -%}<span class="lb-facet-count">(1)</span>{%- endif -%}
+            <svg class="lb-fs-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="lb-facet-dropdown">
+            <div class="lb-facet-body">
+              {%- assign gkeys = 'gender:men,gender:women,gender:unisex' | split: ',' -%}
+              {%- for gk in gkeys -%}
+                {%- assign gneedle = ',' | append: gk | append: ',' -%}
+                {%- if lc_all contains gneedle -%}
+                  {%- case gk -%}
+                    {%- when 'gender:men' -%}{%- assign g_ar = 'رجال' -%}
+                    {%- when 'gender:women' -%}{%- assign g_ar = 'نساء' -%}
+                    {%- when 'gender:unisex' -%}{%- assign g_ar = 'للجنسين' -%}
+                  {%- endcase -%}
+                  {%- assign g_on = false -%}{%- if lc_cur contains gneedle -%}{%- assign g_on = true -%}{%- endif -%}
+                  <label class="lb-facet-row{% if g_on %} is-selected{% endif %}" data-search="{{ gk }}">
+                    <input type="radio" name="lb_gender" value="{{ gk }}"{% if g_on %} checked{% endif %}>
+                    <div class="lb-row-inner"><span class="lb-row-text">{{ g_ar }}</span></div>
+                    <svg class="lb-check" width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true"><path d="M1 5L5 9L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </label>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+            <div class="lb-facet-footer">
+              <button type="button" class="lb-btn-reset">مسح</button>
+              <button type="button" class="lb-btn-save">تطبيق</button>
+            </div>
+          </div>
+        </details>
+      {%- endif -%}
+
+      {%- comment -%} ── COLOUR (path-tag, single-select, data-driven from tags) ── {%- endcomment -%}
+      {%- assign colour_keys = 'black,white,grey,blue,navy,red,beige,brown,green,neon-green,purple,sage,silver,multicolor,khaki,pink,orange,yellow' | split: ',' -%}
+      {%- capture colour_rows -%}
+        {%- for ck in colour_keys -%}
+          {%- assign cneedle = ',' | append: ck | append: ',' -%}
+          {%- if lc_all contains cneedle -%}
+            {%- case ck -%}
+              {%- when 'black' -%}{%- assign c_ar = 'أسود' -%}
+              {%- when 'white' -%}{%- assign c_ar = 'أبيض' -%}
+              {%- when 'grey' -%}{%- assign c_ar = 'رمادي' -%}
+              {%- when 'blue' -%}{%- assign c_ar = 'أزرق' -%}
+              {%- when 'navy' -%}{%- assign c_ar = 'كحلي' -%}
+              {%- when 'red' -%}{%- assign c_ar = 'أحمر' -%}
+              {%- when 'beige' -%}{%- assign c_ar = 'بيج' -%}
+              {%- when 'brown' -%}{%- assign c_ar = 'بني' -%}
+              {%- when 'green' -%}{%- assign c_ar = 'أخضر' -%}
+              {%- when 'neon-green' -%}{%- assign c_ar = 'أخضر نيون' -%}
+              {%- when 'purple' -%}{%- assign c_ar = 'موف' -%}
+              {%- when 'sage' -%}{%- assign c_ar = 'أخضر فاتح' -%}
+              {%- when 'silver' -%}{%- assign c_ar = 'فضي' -%}
+              {%- when 'multicolor' -%}{%- assign c_ar = 'متعدد الألوان' -%}
+              {%- when 'khaki' -%}{%- assign c_ar = 'كاكي' -%}
+              {%- when 'pink' -%}{%- assign c_ar = 'وردي' -%}
+              {%- when 'orange' -%}{%- assign c_ar = 'برتقالي' -%}
+              {%- when 'yellow' -%}{%- assign c_ar = 'أصفر' -%}
+              {%- else -%}{%- assign c_ar = ck -%}
+            {%- endcase -%}
+            {%- assign c_on = false -%}{%- if lc_cur contains cneedle -%}{%- assign c_on = true -%}{%- endif -%}
+            <label class="lb-facet-row{% if c_on %} is-selected{% endif %}" data-search="{{ ck }}">
+              <input type="radio" name="lb_colour" value="{{ ck }}"{% if c_on %} checked{% endif %}>
+              <div class="lb-row-inner"><span class="lb-swatch lb-sw-{{ ck }}" aria-hidden="true"></span><span class="lb-row-text">{{ c_ar }}</span></div>
+              <svg class="lb-check" width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true"><path d="M1 5L5 9L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </label>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {%- assign colour_active = false -%}
+      {%- assign colour_stripped = colour_rows | strip -%}
+      {%- if colour_stripped contains 'checked' -%}{%- assign colour_active = true -%}{%- endif -%}
+      {%- if has_native_colour -%}{%- assign colour_stripped = '' -%}{%- endif -%}
+      {%- if colour_stripped != '' -%}
+        <details class="lb-facet-pill{% if colour_active %} has-active{% endif %}">
+          <summary>
+            <span class="lb-fs-text">اللون</span>
+            {%- if colour_active -%}<span class="lb-facet-count">(1)</span>{%- endif -%}
+            <svg class="lb-fs-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+          <div class="lb-facet-dropdown">
+            <div class="lb-facet-body">{{ colour_rows }}</div>
+            <div class="lb-facet-footer">
+              <button type="button" class="lb-btn-reset">مسح</button>
+              <button type="button" class="lb-btn-save">تطبيق</button>
+            </div>
+          </div>
+        </details>
+      {%- endif -%}
+
+      {%- comment -%} ── NATIVE FILTERS (Search & Discovery) ── {%- endcomment -%}
+      {%- for filter in lb_filters -%}
+        {%- assign fl = filter.label | downcase -%}
+        {%- assign fpn = filter.param_name | downcase -%}
+        {%- comment -%} skip the free-text colour metafield — unusable as a facet {%- endcomment -%}
+        {%- if fpn contains 'lbass.color' -%}{%- continue -%}{%- endif -%}
+
+        {%- comment -%} Arabic title. Matched on substrings so Shopify wording changes do not break it. {%- endcomment -%}
+        {%- assign f_ar = filter.label -%}
+        {%- if fl contains 'availab' or fl contains 'stock' -%}{%- assign f_ar = 'التوفر' -%}
+        {%- elsif fl contains 'price' -%}{%- assign f_ar = 'السعر' -%}
+        {%- elsif fl contains 'brand' or fl contains 'vendor' -%}{%- assign f_ar = 'العلامة التجارية' -%}
+        {%- elsif fl contains 'size' -%}{%- assign f_ar = 'المقاس' -%}
+        {%- elsif fl contains 'colour' or fl contains 'color' -%}{%- assign f_ar = 'اللون' -%}
+        {%- elsif fl contains 'gender' -%}{%- assign f_ar = 'النوع' -%}
+        {%- elsif fl contains 'type' -%}{%- assign f_ar = 'نوع المنتج' -%}
+        {%- elsif fl contains 'material' -%}{%- assign f_ar = 'الخامة' -%}
+        {%- elsif fl contains 'condition' -%}{%- assign f_ar = 'الحالة' -%}
+        {%- elsif fl contains 'style' -%}{%- assign f_ar = 'الستايل' -%}
+        {%- elsif fl contains 'fit' -%}{%- assign f_ar = 'القصة' -%}
+        {%- endif -%}
+
+        {%- comment -%} Active state: list filters use active_values, price uses min/max. {%- endcomment -%}
+        {%- assign f_active_n = filter.active_values.size -%}
+        {%- if filter.type == 'price_range' -%}
+          {%- assign f_active_n = 0 -%}
+          {%- if filter.min_value.value -%}{%- assign f_active_n = 1 -%}
+          {%- elsif filter.max_value.value -%}{%- assign f_active_n = 1 -%}
+          {%- endif -%}
+        {%- endif -%}
+        <details class="lb-facet-pill{% if f_active_n > 0 %} has-active{% endif %}">
+          <summary>
+            <span class="lb-fs-text">{{ f_ar }}</span>
+            {%- if f_active_n > 0 -%}<span class="lb-facet-count">({{ f_active_n }})</span>{%- endif -%}
+            <svg class="lb-fs-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </summary>
+
+          <div class="lb-facet-dropdown">
+            {%- if fl contains 'brand' or fl contains 'vendor' -%}
+              <div class="lb-facet-search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="قلّب على علامة تجارية" aria-label="قلّب على علامة تجارية" onkeyup="lbFilterRows(this)">
+              </div>
+            {%- endif -%}
+
+            <div class="lb-facet-body">
+              {%- case filter.type -%}
+                {%- when 'boolean' or 'list' -%}
+                  {%- for filter_value in filter.values -%}
+                    {%- comment -%}
+                      Value translation.
+
+                      AVAILABILITY: match on `filter_value.value` (`1` / `0`),
+                      NEVER on the label. Shopify returns the label in the shop's
+                      primary locale, and that locale changed from `en` to `fr`
+                      on 2026-09-01 — an earlier version of this file matched the
+                      English strings and silently started rendering "En stock" /
+                      "En rupture de stock" to Arabic-speaking customers. The
+                      value is locale-independent, so this cannot regress again.
+
+                      SIZE: "One Size" is a real Shopify option value and is the
+                      only English left in the list. Numeric/EU sizes stay as
+                      typed — see the data note in the audit report; merging
+                      "42" / "42 EU" / "EU 42" at DISPLAY time would render three
+                      identical-looking rows that filter differently, which is
+                      worse than showing them honestly. Fix the product data.
+                    {%- endcomment -%}
+                    {%- assign v_ar = filter_value.label -%}
+                    {%- assign vl = filter_value.label | downcase -%}
+                    {%- if fl contains 'availab' or fl contains 'stock' -%}
+                      {%- if filter_value.value == '1' -%}{%- assign v_ar = 'متوفر' -%}
+                      {%- elsif filter_value.value == '0' -%}{%- assign v_ar = 'غير متوفر' -%}
+                      {%- endif -%}
+                    {%- elsif fl contains 'gender' -%}
+                      {%- case vl -%}
+                        {%- when 'men' or 'male' -%}{%- assign v_ar = 'رجال' -%}
+                        {%- when 'women' or 'female' -%}{%- assign v_ar = 'نساء' -%}
+                        {%- when 'unisex' -%}{%- assign v_ar = 'للجنسين' -%}
+                        {%- when 'kids' or 'children' -%}{%- assign v_ar = 'أطفال' -%}
+                      {%- endcase -%}
+                    {%- elsif fl contains 'colour' or fl contains 'color' -%}
+                      {%- case vl -%}
+                        {%- when 'black' -%}{%- assign v_ar = 'أسود' -%}
+                        {%- when 'white' -%}{%- assign v_ar = 'أبيض' -%}
+                        {%- when 'grey' or 'gray' -%}{%- assign v_ar = 'رمادي' -%}
+                        {%- when 'blue' -%}{%- assign v_ar = 'أزرق' -%}
+                        {%- when 'navy' -%}{%- assign v_ar = 'كحلي' -%}
+                        {%- when 'red' -%}{%- assign v_ar = 'أحمر' -%}
+                        {%- when 'green' -%}{%- assign v_ar = 'أخضر' -%}
+                        {%- when 'yellow' -%}{%- assign v_ar = 'أصفر' -%}
+                        {%- when 'orange' -%}{%- assign v_ar = 'برتقالي' -%}
+                        {%- when 'purple' -%}{%- assign v_ar = 'موف' -%}
+                        {%- when 'pink' -%}{%- assign v_ar = 'وردي' -%}
+                        {%- when 'brown' -%}{%- assign v_ar = 'بني' -%}
+                        {%- when 'beige' -%}{%- assign v_ar = 'بيج' -%}
+                        {%- when 'cream' -%}{%- assign v_ar = 'كريمي' -%}
+                        {%- when 'gold' -%}{%- assign v_ar = 'ذهبي' -%}
+                        {%- when 'silver' -%}{%- assign v_ar = 'فضي' -%}
+                        {%- when 'khaki' -%}{%- assign v_ar = 'كاكي' -%}
+                        {%- when 'multicolor' or 'multicolour' -%}{%- assign v_ar = 'متعدد الألوان' -%}
+                      {%- endcase -%}
+                    {%- elsif vl == 'one size' -%}{%- assign v_ar = 'مقاس واحد' -%}
+                    {%- elsif vl == 'default title' -%}{%- assign v_ar = 'مقاس واحد' -%}
+                    {%- endif -%}
+                    <label class="lb-facet-row{% if filter_value.active %} is-selected{% endif %}{% if filter_value.count == 0 and filter_value.active == false %} is-disabled{% endif %}" data-search="{{ filter_value.label | downcase | escape }}">
+                      <input type="checkbox" name="{{ filter_value.param_name }}" value="{{ filter_value.value }}"
+                        {% if filter_value.active %}checked{% endif %}
+                        {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}>
+                      <div class="lb-row-inner">
+                        <span class="lb-row-text">{{ v_ar | escape }}</span>
+                      </div>
+                      <span class="lb-row-count">{{ filter_value.count }}</span>
+                      <svg class="lb-check" width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true"><path d="M1 5L5 9L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </label>
+                  {%- endfor -%}
+
+                {%- when 'price_range' -%}
+                  <div class="lb-price-panel">
+                    <div class="lb-price-inputs">
+                      <div class="lb-price-col">
+                        <label for="lbPriceMin">أقل ثمن</label>
+                        <div class="lb-price-box">
+                          <input id="lbPriceMin" dir="ltr" name="{{ filter.min_value.param_name }}"
+                            type="number" placeholder="0" min="0" inputmode="numeric"
+                            max="{{ filter.range_max | divided_by: 100.0 | ceil }}"
+                            {%- if filter.min_value.value %} value="{{ filter.min_value.value | divided_by: 100.0 | remove_last: '.0' }}"{% endif -%}>
+                          <span>درهم</span>
+                        </div>
+                      </div>
+                      <span class="lb-price-sep" aria-hidden="true">—</span>
+                      <div class="lb-price-col">
+                        <label for="lbPriceMax">أعلى ثمن</label>
+                        <div class="lb-price-box">
+                          <input id="lbPriceMax" dir="ltr" name="{{ filter.max_value.param_name }}"
+                            type="number" min="0" inputmode="numeric"
+                            placeholder="{{ filter.range_max | divided_by: 100.0 | ceil }}"
+                            max="{{ filter.range_max | divided_by: 100.0 | ceil }}"
+                            {%- if filter.max_value.value %} value="{{ filter.max_value.value | divided_by: 100.0 | remove_last: '.0' }}"{% endif -%}>
+                          <span>درهم</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              {%- endcase -%}
+            </div>
+
+            <div class="lb-facet-footer">
+              <button type="button" class="lb-btn-reset">مسح</button>
+              <button type="button" class="lb-btn-save">تطبيق</button>
+            </div>
+          </div>
+        </details>
+      {%- endfor -%}
+    </div>
+
+    {%- comment -%}
+      ── ACTIVE FILTER CHIPS + CLEAR ALL ──
+      Previously missing entirely: there was no way to see what was applied or to
+      remove one value without reopening its dropdown, and no global clear.
+      `filter.active_values` gives each value its own remove URL from Shopify.
+    {%- endcomment -%}
+    {%- assign lb_active_total = 0 -%}
+    {%- for filter in lb_filters -%}
+      {%- assign lb_active_total = lb_active_total | plus: filter.active_values.size -%}
+      {%- comment -%} price_range exposes min_value/max_value, never active_values,
+          so without this a price-only filter left the whole chip bar hidden. {%- endcomment -%}
+      {%- if filter.type == 'price_range' -%}
+        {%- if filter.min_value.value -%}{%- assign lb_active_total = lb_active_total | plus: 1 -%}
+        {%- elsif filter.max_value.value -%}{%- assign lb_active_total = lb_active_total | plus: 1 -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign lb_active_total = lb_active_total | plus: current_tags.size -%}
+
+    {%- if lb_active_total > 0 -%}
+      <div class="lb-active-bar">
+        <span class="lb-active-label">الفلاتر المفعّلة:</span>
+        {%- comment -%} Colour/Gender chips (path tags) — removed via JS so the
+            query-param filters survive. {%- endcomment -%}
+        {%- for t in current_tags -%}
+          {%- assign tl = t | downcase -%}
+          {%- assign t_ar = t -%}
+          {%- case tl -%}
+            {%- when 'gender:men' -%}{%- assign t_ar = 'رجال' -%}
+            {%- when 'gender:women' -%}{%- assign t_ar = 'نساء' -%}
+            {%- when 'gender:unisex' -%}{%- assign t_ar = 'للجنسين' -%}
+            {%- when 'black' -%}{%- assign t_ar = 'أسود' -%}
+            {%- when 'white' -%}{%- assign t_ar = 'أبيض' -%}
+            {%- when 'grey' -%}{%- assign t_ar = 'رمادي' -%}
+            {%- when 'blue' -%}{%- assign t_ar = 'أزرق' -%}
+            {%- when 'navy' -%}{%- assign t_ar = 'كحلي' -%}
+            {%- when 'red' -%}{%- assign t_ar = 'أحمر' -%}
+            {%- when 'beige' -%}{%- assign t_ar = 'بيج' -%}
+            {%- when 'brown' -%}{%- assign t_ar = 'بني' -%}
+            {%- when 'green' -%}{%- assign t_ar = 'أخضر' -%}
+            {%- when 'neon-green' -%}{%- assign t_ar = 'أخضر نيون' -%}
+            {%- when 'purple' -%}{%- assign t_ar = 'موف' -%}
+            {%- when 'sage' -%}{%- assign t_ar = 'أخضر فاتح' -%}
+            {%- when 'silver' -%}{%- assign t_ar = 'فضي' -%}
+            {%- when 'multicolor' -%}{%- assign t_ar = 'متعدد الألوان' -%}
+            {%- when 'khaki' -%}{%- assign t_ar = 'كاكي' -%}
+            {%- when 'pink' -%}{%- assign t_ar = 'وردي' -%}
+            {%- when 'orange' -%}{%- assign t_ar = 'برتقالي' -%}
+            {%- when 'yellow' -%}{%- assign t_ar = 'أصفر' -%}
+          {%- endcase -%}
+          <a class="lb-chip" href="#" data-lb-tagremove="{{ tl | escape }}">
+            <span>{{ t_ar | escape }}</span>
+            <span class="lb-chip-x" aria-hidden="true">✕</span>
+            <span class="lb-sr">حيّد هاد الفلتر</span>
+          </a>
+        {%- endfor -%}
+        {%- for filter in lb_filters -%}
+          {%- for v in filter.active_values -%}
+            {%- comment -%}
+              Same locale-proof rule as the rows above: match `v.value`, not the
+              label. The label is whatever the shop's primary locale returns.
+            {%- endcomment -%}
+            {%- comment -%} Chips must use the SAME Arabic map as the rows. An earlier
+                version translated only availability/one-size here, so a native
+                gender filter rendered its chip as "Men" / "Women" in English —
+                the one thing the shopper sees after tapping تطبيق. Values are
+                mapped by value word, which is unambiguous across these filters. {%- endcomment -%}
+            {%- assign vl2 = v.label | downcase -%}
+            {%- assign v_ar2 = v.label -%}
+            {%- if v.value == '1' -%}{%- assign v_ar2 = 'متوفر' -%}
+            {%- elsif v.value == '0' -%}{%- assign v_ar2 = 'غير متوفر' -%}
+            {%- else -%}
+              {%- case vl2 -%}
+                {%- when 'one size' or 'default title' -%}{%- assign v_ar2 = 'مقاس واحد' -%}
+                {%- when 'men' or 'male' -%}{%- assign v_ar2 = 'رجال' -%}
+                {%- when 'women' or 'female' -%}{%- assign v_ar2 = 'نساء' -%}
+                {%- when 'unisex' -%}{%- assign v_ar2 = 'للجنسين' -%}
+                {%- when 'kids' or 'children' -%}{%- assign v_ar2 = 'أطفال' -%}
+                {%- when 'black' -%}{%- assign v_ar2 = 'أسود' -%}
+                {%- when 'white' -%}{%- assign v_ar2 = 'أبيض' -%}
+                {%- when 'grey' or 'gray' -%}{%- assign v_ar2 = 'رمادي' -%}
+                {%- when 'blue' -%}{%- assign v_ar2 = 'أزرق' -%}
+                {%- when 'navy' -%}{%- assign v_ar2 = 'كحلي' -%}
+                {%- when 'red' -%}{%- assign v_ar2 = 'أحمر' -%}
+                {%- when 'green' -%}{%- assign v_ar2 = 'أخضر' -%}
+                {%- when 'yellow' -%}{%- assign v_ar2 = 'أصفر' -%}
+                {%- when 'orange' -%}{%- assign v_ar2 = 'برتقالي' -%}
+                {%- when 'purple' -%}{%- assign v_ar2 = 'موف' -%}
+                {%- when 'pink' -%}{%- assign v_ar2 = 'وردي' -%}
+                {%- when 'brown' -%}{%- assign v_ar2 = 'بني' -%}
+                {%- when 'beige' -%}{%- assign v_ar2 = 'بيج' -%}
+                {%- when 'cream' -%}{%- assign v_ar2 = 'كريمي' -%}
+                {%- when 'gold' -%}{%- assign v_ar2 = 'ذهبي' -%}
+                {%- when 'silver' -%}{%- assign v_ar2 = 'فضي' -%}
+                {%- when 'khaki' -%}{%- assign v_ar2 = 'كاكي' -%}
+                {%- when 'multicolor' or 'multicolour' -%}{%- assign v_ar2 = 'متعدد الألوان' -%}
+              {%- endcase -%}
+            {%- endif -%}
+            <a class="lb-chip" href="{{ v.url_to_remove }}">
+              <span>{{ v_ar2 | escape }}</span>
+              <span class="lb-chip-x" aria-hidden="true">✕</span>
+              <span class="lb-sr">حيّد هاد الفلتر</span>
+            </a>
+          {%- endfor -%}
+          {%- if filter.type == 'price_range' -%}
+            {%- if filter.min_value.value or filter.max_value.value -%}
+              <a class="lb-chip" href="{{ filter.url_to_remove }}">
+                <span dir="ltr">{{ filter.min_value.value | default: 0 | divided_by: 100.0 | round }}–{{ filter.max_value.value | default: filter.range_max | divided_by: 100.0 | round }} درهم</span>
+                <span class="lb-chip-x" aria-hidden="true">✕</span>
+              </a>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+        <a class="lb-clear-all" href="{{ lb_base }}">مسح الكل</a>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} Product count — was English/absent before. {%- endcomment -%}
+    <p class="lb-result-count">
+      {%- if lb_count == 1 -%}
+        منتج واحد
+      {%- else -%}
+        {{ lb_count }} منتج
+      {%- endif -%}
+    </p>
+  </form>
+</div>
+
+<style>
+/* ── wrapper. NOTE: no `direction: ltr` here. The old file forced LTR on an
+   RTL page, which mirrored the whole bar the wrong way. ── */
+.lb-facets-wrapper{margin-bottom:24px;position:relative;z-index:40}
+.lb-facets-form{display:flex;flex-direction:column;gap:12px}
+.lb-facets-scroll{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.lb-facet-pill{position:relative}
+.lb-facet-pill>summary{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+  border:1px solid var(--line,#D1D1D1);border-radius:100px;background:var(--bg,#fff);
+  color:var(--cream,#111);font-size:14.5px;font-weight:700;cursor:pointer;list-style:none;
+  white-space:nowrap;transition:.2s}
+.lb-facet-pill>summary::-webkit-details-marker{display:none}
+.lb-facet-pill:hover>summary{border-color:currentColor}
+.lb-facet-pill[open]>summary,.lb-facet-pill.has-active>summary{border-width:2px;padding:9px 17px}
+.lb-facet-count{font-weight:800}
+
+/* dropdown — logical inset so it anchors correctly in both directions */
+.lb-facet-dropdown{position:absolute;top:calc(100% + 8px);inset-inline-start:0;
+  min-width:min(340px,92vw);background:var(--bg,#fff);border:2px solid currentColor;
+  border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;flex-direction:column;
+  z-index:50;overflow:hidden;text-align:start}
+
+.lb-facet-body{max-height:min(400px,60vh);overflow-y:auto;padding-bottom:8px}
+.lb-facet-row{display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--line,#EBEBEB);cursor:pointer;text-align:start}
+.lb-facet-row:last-child{border-bottom:none}
+.lb-facet-row input{display:none}
+.lb-facet-row:hover{background:rgba(0,0,0,.04)}
+.lb-facet-row.is-selected{background:rgba(0,0,0,.07);font-weight:800}
+.lb-facet-row.is-disabled{opacity:.45;pointer-events:none}
+.lb-row-inner{display:flex;align-items:center;gap:10px;flex:1}
+.lb-row-text{font-size:15px}
+.lb-swatch{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.28);
+  flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.lb-sw-black{background:#141414}.lb-sw-white{background:#fff}.lb-sw-grey{background:#9b9b9b}
+.lb-sw-blue{background:#2f5fd0}.lb-sw-navy{background:#1b2a4a}.lb-sw-red{background:#c8322b}
+.lb-sw-beige{background:#d8c8a8}.lb-sw-brown{background:#6b4a2b}.lb-sw-green{background:#3f8a3f}
+.lb-sw-neon-green{background:#9be600}.lb-sw-purple{background:#7a3fb0}.lb-sw-sage{background:#9caf88}
+.lb-sw-silver{background:linear-gradient(135deg,#c4c4c4,#f2f2f2)}
+.lb-sw-multicolor{background:conic-gradient(#e23,#f80,#fd0,#3b5,#28d,#74e,#e23)}
+.lb-sw-khaki{background:#b0a05f}.lb-sw-pink{background:#e79ac0}.lb-sw-orange{background:#e08a2b}
+.lb-sw-yellow{background:#e8c72b}
+.lb-row-count{font-size:12.5px;opacity:.55;font-variant-numeric:tabular-nums}
+.lb-check{display:none;margin-inline-start:auto;flex:none}
+.lb-facet-row.is-selected .lb-check{display:block}
+
+.lb-facet-search{display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--line,#EBEBEB)}
+.lb-facet-search input{flex:1;border:none;background:transparent;font-size:15px;
+  outline:none;color:inherit;text-align:start}
+
+.lb-price-panel{padding:20px 18px}
+.lb-price-inputs{display:flex;align-items:flex-end;gap:10px}
+.lb-price-col{flex:1}
+.lb-price-col label{display:block;font-size:13px;margin-bottom:6px}
+.lb-price-box{display:flex;align-items:center;gap:6px;border:2px solid currentColor;
+  border-radius:8px;padding:10px 12px}
+.lb-price-box input{width:100%;border:none;outline:none;background:transparent;
+  font-size:16px;color:inherit;-moz-appearance:textfield}
+.lb-price-box input::-webkit-outer-spin-button,
+.lb-price-box input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.lb-price-sep{padding-bottom:14px}
+
+.lb-facet-footer{display:flex;gap:10px;padding:14px 18px;
+  border-top:1px solid var(--line,#EBEBEB);background:var(--bg,#fff);position:sticky;bottom:0}
+.lb-btn-reset,.lb-btn-save{flex:1;padding:12px;font-size:15px;font-weight:800;
+  border-radius:100px;cursor:pointer;text-align:center;border:2px solid;transition:.2s}
+.lb-btn-reset{background:transparent;color:inherit;border-color:var(--line,#B0B0B0);opacity:.75}
+.lb-btn-reset:hover{opacity:1}
+/* Solid ink plate, bone type. Explicit values — an earlier draft used
+   `background:currentColor` with `color` also set, which rendered the label
+   invisible against its own background. */
+.lb-btn-save{background:var(--lb-ink,#0B0B0C);color:var(--lb-bone,#fff);
+  border-color:var(--lb-ink,#0B0B0C)}
+.lb-btn-save:hover{opacity:.88}
+
+/* active chips */
+.lb-active-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lb-active-label{font-size:13px;font-weight:800;opacity:.7}
+.lb-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;
+  border:1px solid var(--line,#D1D1D1);border-radius:100px;font-size:13.5px;
+  font-weight:700;text-decoration:none;color:inherit}
+.lb-chip:hover{border-color:currentColor}
+.lb-chip-x{font-size:11px;opacity:.6}
+.lb-clear-all{font-size:13.5px;font-weight:800;text-decoration:underline;
+  color:inherit;margin-inline-start:4px}
+.lb-result-count{margin:0;font-size:13px;font-weight:700;opacity:.7}
+.lb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* click-outside catcher */
+details.lb-facet-pill[open] summary::before{content:"";display:block;position:fixed;
+  inset:0;z-index:-1;background:transparent}
+
+@media(max-width:640px){
+  .lb-facet-dropdown{position:fixed;inset-inline:8px;top:auto;bottom:8px;
+    min-width:0;max-height:70vh}
+  .lb-facet-body{max-height:50vh}
+  .lb-facet-pill>summary{font-size:14px;padding:9px 15px}
+}
+</style>
+
+<script>
+(function(){
+  'use strict';
+
+  /* Brand search — filters the visible rows in the open dropdown. */
+  window.lbFilterRows = function(input){
+    var term = (input.value || '').toLowerCase();
+    var rows = input.closest('.lb-facet-dropdown').querySelectorAll('.lb-facet-row');
+    Array.prototype.forEach.call(rows, function(row){
+      var txt = row.getAttribute('data-search') || '';
+      row.style.display = txt.indexOf(term) > -1 ? 'flex' : 'none';
+    });
+  };
+
+  /* Keep an open dropdown fully on-screen. The panel opens toward inline-end,
+     so a pill near the start edge (e.g. the leftmost in RTL) would push its
+     panel — and its Apply button — off the viewport, making the filter
+     impossible to apply by tap. Nudge it back with a transform. Below the
+     mobile breakpoint the panel is position:fixed and needs no clamping. */
+  function clampDropdown(pill){
+    var dd = pill.querySelector('.lb-facet-dropdown');
+    if (!dd) return;
+    dd.style.transform = '';
+    if (getComputedStyle(dd).position !== 'absolute') return;
+    var r = dd.getBoundingClientRect();
+    var m = 8, vw = document.documentElement.clientWidth, dx = 0;
+    if (r.left < m) dx = m - r.left;
+    else if (r.right > vw - m) dx = (vw - m) - r.right;
+    if (dx) dd.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+  }
+
+  function init(){
+    var form = document.getElementById('LbassCollectionFilters');
+    if (!form) return;
+    var pills = form.querySelectorAll('details.lb-facet-pill');
+
+    /* One dropdown open at a time, and clamp whichever one just opened. */
+    Array.prototype.forEach.call(pills, function(target){
+      target.addEventListener('click', function(e){
+        if (e.target.closest('summary')){
+          Array.prototype.forEach.call(pills, function(p){
+            if (p !== target) p.removeAttribute('open');
+          });
+        }
+      });
+      target.addEventListener('toggle', function(){
+        if (target.open) clampDropdown(target);
+        else { var dd = target.querySelector('.lb-facet-dropdown'); if (dd) dd.style.transform = ''; }
+      });
+    });
+
+    /* Re-clamp the open panel if the viewport changes under it. */
+    window.addEventListener('resize', function(){
+      var openPill = form.querySelector('details.lb-facet-pill[open]');
+      if (openPill) clampDropdown(openPill);
+    });
+
+    /* Close on Escape — the old version had no keyboard exit. */
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape'){
+        Array.prototype.forEach.call(pills, function(p){ p.removeAttribute('open'); });
+      }
+    });
+
+    form.addEventListener('click', function(e){
+      if (e.target.closest('.lb-btn-save')){ submitFilters(); return; }
+      if (e.target.closest('.lb-btn-reset')){
+        var dd = e.target.closest('.lb-facet-dropdown');
+        dd.querySelectorAll('input').forEach(function(inp){
+          if (inp.type === 'checkbox' || inp.type === 'radio') inp.checked = false;
+          if (inp.type === 'number') inp.value = '';
+          var row = inp.closest('.lb-facet-row');
+          if (row) row.classList.remove('is-selected');
+        });
+        submitFilters();
+      }
+    });
+
+    form.addEventListener('change', function(e){
+      if (e.target.type === 'checkbox' || e.target.type === 'radio'){
+        var row = e.target.closest('.lb-facet-row');
+        if (row){
+          if (e.target.type === 'radio'){
+            var sibs = row.parentElement.querySelectorAll('.lb-facet-row');
+            Array.prototype.forEach.call(sibs, function(r){ r.classList.remove('is-selected'); });
+            if (e.target.checked) row.classList.add('is-selected');
+          } else {
+            row.classList.toggle('is-selected', e.target.checked);
+          }
+        }
+      }
+    });
+
+    /* Build the URL from the form. `append` (not `set`) so multi-value filters
+       such as size stay multi-value — Shopify ORs repeated params. */
+    function submitFilters(){
+      var fd = new FormData(form);
+      /* Colour & Gender are TAGS, not query filters — pull them out of the form
+         data and place them in the collection path (/collections/handle/tag+tag),
+         which Shopify ANDs together and combines with the query-param filters. */
+      var pathTags = [];
+      var colour = fd.get('lb_colour'); if (colour) pathTags.push(colour);
+      var gender = fd.get('lb_gender'); if (gender) pathTags.push(gender);
+      fd.delete('lb_colour'); fd.delete('lb_gender');
+      var params = new URLSearchParams();
+      fd.forEach(function(value, key){
+        if (value !== '' && value !== null) params.append(key, value);
+      });
+      var base = (form.getAttribute('data-collection-url') || window.location.pathname).replace(/\/+$/, '');
+      var path = base + (pathTags.length ? '/' + pathTags.join('+') : '');
+      /* Carry over params the filter UI does not own (preview_theme_id above all —
+         losing it silently kicks a theme preview back to the live theme). */
+      var keep = new URLSearchParams(window.location.search);
+      ['preview_theme_id','_ab','_fd','_sc'].forEach(function(k){
+        if (keep.has(k) && !params.has(k)) params.append(k, keep.get(k));
+      });
+      var qs = params.toString();
+      window.location.href = path + (qs ? '?' + qs : '');
+    }
+
+    /* Removing a colour/gender chip: rebuild the path without that one tag while
+       preserving every query-param filter (size/brand/price) in location.search. */
+    document.addEventListener('click', function(e){
+      var rem = e.target.closest('[data-lb-tagremove]');
+      if (!rem) return;
+      e.preventDefault();
+      var tag = (rem.getAttribute('data-lb-tagremove') || '').toLowerCase();
+      var base = (form.getAttribute('data-collection-url') || window.location.pathname).replace(/\/+$/, '');
+      var cur = (form.getAttribute('data-current-tags') || '').split('+').filter(Boolean);
+      var next = cur.filter(function(t){ return t.toLowerCase() !== tag; });
+      var path = base + (next.length ? '/' + next.join('+') : '');
+      window.location.href = path + window.location.search;
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>

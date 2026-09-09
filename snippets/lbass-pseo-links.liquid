@@ -1,0 +1,116 @@
+{%- comment -%}
+  LBASS — pSEO GUIDE → SHOP / ARTICLE BRIDGE (2026-08-03)
+  Rendered from snippets/lbass-cro-tracking.liquid, gated on template.suffix.
+
+  WHY IT IS NOT IN templates/page.pseo.liquid
+  That template is 46KB of hardcoded per-handle content and it does NOT render
+  {{ page.content }} at all — verified 2026-08-03: the page's body paragraph
+  appears ZERO times in the rendered HTML. So editing page bodies via the
+  Admin API is inert, and any change to the page itself means rewriting 46KB.
+  This adds the missing links server-side from a body-level hook instead, so
+  every link is real HTML a crawler follows.
+
+  WHAT IT FIXES (measured on /pages/sneakers-second-hand-maroc)
+    • Adds a useful bridge to the published /collections/adidas-originals and
+      /collections/nike collections. The former /brand-* targets are not live.
+    • ZERO links to the 10 published Darija guides. The guides linked out to
+      collections, but nothing linked back, so equity flowed one way only.
+
+  HOW ARTICLES ARE LOOKED UP — TWO FAILED ATTEMPTS FIRST
+    1. `blog.articles | where: 'handle', k | first` — returned nothing.
+    2. `for art in blog.articles` + `contains` — also returned nothing, even
+       though blog.articles_count correctly printed 10 on the same page.
+  `blog.articles` does not iterate outside a blog/paginated template. The
+  global `articles['<blog-handle>/<article-handle>']` lookup does work
+  anywhere, so that is what this uses. Keys below are full 'news/...' paths
+  for that reason — do not shorten them to bare handles.
+
+  INTENT SPLIT
+  These pages are informational (titles now read "دليل: كيفاش…"), so this
+  block pushes commercial intent ONWARD to the matching canonical collection
+  rather than trying to convert on the guide. One primary shop CTA, then
+  related reading.
+{%- endcomment -%}
+
+{%- if template.suffix == 'pseo' -%}
+{%- liquid
+  assign h = page.handle
+  assign shop_url = '/collections/all'
+  assign shop_label = 'شوف كل القطع المتوفرة'
+  assign keys = ''
+
+  if h == 'sneakers-second-hand-maroc'
+    assign shop_url = '/collections/صبابط'
+    assign shop_label = 'شوف الصبابط المتوفرة دابا'
+    assign keys = 'news/kifach-taaraf-hala-qitaa-second-hand,news/kifach-tkhtar-qias-hwayej-vintage,news/kifach-tghsel-thafed-hwayej-second-hand'
+  elsif h == 'nike-second-hand-maroc'
+    assign shop_url = '/collections/nike'
+    assign shop_label = 'شوف قطع Nike المتوفرة'
+    assign keys = 'news/guide-achat-second-hand-original-maroc,news/kifach-taaraf-hala-qitaa-second-hand,news/farq-bin-vintage-second-hand-thrift'
+  elsif h == 'adidas-second-hand-maroc'
+    assign shop_url = '/collections/adidas-originals'
+    assign shop_label = 'شوف قطع Adidas المتوفرة'
+    assign keys = 'news/guide-achat-second-hand-original-maroc,news/kifach-taaraf-hala-qitaa-second-hand,news/farq-bin-vintage-second-hand-thrift'
+  elsif h == 'jordan-second-hand-maroc'
+    assign shop_url = '/collections/brand-jordan'
+    assign shop_label = 'شوف قطع Jordan المتوفرة'
+    assign keys = 'news/guide-achat-second-hand-original-maroc,news/chno-ma3na-one-of-one-fashion,news/kifach-taaraf-hala-qitaa-second-hand'
+  elsif h == 'jackets-second-hand-maroc'
+    assign shop_url = '/collections/جاكيطات-و-معاطف'
+    assign shop_label = 'شوف الجاكيطات المتوفرة'
+    assign keys = 'news/kifach-taaraf-hala-qitaa-second-hand,news/kifach-tkhtar-qias-hwayej-vintage,news/kifach-tghsel-thafed-hwayej-second-hand'
+  elsif h == 'cargo-pants-second-hand-maroc'
+    assign shop_url = '/collections/سراويل-و-كارغو'
+    assign shop_label = 'شوف السراويل والكارغو'
+    assign keys = 'news/kifach-tkhtar-qias-hwayej-vintage,news/streetwear-maroc-kifach-trakeb-look,news/kifach-taaraf-hala-qitaa-second-hand'
+  elsif h == 'streetwear-original-maroc'
+    assign shop_url = '/collections/one-of-one'
+    assign shop_label = 'شوف قطع 1/1 المتوفرة'
+    assign keys = 'news/streetwear-maroc-kifach-trakeb-look,news/chno-ma3na-one-of-one-fashion,news/farq-bin-vintage-second-hand-thrift'
+  elsif h == 'friperie-en-ligne-paiement-a-la-livraison-maroc'
+    assign keys = 'news/friperie-en-ligne-maroc-cest-quoi,news/kifach-khdam-cod-chira-hwayej-online,news/guide-achat-second-hand-original-maroc'
+  elsif h == 'comment-acheter-second-hand-original-maroc'
+    assign keys = 'news/guide-achat-second-hand-original-maroc,news/kifach-taaraf-hala-qitaa-second-hand,news/3lach-swar-haqiqiya-mohimma'
+  endif
+-%}
+
+<section class="lbpb" aria-label="كمل من هنا">
+  <div class="lbpb-in">
+    <a class="lbpb-cta" href="{{ shop_url }}">{{ shop_label }} <span aria-hidden="true">←</span></a>
+
+    {%- if keys != '' -%}
+      {%- assign ks = keys | split: ',' -%}
+      <div class="lbpb-guides">
+        <p class="lbpb-h">أدلة كتعاونك قبل ما تشري</p>
+        <ul>
+          {%- for k in ks -%}
+            {%- assign art = articles[k] -%}
+            {%- if art.title != blank -%}
+              <li><a href="{{ art.url }}">{{ art.title }}</a></li>
+            {%- endif -%}
+          {%- endfor -%}
+          <li><a class="lbpb-all" href="/blogs/news">شوف كل الأدلة</a></li>
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+.lbpb{max-width:1100px;margin:0 auto;padding:0 24px 34px}
+.lbpb-in{border:1px solid var(--line,#26262B);border-radius:14px;
+  background:rgba(255,255,255,.035);padding:20px}
+.lbpb-cta{display:inline-flex;align-items:center;gap:8px;min-height:50px;
+  padding:0 24px;background:#BF2E15;color:#fff;font-weight:900;font-size:14.5px;
+  text-decoration:none;border-radius:0;transition:background .2s ease}
+.lbpb-cta:hover{background:#8F1F0D}
+.lbpb-cta:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.lbpb-guides{margin:20px 0 0;padding-top:16px;border-top:1px solid var(--line,#26262B)}
+.lbpb-h{margin:0 0 10px;font-size:12.5px;font-weight:800;color:var(--txt3,#5E5A55)}
+.lbpb-guides ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.lbpb-guides a{color:var(--gold,#C89A0E);font-size:13.5px;font-weight:600;
+  text-decoration:underline;text-underline-offset:3px;line-height:1.7}
+.lbpb-guides a:hover{color:var(--gold2,#E0B52A)}
+@media(max-width:640px){.lbpb{padding:0 16px 26px}.lbpb-cta{width:100%;justify-content:center}}
+</style>
+{%- endif -%}

@@ -1,0 +1,383 @@
+{% capture short_answer %}
+  هاد الصفحة كتشرح الموضوع بطريقة واضحة باش تعرف شنو كتشرى، كيفاش كتقيس، كيفاش كنوضح الحالة، وكيفاش كيدوز الطلب مع Lbass Original. التفاصيل اللي ماشي مؤكدة كنخليوها بلا وعود زايدة.
+{% endcapture %}
+{% case page.handle %}
+  {% when 'condition-guide' %}
+    {% capture short_answer %}الحالة فـ Lbass Original خاصها تكون مفهومة قبل ما تشري: واش القطعة بحال الجديدة، مزيانة بزاف، مستعملة شوية، ولا فيها عيب واضح. أي wear أو عيب معروف خاصو يبان فالوصف أو الصور، وإذا بغيتي تتأكد أكثر تقدر تطلب صور قريبة أو فيديو فالواتساب.{% endcapture %}
+  {% when 'size-guide' %}
+    {% capture short_answer %}قياسات second-hand ماخاصكش تعتمد فيها غير على label. قارن الصدر، الطول، الخصر، inseam أو قياس الصباط مع قطعة عندك كاتجيك مزيان. إلا كانت القياسات ناقصة فصفحة المنتج، سولنا فالواتساب قبل ما تطلب.{% endcapture %}
+  {% when 'authenticity' %}
+    {% capture short_answer %}Lbass Original كيراجع البراند والتفاصيل الظاهرة قبل ما يعرض القطعة، ولكن ماكنوعدوش بشهادة خارجية إلا إلا كانت مذكورة صراحة. الصور الحقيقية، الكود، الحالة، والتفاصيل القريبة كيساعدوك تشري بثقة وبلا مفاجآت.{% endcapture %}
+  {% when 'shipping-and-payment' %}
+    {% capture short_answer %}التوصيل والدفع عند الاستلام مع Lbass Original واضح: 20 درهم داخل مراكش، 40 درهم لباقي المغرب، والخلاص بـ COD ملي توصلك أو PayPal أونلاين. مدة التوصيل كنأكدوها حسب المدينة قبل الإرسال.{% endcapture %}
+  {% when 'sell-your-clothes' %}
+    {% capture short_answer %}إلى عندك حوايج براند مستعملة وباغي تبيعها، صيفط الصور، البراند، القياس، الحالة، والثمن المتوقع. Lbass كيشوف واش القطعة مناسبة، كيعطي تقييم، وكيقدر يقترح كاش، store credit، أو طريقة أخرى حسب الحالة والطلب.{% endcapture %}
+{% endcase %}
+{% assign query_page_h1 = page.title %}
+{% case page.handle %}
+  {% when 'size-guide' %}
+    {% assign query_page_h1 = 'القياسات ديال حوايج Second-Hand' %}
+    {% capture short_answer %}القياسات ديال second-hand ما خاصكش تعتمد فيها غير على label؛ قارن القياسات بالسنتيمتر مع قطعة عندك كاتجيك مزيان.{% endcapture %}
+  {% when 'vetements-second-hand-maroc' %}
+    {% assign query_page_h1 = 'Vêtements Second Hand Maroc' %}
+    {% capture short_answer %}Vêtements second hand Maroc: Lbass Original propose des pièces de marque, sneakers et accessoires sourcés en Allemagne, vérifiés à Marrakech et photographiés individuellement.{% endcapture %}
+  {% when 'second-hand-clothing-morocco' %}
+    {% assign query_page_h1 = 'Second-Hand Clothing Morocco' %}
+    {% capture short_answer %}Second-hand clothing Morocco: Lbass Original sells branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.{% endcapture %}
+  {% when 'second-hand-clothing-marrakech' %}
+    {% assign query_page_h1 = 'Friperie Marrakech' %}
+    {% capture short_answer %}Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 40 MAD ailleurs au Maroc.{% endcapture %}
+  {% when 'about' %}
+    {% assign query_page_h1 = 'Lbass Original Marrakech' %}
+    {% capture short_answer %}Lbass Original Marrakech هو متجر مغربي أونلاين كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، مفحوصة ومصورة قطعة بقطعة فمراكش.{% endcapture %}
+  {% when 'faq' %}
+    {% assign query_page_h1 = 'أسئلة على Lbass Original' %}
+    {% capture short_answer %}هنا كتلقى أجوبة واضحة على الحالة، القياس، الصور الحقيقية، COD، PayPal والتوصيل: 20 درهم داخل مراكش و40 درهم لباقي المغرب.{% endcapture %}
+{% endcase %}
+
+<style>
+.page-answer{max-width:860px;margin:10px 0 18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035)}
+.page-answer h2,.page-faq h2,.page-next h2{font-size:18px;margin:0 0 8px;color:var(--cream)}
+.page-answer p,.page-faq p{color:var(--txt2);margin:0;line-height:1.85}
+.page-faq{max-width:860px;margin:24px 0 0;border-top:1px solid var(--line)}
+.page-faq details{border-bottom:1px solid var(--line);padding:14px 0}
+.page-faq summary{cursor:pointer;color:var(--cream);font-weight:900}
+.page-faq summary::marker{color:var(--gold)}
+.page-next{max-width:860px;margin:24px 0 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--ink2)}
+.page-next .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.page-steps{max-width:860px;margin:26px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--ink2)}
+.page-steps h2{margin-top:0}
+.page-steps ol{margin:0;padding-inline-start:24px}
+.page-steps li{margin:8px 0;line-height:1.8}
+.page-table{width:100%;max-width:860px;border-collapse:collapse;margin:22px 0;display:block;overflow-x:auto}
+.page-table th,.page-table td{border:1px solid var(--line);padding:10px 12px;text-align:start;min-width:180px;vertical-align:top}
+.page-table th{color:var(--cream);background:var(--ink2)}
+.page-table td{color:var(--txt2)}
+.entity-grid{max-width:860px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:22px 0}
+.entity-card{border:1px solid var(--line);border-radius:14px;background:var(--ink2);padding:16px}
+.entity-card h2,.entity-card h3{margin:0 0 7px;color:var(--cream);font-size:17px}
+.entity-card p{margin:0;color:var(--txt2);line-height:1.8;font-size:13.5px}
+.entity-links{max-width:860px;display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 24px}
+.about-identity,.about-process,.about-contact,.about-recognition{max-width:860px;margin:24px 0;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--ink2)}
+.about-identity h2,.about-process h2,.about-contact h2,.about-recognition h2{margin:0 0 9px;color:var(--cream);font-size:clamp(19px,2.4vw,26px)}
+.about-identity p,.about-contact p,.about-recognition p{margin:7px 0;color:var(--txt2);line-height:1.85}
+.about-identity [lang="fr"],.about-identity [lang="en"]{font-size:13px}
+.about-process ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;counter-reset:about-step;list-style:none;margin:14px 0 0;padding:0}
+.about-process li{counter-increment:about-step;padding:14px;border:1px solid var(--line);border-radius:12px;color:var(--txt2);line-height:1.75;background:rgba(255,255,255,.025)}
+.about-process li::before{content:counter(about-step);display:inline-grid;place-items:center;width:26px;height:26px;margin-inline-end:8px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:900}
+.about-recognition{border-color:rgba(200,154,14,.3);background:rgba(200,154,14,.06)}
+.about-contact a{color:var(--gold2);font-weight:900}
+.page-shop-en{max-width:860px;margin:0 0 20px;padding:18px;border:1px solid rgba(200,154,14,.34);border-radius:14px;background:rgba(200,154,14,.065)}
+.page-shop-en h2{margin:0 0 7px;color:var(--cream);font-size:20px}
+.page-shop-en p{margin:0 0 13px;color:var(--txt2);font-size:13.5px;line-height:1.75}
+.page-shop-en__links{display:flex;gap:9px;flex-wrap:wrap}
+.page-shop-en__links a{display:inline-flex;min-height:44px;align-items:center;justify-content:center;padding:10px 15px;border:1px solid var(--line);border-radius:9px;color:var(--cream);font-size:13px;font-weight:900;text-decoration:none}
+.page-shop-en__links a:first-child{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+@media(max-width:640px){.entity-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.about-process ol{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح"><a href="{{ routes.root_url }}">الرئيسية</a> › <span aria-current="page">{{ query_page_h1 }}</span></nav>
+  <h1>{{ query_page_h1 }}</h1>
+
+  <section class="page-answer" aria-labelledby="page-answer-title">
+    <h2 id="page-answer-title">الجواب المختصر</h2>
+    <p>{{ short_answer | strip }}</p>
+  </section>
+
+  {% if page.handle == 'second-hand-clothing-morocco' %}
+    {%- assign en_shoes_available = collections['صبابط'].products | where: 'available', true -%}
+    {%- assign en_jackets_available = collections['جاكيطات-و-معاطف'].products | where: 'available', true -%}
+    <section class="page-shop-en" aria-labelledby="page-shop-en-title" lang="en" dir="ltr">
+      <h2 id="page-shop-en-title">Shop available second-hand pieces in Morocco</h2>
+      <p>Real photos of the exact item · clear size and condition · cash on delivery across Morocco. <span lang="ar" dir="rtl">صور حقيقية · حالة وقياس واضحين · خلّص ملي توصلك.</span></p>
+      <div class="page-shop-en__links">
+        <a href="{{ routes.all_products_collection_url }}" data-cro-event="available_now_click" data-cro-label="english_landing_all">Shop available now</a>
+        {% if en_shoes_available.size > 0 %}<a href="{{ collections['صبابط'].url }}" data-cro-event="english_category_click" data-cro-label="sneakers">Shop sneakers</a>{% endif %}
+        {% if en_jackets_available.size > 0 %}<a href="{{ collections['جاكيطات-و-معاطف'].url }}" data-cro-event="english_category_click" data-cro-label="jackets">Shop jackets</a>{% endif %}
+      </div>
+    </section>
+    {% render 'lbass-live-products-rail',
+      heading: 'Available now',
+      intro: 'Live Shopify inventory with real item photos, price, size and condition.',
+      placement: 'english_second_hand_landing',
+      limit: 4
+    %}
+  {% endif %}
+
+  <div style="max-width:860px">{{ page.content | replace: '212708336547', '491754264425' | replace: 'كنعطيوك RIB ديالنا', 'كنعطيوك تفاصيل الخلاص أونلاين' | replace: 'PayPal, or by PayPal', 'PayPal' }}</div>
+
+{%- comment -%}
+  ═══ NO VISIBLE FAQ IS RENDERED HERE — DELIBERATE, 2026-08-23 ═══
+
+  A metafield-driven visible FAQ block was added here and REMOVED the same day.
+  Recording why, so it is not re-added:
+
+  The 2026-08-23 audit listed these three pages as having "no FAQ":
+      /pages/vetements-second-hand-maroc
+      /pages/second-hand-clothing-morocco
+      /pages/second-hand-clothing-marrakech
+  That reading was wrong. It measured FAQPage *schema*, and all three already
+  carry 4-5 visible <details> Q&A written into the page BODY. Rendering a second
+  list from the metafield printed the same topics twice on every one of them.
+
+  The real gap was schema-only. It is fixed by populating page.metafields.lbass.faq
+  to MIRROR the questions already visible in the body — snippets/lbass-page-faq-schema.liquid
+  then emits FAQPage from it, and nothing new is drawn on the page.
+
+  THE RULE: the metafield describes what the body already shows. If you edit the
+  visible Q&A in a page body, edit the metafield to match — FAQPage that
+  describes questions a visitor cannot see is a structured-data violation.
+{%- endcomment -%}
+
+{%- if page.handle == 'shipping-and-payment' -%}
+  <div style="max-width:860px;margin:28px 0;padding:20px 22px;background:rgba(200,154,14,.08);border:1px solid rgba(200,154,14,.3);border-radius:12px;text-align:center">
+    <p style="margin:0 0 6px;color:var(--cream,#F4EFE6);font-weight:800;font-size:15px">مفهوم التوصيل والخلاص — دابا جاهز تتسوق؟</p>
+    <p style="margin:0 0 16px;color:var(--txt2,#97928A);font-size:13px">COD متوفر — كتخلص ملي توصلك. التوصيل: 20 درهم مراكش · 40 درهم باقي المغرب.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" style="padding:12px 20px;background:var(--gold,#c89a0e);color:#000;border-radius:8px;text-decoration:none;font-weight:800;font-size:14px">تسوق الصبابط ←</a>
+      <a href="/collections/all" style="padding:12px 20px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">شوف الكولكسيون</a>
+      <a href="https://wa.me/491754264425" target="_blank" rel="noopener" style="padding:12px 20px;background:transparent;border:1px solid #25D366;color:#25D366;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">💬 سولنا فالواتساب</a>
+    </div>
+  </div>
+  {%- endif -%}
+
+
+  {% if page.handle == 'about' %}
+    <section class="about-identity" aria-labelledby="about-identity-title">
+      <h2 id="about-identity-title">شنو هي Lbass Original؟</h2>
+      <p><strong>Lbass Original</strong> هو متجر مغربي أونلاين من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، كتتشيك وكتتصور قطعة بقطعة فمراكش، وكتتوصل لكل المغرب.</p>
+      <p lang="fr" dir="ltr">Lbass Original est une friperie en ligne basée à Marrakech, spécialisée dans les vêtements de marque second hand, sneakers et streetwear sourcés en Allemagne et vérifiés à Marrakech.</p>
+      <p lang="en" dir="ltr">Lbass Original is a Moroccan online store based in Marrakech that sells original second-hand branded clothing, sneakers, accessories, and streetwear pieces sourced from Germany, checked in Marrakech, photographed honestly, and delivered across Morocco.</p>
+    </section>
+    <section class="entity-grid" aria-label="معلومات مؤكدة على Lbass Original">
+      <article class="entity-card"><h2>من ألمانيا لمراكش</h2><p>القطع كتتختار من ألمانيا، وكنراجعو الحالة والتفاصيل المتاحة فمراكش قبل العرض.</p></article>
+      <article class="entity-card"><h3>نفس القطعة فالصور</h3><p>الصور ديال نفس القطعة المعروضة، ماشي catalogue photos. الحالة، التّيكيت والملاحظات كيبانو غير حسب التأكيد.</p></article>
+      <article class="entity-card"><h3>مخزون محدود بصح</h3><p>القطع غالباً محدودة. شارة 1/1 كتبان غير ملي Shopify كيأكد وحدة وحدة فالمخزون.</p></article>
+      <article class="entity-card"><h3>توصيل وخلاص واضح</h3><p>20 درهم داخل مراكش، 40 درهم لباقي المغرب، وكاين COD أو PayPal حسب طريقة الطلب.</p></article>
+    </section>
+    <section class="about-process" aria-labelledby="about-process-title">
+      <h2 id="about-process-title">كيفاش كتدوز القطعة قبل العرض؟</h2>
+      <ol>
+        <li>كنختارو القطع من ألمانيا حسب البراند، الحالة والستايل.</li>
+        <li>كتوصل لمراكش وكنراجعو القياس، الحالة والتفاصيل الظاهرة.</li>
+        <li>كنصورو نفس القطعة وكنكتبو أي ملاحظة مؤكدة قبل العرض.</li>
+        <li>كتتحط أونلاين بالثمن والتوفر الحقيقيين، والتوصيل كينطلق من مراكش.</li>
+      </ol>
+    </section>
+    <section aria-labelledby="about-compare-title">
+      <h2 id="about-compare-title">Lbass Original vs friperie classique</h2>
+      <table class="page-table">
+        <thead><tr><th>شنو كتقارن؟</th><th>Lbass Original</th><th>Friperie classique</th></tr></thead>
+        <tbody>
+          <tr><td>الصور</td><td>صور ديال نفس القطعة فصفحة المنتج.</td><td>كتختلف حسب المتجر.</td></tr>
+          <tr><td>الحالة والقياس</td><td>مكتوبين حسب المعلومات المؤكدة قبل الطلب.</td><td>كتختلف طريقة العرض من متجر لمتجر.</td></tr>
+          <tr><td>الوصول</td><td>متجر أونلاين من مراكش وتوصيل للمغرب.</td><td>ممكن محل فيزيكي أو أونلاين؛ كيختلف.</td></tr>
+        </tbody>
+      </table>
+      <p style="max-width:860px;color:var(--txt3);line-height:1.8">هاد المقارنة ما كتقولش أن Lbass هو “الأفضل”؛ كتبيّن غير المعلومات اللي تقدر تراجعها بنفسك قبل ما تختار.</p>
+    </section>
+    <nav class="entity-links" aria-label="تعرف أكثر على Lbass Original">
+      <a class="chip" href="{{ routes.all_products_collection_url }}">New Drop</a>
+      {% if collections['صبابط'] != blank and collections['صبابط'].products_count > 0 %}<a class="chip" href="{{ collections['صبابط'].url }}">صبابط أصلية فالمغرب</a>{% endif %}
+      {% if collections['إكسسوارات'] != blank and collections['إكسسوارات'].products_count > 0 %}<a class="chip" href="{{ collections['إكسسوارات'].url }}">إكسسوارات</a>{% endif %}
+      {% if collections['adidas-originals'] != blank and collections['adidas-originals'].products_count > 0 %}<a class="chip" href="{{ collections['adidas-originals'].url }}">Adidas second-hand Maroc</a>{% endif %}
+      {% if collections['nike'] != blank and collections['nike'].products_count > 0 %}<a class="chip" href="{{ collections['nike'].url }}">Nike second-hand Maroc</a>{% endif %}
+      <a class="chip" href="/pages/how-we-check-items">كيفاش كنشيكو القطع</a>
+      <a class="chip" href="/pages/condition-guide">دليل الحالة</a>
+      <a class="chip" href="/pages/shipping-and-payment">COD والتوصيل</a>
+      <a class="chip" href="/pages/contact">تواصل معنا</a>
+      <a class="chip" href="https://wa.me/491754264425" target="_blank" rel="noopener">WhatsApp</a>
+    </nav>
+    <section class="about-contact" aria-labelledby="about-contact-title">
+      <h2 id="about-contact-title">تواصل مع Lbass Original</h2>
+      <p>إلا بغيتي تتأكد من القياس، الحالة، الصور أو طريقة التوصيل، كتب لينا على <a href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a> أو سولنا فالواتساب. تقدر تراسلنا فأي وقت، والجواب كيكون ملي نكونو متاحين.</p>
+    </section>
+    <section class="about-recognition" aria-labelledby="about-recognition-title">
+      <h2 id="about-recognition-title">Recognition &amp; Mentions</h2>
+      <p>Lbass Original كيبني الثقة بالصور الحقيقية، ملاحظات الحالة الواضحة، وتجربة second-hand صادقة فالمغرب. غادي نضيفو هنا غير mentions، collaborations أو قصص زبناء حقيقية منين تكون قابلة للتوثيق—بلا badges ولا جوائز مخترعة.</p>
+    </section>
+  {% endif %}
+
+  {% if page.handle == 'contact' %}
+    <section class="page-next" aria-labelledby="contact-email-title">
+      <h2 id="contact-email-title">تواصل معنا بالإيميل</h2>
+      <p>للأسئلة على الطلب، الحالة، القياس، التوصيل أو الصور، كتب لينا على <a href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a>.</p>
+      <div class="links"><a href="mailto:contact@lbassoriginal.com">صيفط إيميل</a><a href="https://wa.me/491754264425" target="_blank" rel="noopener">سول فالواتساب</a></div>
+    </section>
+  {% endif %}
+
+  {% if page.handle == 'size-guide' %}
+    <section class="page-steps" aria-labelledby="size-steps-title">
+      <h2 id="size-steps-title">كيفاش تختار القياس فـ 5 خطوات</h2>
+      <ol>
+        <li>شوف القياس المكتوب فصفحة المنتج.</li>
+        <li>قيس قطعة عندك كاتجيك مزيان بالسنتيمتر.</li>
+        <li>قارن الطول، العرض، الوسط أو insole حسب نوع القطعة.</li>
+        <li>راجع الصور الحقيقية وملاحظة الـ fit إلا كانت متوفرة.</li>
+        <li>سولنا فالواتساب إلا بقات شي معلومة ناقصة قبل الطلب.</li>
+      </ol>
+    </section>
+  {% elsif page.handle == 'condition-guide' %}
+    <section aria-labelledby="condition-table-title">
+      <h2 id="condition-table-title">كيفاش نقراو حالة القطعة؟</h2>
+      <table class="page-table">
+        <thead><tr><th>الحالة</th><th>شنو كتعني؟</th><th>شنو خاصك تراجع؟</th></tr></thead>
+        <tbody>
+          <tr><td>جديد بالتّيكيت</td><td>القطعة مازال فيها التّيكيت، إلا كان ظاهر ومذكور فالمنتج.</td><td>صور التّيكيت، القياس، والبراند.</td></tr>
+          <tr><td>شبه جديد</td><td>الحالة قريبة للجديد بلا ما نفترض أنها ما تلبساتش.</td><td>الصور، الحالة المكتوبة، وأي ملاحظة.</td></tr>
+          <tr><td>بحالة مزيانة</td><td>قطعة مستعملة وقابلة للبس مع آثار استعمال ممكنة.</td><td>العيوب المعروفة، القياس، والثمن.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+
+  {% case page.handle %}
+    {% when 'condition-guide' %}
+      <section class="page-faq" aria-labelledby="page-faq-title">
+        <h2 id="page-faq-title">أسئلة مهمة على الحالة</h2>
+        <details open><summary>شنو معنى حالة ممتازة؟</summary><p>حالة ممتازة كتقرب لبحال الجديد، ولكن حيث القطعة second-hand ممكن تلقى أثر خفيف بزاف. أي عيب معروف خاصو يكون واضح قبل الشراء.</p></details>
+        <details><summary>واش العيوب الصغيرة كيبانو قبل الطلب؟</summary><p>الهدف هو أن العيوب المعروفة تبان فالوصف أو الصور. إلا محتاج زاوية أو فيديو أكثر، طلبهم فالواتساب قبل ما تكمل الطلب.</p></details>
+        <details><summary>شنو ندير إلا الحالة ماجاتش بحال الوصف؟</summary><p>تواصل مع Lbass بسرعة وشرح المشكل بالصور. الحل كيتدار حسب شروط الإرجاع وحالة القطعة عند الوصول.</p></details>
+      </section>
+    {% when 'size-guide' %}
+      <section style="max-width:860px;margin:26px 0" aria-labelledby="measure-h">
+        <h2 id="measure-h">كيفاش تقيس كل نوع ديال القطع 📏</h2>
+        <p style="color:var(--txt2);margin:6px 0 16px">خود متر خياطة (أو خيط + ريغلة)، وحط القطعة مفروشة على سطح مستوي. قيس دائماً قطعة عندك كتجيك مزيانة وقارن مع القياسات المكتوبة فصفحة المنتج.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px">
+          <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+            <h3 style="margin:0 0 8px">👖 السروال والجينز</h3>
+            <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8"><b>الوسط:</b> قيس من طرف لطرف فوق الحزام وضرب فـ2. <b>الطول:</b> من فوق الحزام حتى لتحت الرجل. <b>Inseam:</b> من الملتقى ديال الرجلين حتى للكعب — هادا أهم قياس فالسروال.</p>
+          </div>
+          <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+            <h3 style="margin:0 0 8px">🧥 الجاكيط والهودي</h3>
+            <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8"><b>الصدر:</b> من إبط لإبط وضرب فـ2. <b>الطول:</b> من أعلى الكتف حتى للحاشية السفلية. <b>الكم:</b> من درز الكتف حتى لطرف الكم. القطع vintage غالباً كتجي أوسع من القياس الحديث.</p>
+          </div>
+          <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+            <h3 style="margin:0 0 8px">👟 السنيكرز والصباط</h3>
+            <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8"><b>Insole:</b> قيس النعل الداخلي من الكعب حتى للأصبع بالسنتيمتر وقارنو مع صباط عندك مريح. أرقام EU/US كيختلفو بين البراندات — السنتيمتر هو الحقيقة.</p>
+          </div>
+          <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+            <h3 style="margin:0 0 8px">👕 التيشرت والقميص</h3>
+            <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8"><b>العرض:</b> من إبط لإبط والقطعة مفروشة. <b>الطول:</b> من الكتف حتى للحاشية. إلا بغيتي fit oversized، زيد 4-6 سم على قياسك العادي فالعرض.</p>
+          </div>
+        </div>
+      </section>
+      <section class="page-faq" aria-labelledby="page-faq-title">
+        <h2 id="page-faq-title">أسئلة مهمة على القياس</h2>
+        <details open><summary>كيفاش نختار القياس الصحيح؟</summary><p>قارن القياسات بالسنتيمتر مع قطعة عندك كاتجيك مزيان. label size بوحدو ماكافيش، خصوصا فـ vintage و second-hand.</p></details>
+        <details><summary>شنو الفرق بين label size و fits like؟</summary><p>label size هو القياس المكتوب فالإتيكيت. fits like هو التقدير العملي ديال كيفاش كتجي القطعة على الجسم مقارنة بالقياسات الحديثة.</p></details>
+        <details><summary>نقدر نسول على القياس فالواتساب؟</summary><p>نعم. صيفط رابط المنتج وقياسك أو قياسات قطعة عندك، وطلب مساعدة قبل ما تطلب.</p></details>
+      </section>
+    {% when 'authenticity' %}
+      <section class="page-faq" aria-labelledby="page-faq-title">
+        <h2 id="page-faq-title">أسئلة مهمة على الأصالة</h2>
+        <details open><summary>كيفاش كيتراجع البراند؟</summary><p>كنراجع التفاصيل الظاهرة بحال logo، label، الخياطة، الخامة، والكود إذا كان متوفر. بعض البراندات كتحتاج تحقق أعمق.</p></details>
+        <details><summary>واش Lbass كيعطي شهادة أصالة؟</summary><p>ماكايناش شهادة خارجية إلا إلا كانت مذكورة صراحة فصفحة المنتج. الفحص العادي هو مراجعة داخلية للتفاصيل المتاحة.</p></details>
+        <details><summary>نقدر نطلب صور قريبة؟</summary><p>نعم. طلب صور أو فيديو للـ label، logo، zipper، sole، أو أي تفصيل مهم قبل ما تشري.</p></details>
+      </section>
+    {% when 'shipping-and-payment' %}
+      <section class="page-faq" aria-labelledby="page-faq-title">
+        <h2 id="page-faq-title">أسئلة مهمة على التوصيل والخلاص</h2>
+        <details open><summary>شنو طرق الخلاص المتوفرة؟</summary><p>كتقدر تختار بين COD، يعني كاش ملي توصلك القطعة، أو PayPal أونلاين. كنأكدو معاك الطريقة المناسبة قبل الإرسال.</p></details>
+        <details><summary>شحال كيدير التوصيل؟</summary><p>المدة كتبدل حسب المدينة وشركة التوصيل. كازا والرباط غالبا أسرع من المدن البعيدة، ولكن التأكيد النهائي كيجي مع الطلب.</p></details>
+        <details><summary>شنو إلا وقع مشكل فالتوصيل؟</summary><p>تواصل مع Lbass برقم الطلب والمدينة. إعادة المحاولة، التأجيل، أو الإلغاء كيتدار حسب حالة الطلب وشركة التوصيل.</p></details>
+      </section>
+    {% when 'sell-your-clothes' %}
+      <section class="page-faq" aria-labelledby="page-faq-title">
+        <h2 id="page-faq-title">أسئلة مهمة على البيع لـ Lbass</h2>
+        <details open><summary>شنو خاصني نصيفط باش يتقيم المنتج؟</summary><p>صيفط صور واضحة من القدام، اللور، label، أي عيب، مع البراند، القياس، المدينة، الحالة، والثمن المتوقع.</p></details>
+        <details><summary>شنو الحوايج اللي كتقبلو؟</summary><p>الأولوية للحوايج البراند، streetwear، vintage، الجاكيتات، الجينز، الصباط، الهوديات، والإكسسوارات فحالة قابلة للبيع.</p></details>
+        <details><summary>كاش ولا store credit؟</summary><p>الاختيار كيتحدد حسب القطعة والطلب عليها. store credit ممكن يعطي مرونة أكثر، والكاش كيبقى حسب التقييم والاتفاق.</p></details>
+      </section>
+  {% endcase %}
+
+  {% render 'lbass-bridge-shop' %}
+  {% render 'lbass-bridge-categories' %}
+  {% render 'lbass-bridge-trust' %}
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{% if page.handle == 'about' %}AboutPage{% else %}WebPage{% endif %}",
+  "name": {{ query_page_h1 | json }},
+  "description": {{ short_answer | strip | json }},
+  "url": "{{ shop.url }}{{ page.url }}",
+  "inLanguage": "ar-MA",
+  {% if page.published_at != blank %}"datePublished": {{ page.published_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},{% endif %}
+  {% if page.updated_at != blank %}"dateModified": {{ page.updated_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},{% endif %}
+  "isPartOf": {
+    "@id": "{{ shop.url }}/#website"
+  },
+  "publisher": {
+    "@id": "{{ shop.url }}/#organization"
+  }{% if page.handle == 'about' %},
+  "mainEntity": {"@id": "{{ shop.url }}/#organization"}
+  {% endif %}
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"الرئيسية","item":{{ shop.url | json }}},
+    {"@type":"ListItem","position":2,"name":{{ page.title | json }}}
+  ]
+}
+</script>
+
+{% if page.handle == 'size-guide' %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "كيفاش تختار القياس فالحوايج second-hand؟",
+  "description": "خمس خطوات عملية لمقارنة قياس قطعة second-hand مع قطعة كاتجيك مزيان قبل الطلب.",
+  "totalTime": "PT10M",
+  "step": [
+    {"@type":"HowToStep","position":1,"name":"شوف القياس المكتوب","text":"شوف القياس المكتوب فصفحة المنتج."},
+    {"@type":"HowToStep","position":2,"name":"قيس قطعة عندك","text":"قيس قطعة عندك كاتجيك مزيان بالسنتيمتر."},
+    {"@type":"HowToStep","position":3,"name":"قارن القياسات","text":"قارن الطول، العرض، الوسط أو insole حسب نوع القطعة."},
+    {"@type":"HowToStep","position":4,"name":"راجع الصور والـ fit","text":"راجع الصور الحقيقية وملاحظة الـ fit إلا كانت متوفرة."},
+    {"@type":"HowToStep","position":5,"name":"سول قبل الطلب","text":"سولنا فالواتساب إلا بقات شي معلومة ناقصة قبل الطلب."}
+  ]
+}
+</script>
+{% endif %}
+
+{% if page.handle == 'condition-guide' or page.handle == 'size-guide' or page.handle == 'authenticity' or page.handle == 'shipping-and-payment' or page.handle == 'sell-your-clothes' %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% case page.handle %}
+      {% when 'condition-guide' %}
+        {"@type":"Question","name":"شنو معنى حالة ممتازة؟","acceptedAnswer":{"@type":"Answer","text":"حالة ممتازة كتقرب لبحال الجديد، ولكن حيث القطعة second-hand ممكن تلقى أثر خفيف بزاف. أي عيب معروف خاصو يكون واضح قبل الشراء."}},
+        {"@type":"Question","name":"واش العيوب الصغيرة كيبانو قبل الطلب؟","acceptedAnswer":{"@type":"Answer","text":"الهدف هو أن العيوب المعروفة تبان فالوصف أو الصور. إلا محتاج زاوية أو فيديو أكثر، طلبهم فالواتساب قبل ما تكمل الطلب."}},
+        {"@type":"Question","name":"شنو ندير إلا الحالة ماجاتش بحال الوصف؟","acceptedAnswer":{"@type":"Answer","text":"تواصل مع Lbass بسرعة وشرح المشكل بالصور. الحل كيتدار حسب شروط الإرجاع وحالة القطعة عند الوصول."}}
+      {% when 'size-guide' %}
+        {"@type":"Question","name":"كيفاش نختار القياس الصحيح؟","acceptedAnswer":{"@type":"Answer","text":"قارن القياسات بالسنتيمتر مع قطعة عندك كاتجيك مزيان. label size بوحدو ماكافيش، خصوصا فـ vintage و second-hand."}},
+        {"@type":"Question","name":"شنو الفرق بين label size و fits like؟","acceptedAnswer":{"@type":"Answer","text":"label size هو القياس المكتوب فالإتيكيت. fits like هو التقدير العملي ديال كيفاش كتجي القطعة على الجسم مقارنة بالقياسات الحديثة."}},
+        {"@type":"Question","name":"نقدر نسول على القياس فالواتساب؟","acceptedAnswer":{"@type":"Answer","text":"نعم. صيفط رابط المنتج وقياسك أو قياسات قطعة عندك، وطلب مساعدة قبل ما تطلب."}}
+      {% when 'authenticity' %}
+        {"@type":"Question","name":"كيفاش كيتراجع البراند؟","acceptedAnswer":{"@type":"Answer","text":"كنراجع التفاصيل الظاهرة بحال logo، label، الخياطة، الخامة، والكود إذا كان متوفر. بعض البراندات كتحتاج تحقق أعمق."}},
+        {"@type":"Question","name":"واش Lbass كيعطي شهادة أصالة؟","acceptedAnswer":{"@type":"Answer","text":"ماكايناش شهادة خارجية إلا إلا كانت مذكورة صراحة فصفحة المنتج. الفحص العادي هو مراجعة داخلية للتفاصيل المتاحة."}},
+        {"@type":"Question","name":"نقدر نطلب صور قريبة؟","acceptedAnswer":{"@type":"Answer","text":"نعم. طلب صور أو فيديو للـ label، logo، zipper، sole، أو أي تفصيل مهم قبل ما تشري."}}
+      {% when 'shipping-and-payment' %}
+        {"@type":"Question","name":"شنو طرق الخلاص المتوفرة؟","acceptedAnswer":{"@type":"Answer","text":"كتقدر تختار بين COD، يعني كاش ملي توصلك القطعة، أو PayPal أونلاين. كنأكدو معاك الطريقة المناسبة قبل الإرسال."}},
+        {"@type":"Question","name":"شحال كيدير التوصيل؟","acceptedAnswer":{"@type":"Answer","text":"المدة كتبدل حسب المدينة وشركة التوصيل. كازا والرباط غالبا أسرع من المدن البعيدة، ولكن التأكيد النهائي كيجي مع الطلب."}},
+        {"@type":"Question","name":"شنو إلا وقع مشكل فالتوصيل؟","acceptedAnswer":{"@type":"Answer","text":"تواصل مع Lbass برقم الطلب والمدينة. إعادة المحاولة، التأجيل، أو الإلغاء كيتدار حسب حالة الطلب وشركة التوصيل."}}
+      {% when 'sell-your-clothes' %}
+        {"@type":"Question","name":"شنو خاصني نصيفط باش يتقيم المنتج؟","acceptedAnswer":{"@type":"Answer","text":"صيفط صور واضحة من القدام، اللور، label، أي عيب، مع البراند، القياس، المدينة، الحالة، والثمن المتوقع."}},
+        {"@type":"Question","name":"شنو الحوايج اللي كتقبلو؟","acceptedAnswer":{"@type":"Answer","text":"الأولوية للحوايج البراند، streetwear، vintage، الجاكيتات، الجينز، الصباط، الهوديات، والإكسسوارات فحالة قابلة للبيع."}},
+        {"@type":"Question","name":"كاش ولا store credit؟","acceptedAnswer":{"@type":"Answer","text":"الاختيار كيتحدد حسب القطعة والطلب عليها. store credit ممكن يعطي مرونة أكثر، والكاش كيبقى حسب التقييم والاتفاق."}}
+    {% endcase %}
+  ]
+}
+</script>
+{% endif %}

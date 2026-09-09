@@ -1,0 +1,52 @@
+{%- comment -%}
+  LBASS — ONE-OF-ONE TEST (2026-08-29). Echoes "1" or "0".
+
+  WHY THIS EXISTS. Every surface in this theme tested uniqueness with
+
+      {% if product.available and product.total_inventory == 1 %}
+
+  and `product.total_inventory` renders EMPTY on this storefront. Measured on
+  the live product object for zara-black-chunky-boots-size-39, which the Admin
+  API reports as totalInventory:1, tracked, availableForSale:true:
+
+      total_inventory=   avail=true  variants=1
+      selv_qty=1  selv_mgmt=shopify  selv_avail=true  selv_policy=deny
+
+  So the comparison was nil == 1 — false for every product, forever. The 1/1
+  stamp rendered "LIVE" on all 42 products of the /collections/one-of-one
+  collection, the PDP badge never appeared, and the same dead test was copied
+  into search, the vault page, the homepage hero and the look card. This was
+  invisible because a second bug (.chip{...!important} in lbass-stamp flattening
+  the unique chip — see lbass-unique-badge.liquid) meant that even a firing
+  badge would have looked like every other chip.
+
+  WHAT IS RELIABLE. variant.inventory_quantity and variant.inventory_management
+  both resolve correctly, so uniqueness is summed from the variants instead.
+
+  HONESTY RULE. If ANY variant has no inventory management, units are unknown
+  and this returns "0". A "pièce unique" claim on a piece we cannot count is a
+  false scarcity claim to the customer — the badge stays off rather than guess.
+
+  USAGE — render returns a string, so capture and strip it:
+
+      {% capture one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}
+      {% assign one_s = one_s | strip %}
+      {% assign card_one = false %}{% if one_s == '1' %}{% assign card_one = true %}{% endif %}
+{%- endcomment -%}
+{%- liquid
+  assign lb_units = 0
+  assign lb_untracked = false
+  for v in product.variants
+    if v.inventory_management == blank
+      assign lb_untracked = true
+    endif
+    if v.inventory_quantity > 0
+      assign lb_units = lb_units | plus: v.inventory_quantity
+    endif
+  endfor
+  if product.available and lb_untracked == false and lb_units == 1
+    echo '1'
+  else
+    echo '0'
+  endif
+-%}

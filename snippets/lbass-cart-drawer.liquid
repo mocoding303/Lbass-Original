@@ -1,0 +1,655 @@
+{% comment %}
+  Lbass Original — shared left-side cart drawer + quick-add engine.
+  Rendered once per page: from layout/theme.liquid on standard pages,
+  and directly inside templates that use {% layout none %} (index, page.vault).
+  Uses Shopify Ajax Cart API (/cart.js, /cart/add.js, /cart/change.js).
+  All classes are prefixed lbdr-/lbqa- so nothing collides with existing CSS.
+{% endcomment %}
+
+<style>
+/* ── quick-add button (rendered by snippets/lbass-quick-add.liquid) ── */
+.lbqa-wrap{display:flex;flex-direction:column;min-width:0}
+.lbqa-wrap>a{flex:1 1 auto}
+.lbqa-wrap>.drop-card{flex:1 1 auto;width:100%}
+.drop-rail>.lbqa-wrap{flex:0 0 clamp(238px,24vw,310px);scroll-snap-align:start}
+.real-grid>.lbqa-wrap,.grid>.lbqa-wrap,.pgrid>.lbqa-wrap,.vgrid>.lbqa-wrap{min-width:0}
+.vgrid>.lbqa-wrap.hidden{display:none}
+/* Sold cards reuse .lbqa-btn + .lbqa-sold (defined below) so they match the
+   available-card button exactly. No bespoke sold styling — that is what caused
+   two competing sold treatments on one card. */
+.lbqa-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:100%;margin-top:8px;padding:11px 14px;min-height:48px;border-radius:12px;border:1px solid var(--gold,#C89A0E);background:var(--cream,#F4EFE6);color:var(--ink,#0A0A0B);font-family:inherit;font-weight:900;font-size:14px;line-height:1.3;cursor:pointer;transition:background .25s,transform .2s,opacity .25s;-webkit-tap-highlight-color:transparent;text-decoration:none}
+.lbqa-btn .lbqa-en{font-size:8.5px;font-weight:800;letter-spacing:.22em;opacity:.55;direction:ltr}
+.lbqa-btn:hover{background:var(--gold,#C89A0E)}
+.lbqa-btn:active{transform:scale(.975)}
+.lbqa-btn:focus-visible{outline:2px solid var(--gold,#C89A0E);outline-offset:2px}
+.lbqa-btn[disabled]{cursor:default;opacity:.55}
+.lbqa-btn.lbqa-sold{background:transparent;color:var(--txt3,#5E5A55);border-color:var(--line,#26262B)}
+.lbqa-btn.lbqa-pending{background:rgba(224,181,42,.08);color:var(--gold2,#E0B52A);border-color:rgba(224,181,42,.45)}
+.lbqa-btn.busy{opacity:.7;pointer-events:none}
+.lbqa-btn.busy .lbqa-txt::after{content:"…"}
+.lbqa-btn.done{background:var(--green,#1FA855);border-color:var(--green,#1FA855);color:#fff}
+
+/* ── variant quick-pick sheet ── */
+.lbqa-sheet{position:fixed;inset:0;z-index:97;display:none;align-items:flex-end;justify-content:center;background:rgba(5,5,6,.72);backdrop-filter:blur(4px)}
+.lbqa-sheet.show{display:flex}
+.lbqa-sheet-in{width:min(480px,100vw);background:var(--ink2,#121214);border:1px solid var(--line,#26262B);border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:640px){.lbqa-sheet{align-items:center}.lbqa-sheet-in{border-radius:18px}}
+.lbqa-sheet-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.lbqa-sheet-h b{color:var(--cream,#F4EFE6);font-size:15.5px;font-weight:900;line-height:1.4}
+.lbqa-sheet-x{width:38px;height:38px;flex:none;border-radius:50%;border:1px solid var(--line,#26262B);background:transparent;color:var(--txt2,#97928A);font-size:15px;cursor:pointer;font-family:inherit}
+.lbqa-sheet-l{color:var(--txt2,#97928A);font-size:13px;font-weight:800;margin:8px 0 10px}
+.lbqa-sheet-szs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.lbqa-sz{padding:12px 18px;min-width:56px;min-height:46px;border-radius:10px;border:1px solid var(--line,#26262B);background:var(--ink,#0A0A0B);color:var(--cream,#F4EFE6);font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;transition:border-color .2s,background .2s}
+.lbqa-sz:hover{border-color:var(--gold,#C89A0E)}
+.lbqa-sz:focus-visible{outline:2px solid var(--gold,#C89A0E);outline-offset:2px}
+.lbqa-sz[disabled]{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.lbqa-sheet-pdp{display:inline-block;color:var(--gold,#C89A0E);font-size:13px;font-weight:800;text-decoration:none}
+.lbqa-sheet-pdp:hover{text-decoration:underline}
+
+/* ── left-side drawer ── */
+.lbdr-scrim{position:fixed;inset:0;z-index:95;background:rgba(5,5,6,.66);backdrop-filter:blur(3px);opacity:0;transition:opacity .3s}
+.lbdr-scrim.show{opacity:1}
+.lbdr{position:fixed;top:0;bottom:0;left:0;width:min(430px,100vw);z-index:96;background:var(--ink2,#121214);border-right:1px solid var(--line,#26262B);transform:translateX(-103%);transition:transform .4s cubic-bezier(.7,0,.3,1);display:flex;flex-direction:column;color:var(--txt,#D8D4CC);font-size:15px;line-height:1.65}
+.lbdr.open{transform:translateX(0)}
+@media(prefers-reduced-motion:reduce){.lbdr{transition:none}.lbdr-scrim{transition:none}}
+.lbdr-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line,#26262B);flex:none}
+.lbdr-title{font-weight:900;font-size:18px;color:var(--cream,#F4EFE6)}
+.lbdr-title small{color:var(--gold,#C89A0E);font-size:14px}
+.lbdr-x{width:40px;height:40px;border-radius:50%;border:1px solid var(--line,#26262B);background:transparent;color:var(--txt2,#97928A);font-size:16px;cursor:pointer;font-family:inherit}
+.lbdr-x:hover{color:var(--cream,#F4EFE6);border-color:var(--gold,#C89A0E)}
+.lbdr-trust{flex:none;padding:10px 18px;background:rgba(200,154,14,.08);border-bottom:1px solid rgba(200,154,14,.2);color:var(--gold2,#E0B52A);font-size:12.5px;font-weight:800;text-align:center}
+.lbdr-scarcity{flex:none;margin:0;padding:9px 18px;border-bottom:1px solid var(--line,#26262B);color:var(--txt,#D8D4CC);font-size:12px;font-weight:800;text-align:center}
+.lbdr-pay{flex:none;margin:6px 0 0;font-size:12px;line-height:1.75;color:var(--txt2,#97928A)}
+.lbdr-pay b{color:var(--cream,#F4EFE6)}
+.lbdr-pay a{color:var(--gold2,#E0B52A);text-decoration:underline;text-underline-offset:2px}
+.lbdr-source{margin:10px 0 12px;padding:11px 12px;border:1px solid var(--line,#26262B);border-radius:10px;background:var(--ink,#0A0A0B)}
+.lbdr-source label{display:block;margin:0 0 6px;color:var(--cream,#F4EFE6);font-size:12.5px;font-weight:900}
+.lbdr-source select{width:100%;min-height:44px;border:1px solid var(--line,#26262B);border-radius:8px;background:var(--ink2,#121214);color:var(--cream,#F4EFE6);padding:9px 12px;font:inherit;font-size:13px}
+.lbdr-source small{display:block;margin-top:5px;color:var(--txt3,#5E5A55);font-size:10.5px}
+.lbdr-fship{flex:none;padding:10px 18px;border-bottom:1px solid var(--line,#26262B);font-size:12.5px;font-weight:800;color:var(--txt,#D8D4CC)}
+.lbdr-fship-track{margin-top:7px;height:5px;border-radius:4px;background:var(--ink,#0A0A0B);overflow:hidden}
+.lbdr-fship-fill{height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--gold,#C89A0E),var(--gold2,#E0B52A));transition:width .4s ease}
+.lbdr-body{flex:1;overflow-y:auto;padding:14px 18px;overscroll-behavior:contain}
+.lbdr-it{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line,#26262B)}
+.lbdr-it-img{width:76px;height:95px;flex:none;border-radius:10px;object-fit:cover;background:var(--ink,#0A0A0B);border:1px solid var(--line,#26262B)}
+.lbdr-it-main{flex:1;min-width:0}
+.lbdr-it-v{margin:0;color:var(--gold,#C89A0E);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;direction:ltr;text-align:right}
+.lbdr-it-n{display:block;color:var(--cream,#F4EFE6);font-weight:800;font-size:14.5px;line-height:1.4;text-decoration:none;margin:2px 0}
+.lbdr-it-n:hover{color:var(--gold,#C89A0E)}
+.lbdr-it-m{margin:0 0 6px;color:var(--txt2,#97928A);font-size:12.5px;font-weight:700}
+.lbdr-it-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lbdr-it-q{color:var(--txt2,#97928A);font-size:12.5px;font-weight:800}
+.lbdr-it-p{color:var(--gold,#C89A0E);font-weight:900;font-size:15px;direction:ltr}
+.lbdr-rm{margin-top:6px;padding:6px 0;background:none;border:0;color:var(--txt3,#5E5A55);font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;min-height:32px}
+.lbdr-rm:hover{color:#ff8a8a}
+.lbdr-empty{text-align:center;padding:26px 6px}
+.lbdr-empty-t{font-weight:900;font-size:16.5px;color:var(--cream,#F4EFE6);margin:0 0 16px}
+.lbdr-sugg-h{margin:26px 0 10px;color:var(--txt2,#97928A);font-weight:800;font-size:13px}
+.lbdr-sugg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:right}
+.lbdr-sg{display:block;border:1px solid var(--line,#26262B);border-radius:12px;overflow:hidden;background:var(--ink,#0A0A0B);text-decoration:none;transition:border-color .2s}
+.lbdr-sg:hover{border-color:var(--gold,#C89A0E)}
+.lbdr-sg img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.lbdr-sg-n{display:block;padding:8px 10px 0;color:var(--cream,#F4EFE6);font-size:12px;font-weight:800;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbdr-sg-p{display:block;padding:2px 10px 10px;color:var(--gold,#C89A0E);font-size:12.5px;font-weight:900;direction:ltr;text-align:right}
+.lbdr-foot{flex:none;border-top:1px solid var(--line,#26262B);padding:14px 18px calc(14px + env(safe-area-inset-bottom));background:var(--ink2,#121214)}
+.lbdr-total{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.lbdr-total span{font-weight:800;color:var(--txt2,#97928A);font-size:14px}
+.lbdr-total b{color:var(--cream,#F4EFE6);font-weight:900;font-size:19px;direction:ltr}
+.lbdr-cod-badge{margin:0 0 10px;padding:9px 14px;background:rgba(200,154,14,.12);border:1px solid rgba(200,154,14,.35);border-radius:8px;color:var(--gold2,#E0B52A);font-size:12.5px;font-weight:800;text-align:center}
+.lbdr-ship{margin:0 0 12px;color:var(--txt2,#97928A);font-size:12.5px;font-weight:700;text-align:center}
+.lbdr-btn{display:flex;align-items:center;justify-content:center;width:100%;padding:15px 18px;min-height:50px;border-radius:12px;border:0;font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;text-decoration:none;transition:background .25s,transform .2s;-webkit-tap-highlight-color:transparent}
+.lbdr-btn:active{transform:scale(.98)}
+.lbdr-btn-g{background:var(--green,#1FA855);color:#fff}
+.lbdr-btn-g:hover{background:#26bd63}
+.lbdr-btn-c{display:inline-flex;width:auto;padding:13px 22px;background:var(--cream,#F4EFE6);color:var(--ink,#0A0A0B)}
+.lbdr-btn-c:hover{background:var(--gold,#C89A0E)}
+.lbdr-row2{display:flex;gap:8px;margin-top:8px}
+.lbdr-row2 .lbdr-btn{font-size:13.5px;min-height:46px;padding:12px 10px}
+.lbdr-btn-wa{background:rgba(37,211,102,.12);color:#37c97a;border:1px solid rgba(37,211,102,.35)}
+.lbdr-btn-wa:hover{background:rgba(37,211,102,.2)}
+.lbdr-btn-ghost{background:transparent;color:var(--txt2,#97928A);border:1px solid var(--line,#26262B)}
+.lbdr-btn-ghost:hover{color:var(--cream,#F4EFE6);border-color:var(--gold,#C89A0E)}
+.lbdr-cartlink{display:block;margin-top:10px;text-align:center;color:var(--txt3,#5E5A55);font-size:12.5px;font-weight:800;text-decoration:none}
+.lbdr-cartlink:hover{color:var(--gold,#C89A0E)}
+.lbdr-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);z-index:120;background:var(--cream,#F4EFE6);color:var(--ink,#0A0A0B);padding:12px 22px;border-radius:12px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:92vw;text-align:center}
+.lbdr-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:640px){.lbdr{width:min(88vw,430px)}}
+
+/* ── header cart button for pages using theme.liquid ── */
+.lb-cartbtn{position:relative;margin-inline-start:auto;width:44px;height:44px;border-radius:50%;border:1px solid var(--line,#26262B);background:transparent;color:var(--cream,#F4EFE6);font-size:19px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;transition:border-color .2s}
+.lb-cartbtn:hover{border-color:var(--gold,#C89A0E)}
+.lb-cartbtn .lb-bub{position:absolute;top:-4px;inset-inline-end:-4px;min-width:19px;height:19px;border-radius:10px;background:var(--gold,#C89A0E);color:var(--ink,#0A0A0B);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px}
+</style>
+
+<div class="lbdr-scrim" id="lbdrScrim" hidden></div>
+
+<aside class="lbdr" id="lbdr" role="dialog" aria-modal="true" aria-label="سلة التسوّق" aria-hidden="true">
+  <div class="lbdr-head">
+    <span class="lbdr-title">السلة <small id="lbdrCount"></small></span>
+    <button class="lbdr-x" id="lbdrX" type="button" aria-label="سدّ السلة">✕</button>
+  </div>
+
+  <div class="lbdr-fship" id="lbdrFship" hidden>
+    <span id="lbdrFshipTxt"></span>
+    <div class="lbdr-fship-track"><div class="lbdr-fship-fill" id="lbdrFshipFill"></div></div>
+  </div>
+  <div class="lbdr-body">
+    <div class="lbdr-empty" id="lbdrEmpty">
+      <p class="lbdr-empty-t">السلة ديالك مازال خاوية.</p>
+      <a class="lbdr-btn lbdr-btn-c" href="{{ routes.all_products_collection_url }}">شوف القطع المتوفرة</a>
+      {%- assign lbdr_sugg = collections.all.products | where: 'available', true -%}
+      {%- if lbdr_sugg.size > 0 -%}
+        <p class="lbdr-sugg-h">بغيتي تكمل اللوك؟ هادو قطع متوفرة دابا 👇</p>
+        <div class="lbdr-sugg">
+          {%- for sp in lbdr_sugg limit: 4 -%}
+            {%- assign sp_title = sp.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first -%}
+            <a class="lbdr-sg" href="{{ sp.url }}">
+              {%- if sp.featured_image -%}
+                <img src="{{ sp.featured_image | image_url: width: 300 }}" alt="{{ sp_title | escape }}" loading="lazy" decoding="async" width="150" height="188">
+              {%- endif -%}
+              <span class="lbdr-sg-n">{{ sp_title | escape }}</span>
+              <span class="lbdr-sg-p">{{ sp.price | money_without_trailing_zeros }}</span>
+            </a>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+    <div id="lbdrItems" aria-live="polite"></div>
+  </div>
+  <div class="lbdr-foot" id="lbdrFoot" hidden>
+    <div class="lbdr-total"><span>المجموع</span><b id="lbdrTotal"></b></div>
+    <p class="lbdr-ship" style="margin:0 0 12px;font-size:11.5px">🚚 20 درهم مراكش · 40 درهم باقي المغرب · مجاني من 500 · 💳 COD أو PayPal</p>
+    <a class="lbdr-btn lbdr-btn-g" id="lbdrCheckout" href="/checkout" data-cro-event="checkout_start" data-cro-label="cart_drawer">كمّل الطلب ←</a>
+    <div class="lbdr-row2">
+      <button class="lbdr-btn lbdr-btn-wa" id="lbdrWa" type="button">💬 كمّل فالواتساب</button>
+      <button class="lbdr-btn lbdr-btn-ghost" id="lbdrKeep" type="button">كمّل التسوّق</button>
+    </div>
+  </div>
+</aside>
+
+<div class="lbqa-sheet" id="lbqaSheet" role="dialog" aria-modal="true" aria-label="اختيار القياس">
+  <div class="lbqa-sheet-in">
+    <div class="lbqa-sheet-h">
+      <b id="lbqaSheetT"></b>
+      <button class="lbqa-sheet-x" id="lbqaSheetX" type="button" aria-label="سدّ">✕</button>
+    </div>
+    <p class="lbqa-sheet-l">اختار القياس قبل ما تزيدها — ما كنختاروش القياس بلاصتك:</p>
+    <div class="lbqa-sheet-szs" id="lbqaSheetSzs"></div>
+    <a class="lbqa-sheet-pdp" id="lbqaSheetPdp" href="#">📏 شوف القياسات والحالة الكاملة ←</a>
+  </div>
+</div>
+
+<div class="lbdr-toast" id="lbdrToast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  if (window.LbassCart) return;
+  var D = document;
+  var root = D.getElementById('lbdr'), scrim = D.getElementById('lbdrScrim'), sheet = D.getElementById('lbqaSheet');
+  var state = { cart: null, open: false, opener: null, busy: false, sheetOpener: null };
+
+  function q(id){ return D.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmt(cents){
+    var v = cents / 100;
+    var s = (v % 1 === 0) ? v.toLocaleString('en-US') : v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    return s + ' درهم';
+  }
+  function stripCode(t){ return String(t).split(' — LBO-')[0].split(' - LBO-')[0].split(' – LBO-')[0]; }
+  function imgSize(src, w){ if (!src) return src; return src + (src.indexOf('?') >= 0 ? '&' : '?') + 'width=' + w; }
+
+  var toastT;
+  function toast(msg){
+    var t = q('lbdrToast'); if (!t) return;
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+  }
+
+  function counts(n){
+    D.querySelectorAll('[data-lbass-count]').forEach(function(b){ b.textContent = n; b.hidden = !n; });
+    ['cartBub','pdpBub'].forEach(function(id){ var b = q(id); if (b){ b.textContent = n; b.hidden = !n; } });
+    var c = q('lbdrCount'); if (c) c.textContent = n ? '(' + n + ')' : '';
+  }
+
+  function render(){
+    var cart = state.cart; if (!cart) return;
+    counts(cart.item_count);
+    var sourceSelect = q('lbdrDiscoverySource');
+    if (sourceSelect && cart.attributes){
+      sourceSelect.value = cart.attributes['منين عرفتي Lbass Original؟'] || '';
+    }
+    var items = q('lbdrItems'), empty = q('lbdrEmpty'), foot = q('lbdrFoot');
+    /* free-shipping progress — real threshold: 500 MAD (checkout rate matches) */
+    var FREE_SHIP = 50000; /* cents */
+    var fs = q('lbdrFship');
+    if (fs){
+      if (!cart.item_count){ fs.hidden = true; }
+      else {
+        fs.hidden = false;
+        var rem = FREE_SHIP - cart.total_price;
+        q('lbdrFshipTxt').innerHTML = rem > 0
+          ? '🚚 باقي ليك <b style="color:var(--gold2,#E0B52A)">' + fmt(rem) + '</b> على التوصيل المجاني'
+          : '🎉 مبروك — التوصيل مجاني على هاد الطلب!';
+        q('lbdrFshipFill').style.width = Math.min(100, (cart.total_price / FREE_SHIP) * 100) + '%';
+      }
+    }
+    if (!cart.item_count){
+      items.innerHTML = ''; empty.hidden = false; foot.hidden = true;
+      return;
+    }
+    empty.hidden = true; foot.hidden = false;
+    q('lbdrTotal').textContent = fmt(cart.total_price);
+    items.innerHTML = cart.items.map(function(it){
+      var cond = it.properties && (it.properties['الحالة'] || it.properties.condition);
+      var meta = [];
+      if (it.variant_title && it.variant_title !== 'Default Title') meta.push('القياس: ' + esc(it.variant_title));
+      if (cond) meta.push(esc(cond));
+      meta.push('قطعة محدودة');
+      return '<div class="lbdr-it">'
+        + (it.image ? '<img class="lbdr-it-img" src="' + esc(imgSize(it.image, 200)) + '" alt="" width="76" height="95" loading="lazy">' : '<span class="lbdr-it-img" aria-hidden="true"></span>')
+        + '<div class="lbdr-it-main">'
+        + (it.vendor ? '<p class="lbdr-it-v">' + esc(it.vendor) + '</p>' : '')
+        + '<a class="lbdr-it-n" href="' + esc(it.url) + '">' + esc(stripCode(it.product_title)) + '</a>'
+        + '<p class="lbdr-it-m">' + meta.join(' · ') + '</p>'
+        + '<div class="lbdr-it-row"><span class="lbdr-it-q">الكمية: ' + it.quantity + '</span><b class="lbdr-it-p">' + fmt(it.final_line_price) + '</b></div>'
+        + '<button type="button" class="lbdr-rm" data-lbdr-rm="' + esc(it.key) + '">✕ حيّدها من السلة</button>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  function refresh(){
+    return fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
+      .then(function(r){ return r.json(); })
+      .then(function(c){ state.cart = c; render(); return c; })
+      .catch(function(){ /* network error: leave current state */ });
+  }
+
+  /* ── focus trap + open/close ── */
+  function focusables(el){
+    return Array.prototype.filter.call(
+      el.querySelectorAll('a[href],button:not([disabled]),input,select,[tabindex]:not([tabindex="-1"])'),
+      function(n){ return n.offsetParent !== null; }
+    );
+  }
+  function keyHandler(e){
+    if (e.key === 'Escape'){
+      if (sheet.classList.contains('show')) { closeSheet(); e.stopPropagation(); return; }
+      if (state.open) close();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    var box = sheet.classList.contains('show') ? sheet : (state.open ? root : null);
+    if (!box) return;
+    var f = focusables(box); if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && D.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && D.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+
+  function open(openerEl){
+    if (state.open) return;
+    state.open = true;
+    track('lbass_cart_opened', { items_count: state.cart ? state.cart.item_count : 0 });
+    state.opener = openerEl || D.activeElement;
+    scrim.hidden = false;
+    /* apply synchronously - rAF is throttled to zero in hidden/background tabs */
+    void scrim.offsetWidth;
+    scrim.classList.add('show');
+    root.classList.add('open');
+    root.setAttribute('aria-hidden', 'false');
+    D.body.style.overflow = 'hidden';
+    D.addEventListener('keydown', keyHandler);
+    var x = q('lbdrX'); if (x) x.focus();
+  }
+  function close(){
+    if (!state.open) return;
+    state.open = false;
+    root.classList.remove('open'); scrim.classList.remove('show');
+    root.setAttribute('aria-hidden', 'true');
+    setTimeout(function(){ scrim.hidden = true; }, 320);
+    D.body.style.overflow = '';
+    D.removeEventListener('keydown', keyHandler);
+    if (state.opener && state.opener.focus) state.opener.focus();
+    state.opener = null;
+  }
+
+  /* ── add / remove ── */
+  /* ── Custom CRO signals. Standard ecommerce is owned by Shopify's app pixels. ── */
+  function track(name, params){
+    params = params || {};
+    if (window.LbassAiAttribution && typeof window.LbassAiAttribution.enrich === 'function') params = window.LbassAiAttribution.enrich(params);
+    try { if (/^lbass_/.test(name) && window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish(name, params); } catch(e){}
+  }
+  function vaultAttribution(){
+    try {
+      var value = JSON.parse(sessionStorage.getItem('lbass_vault_attribution_v1') || 'null');
+      if (!value || !value.ts || (Date.now() - value.ts) > 86400000) return null;
+      return value;
+    } catch(e){ return null; }
+  }
+  function persistVaultAttribution(vault){
+    if (!vault) return;
+    var rootUrl = (window.Shopify && Shopify.routes && Shopify.routes.root) || '/';
+    fetch(rootUrl + 'cart/update.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ attributes: { '__lbass_vault_source': vault.source || 'vault', '__lbass_vault_category': vault.category || 'unknown', '__lbass_vault_touch': vault.touch || 'unknown' } })
+    }).catch(function(){});
+  }
+  function trackAddToCart(variantIds, source){
+    var value = 0, names = [];
+    if (state.cart){
+      state.cart.items.forEach(function(i){
+        if (variantIds.indexOf(i.variant_id) !== -1){ value += i.final_line_price / 100; names.push(i.product_title); }
+      });
+    }
+    var vault = vaultAttribution();
+    if (vault){
+      var params = { currency: 'MAD', value: value, items_count: variantIds.length, source: vault.source || 'vault', category: vault.category || 'unknown', product_id: vault.product_id || '', product_name: vault.product_name || names.join(' + ') };
+      persistVaultAttribution(vault);
+      track('lbass_vault_add_to_cart', params);
+    }
+    track('lbass_add_to_cart', { currency: 'MAD', value: value, items_count: variantIds.length, source: source || 'product_card', product_name: names.join(' + ') });
+  }
+
+  function btnBusy(btn, on){
+    if (!btn) return;
+    btn.classList.toggle('busy', on);
+    if (on) btn.setAttribute('aria-busy', 'true'); else btn.removeAttribute('aria-busy');
+  }
+  function btnDone(btn){
+    if (!btn) return;
+    btn.classList.add('done');
+    var txt = btn.querySelector('.lbqa-txt');
+    var prev = txt ? txt.textContent : null;
+    if (txt) txt.textContent = '✓ تزادت';
+    setTimeout(function(){ btn.classList.remove('done'); if (txt && prev) txt.textContent = prev; }, 1800);
+  }
+
+  function add(variantId, opts){
+    opts = opts || {};
+    variantId = parseInt(variantId, 10);
+    if (!variantId) return Promise.resolve(false);
+    if (state.busy) return Promise.resolve(false);
+    if (state.cart && state.cart.items.some(function(i){ return i.variant_id === variantId; })){
+      toast('راها ديجا فالسلة 👍');
+      open(opts.btn);
+      return Promise.resolve(false);
+    }
+    state.busy = true;
+    btnBusy(opts.btn, true);
+    var payload = { items: [{ id: variantId, quantity: 1 }] };
+    if (opts.props) payload.items[0].properties = opts.props;
+    return fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r){
+      if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(e){ throw Object.assign(new Error('add_failed'), { info: e, status: r.status }); });
+      return r.json();
+    })
+    .then(function(){ return refresh(); })
+    .then(function(){
+      btnDone(opts.btn);
+      toast('✓ تزادت فالسلة');
+      trackAddToCart([variantId], opts.source);
+      open(opts.btn);
+      return true;
+    })
+    .catch(function(err){
+      refresh();
+      if (err && err.status === 422) toast('⚠ هاد الكمية ما بقاتش متوفرة دابا — راجع المخزون أو سولنا فالواتساب.');
+      else toast('⚠ وقع مشكل فالإضافة. عاود جرّب أو سولنا فالواتساب.');
+      return false;
+    })
+    .then(function(success){ state.busy = false; btnBusy(opts.btn, false); return success; });
+  }
+
+  /* ── multi-add for كمّل اللوك Look Builder: one request, drawer opens once ── */
+  function addMany(variantIds, opts){
+    opts = opts || {};
+    var requestedIds = (variantIds || []).map(function(v){ return parseInt(v, 10); }).filter(Boolean);
+    var ids = requestedIds.slice();
+    if (state.cart){
+      ids = ids.filter(function(id){ return !state.cart.items.some(function(i){ return i.variant_id === id; }); });
+    }
+    if (!ids.length){
+      toast(requestedIds.length ? 'كلشي راه ديجا فالسلة 👍' : 'ما كايناش قطعة مؤكدة قابلة للإضافة من هاد اللوك دابا.');
+      if (requestedIds.length) open(opts.btn);
+      return Promise.resolve(0);
+    }
+    if (state.busy) return Promise.resolve();
+    state.busy = true;
+    btnBusy(opts.btn, true);
+    return fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ items: ids.map(function(id){ return { id: id, quantity: 1 }; }) })
+    })
+    .then(function(r){ if (!r.ok) throw new Error('bulk_failed'); return r.json(); })
+    .catch(function(){
+      /* bulk rejected (e.g. one line just sold) — add one by one, skip failures */
+      return ids.reduce(function(p, id){
+        return p.then(function(){
+          return fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ items: [{ id: id, quantity: 1 }] })
+          }).then(function(r){ if (!r.ok) throw new Error('line_failed'); return r.json(); }).catch(function(){});
+        });
+      }, Promise.resolve());
+    })
+    .then(function(){ return refresh(); })
+    .then(function(){
+      var addedIds = state.cart ? ids.filter(function(id){ return state.cart.items.some(function(i){ return i.variant_id === id; }); }) : [];
+      if (addedIds.length === ids.length) toast('✓ اللوك تزاد للسلة');
+      else if (addedIds.length) toast('تزادت ' + addedIds.length + ' من ' + ids.length + ' قطع؛ شي كمية ما بقاتش متوفرة.');
+      else toast('⚠ حتى قطعة ما تزادتش؛ راجع المخزون أو سولنا فالواتساب.');
+      if (addedIds.length){
+        trackAddToCart(addedIds, 'look_builder');
+        track('lbass_look_multi_add', { items_count: addedIds.length, requested_count: ids.length });
+      }
+      open(opts.btn);
+      return addedIds.length;
+    })
+    .catch(function(){ toast('⚠ وقع مشكل فالإضافة. عاود جرّب أو سولنا فالواتساب.'); return 0; })
+    .then(function(result){ state.busy = false; btnBusy(opts.btn, false); return result; });
+  }
+
+  function removeItem(key){
+    fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ id: key, quantity: 0 })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(c){ state.cart = c; render(); toast('تحيّدات من السلة'); track('lbass_cart_item_removed'); })
+    .catch(function(){ toast('⚠ ما قدرناش نحيّدوها — عاود جرّب.'); });
+  }
+
+  /* ── WhatsApp checkout (kept from existing flow) ── */
+  function waCheckout(){
+    var cart = state.cart;
+    if (!cart || !cart.item_count){ toast('السلة خاوية — زيد شي قطعة أولاً'); return; }
+    var lines = cart.items.map(function(it){
+      var sz = (it.variant_title && it.variant_title !== 'Default Title') ? ' · ' + it.variant_title : '';
+      return '▸ ' + (it.vendor ? it.vendor + ' ' : '') + stripCode(it.product_title) + sz + ' = ' + (it.final_line_price / 100) + ' درهم';
+    }).join('\n');
+    /* City is asked for explicitly: Shopify has no Moroccan provinces, so the
+       20 / 40 split cannot be resolved automatically at checkout. The WhatsApp
+       confirmation is where the real city is established and the correct rate
+       applied — see the delivery profile (Marrakech 20 / elsewhere 40 / free 500+). */
+    var msg = 'سلام Lbass Original! 👋\n\nبغيت نطلب:\n\n' + lines + '\n\nالمجموع: ' + (cart.total_price / 100) + ' درهم\nالمدينة ديالي: [اكتب المدينة]\nطريقة الخلاص المفضلة: COD أو PayPal\n\nالتوصيل: 20 درهم داخل مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم\n\nشكراً ليك! 🙏';
+    var vault = vaultAttribution();
+    if (vault) track('lbass_vault_checkout_start', { channel: 'whatsapp', payment_hint: 'cod_or_paypal', value: cart.total_price / 100, currency: 'MAD', source: vault.source || 'vault', category: vault.category || 'unknown' });
+    
+    try {
+      if (typeof window.fbq === 'function') {
+        var contentIds = cart.items.map(function(it){ return it.product_id; });
+        window.fbq('track', 'InitiateCheckout', {
+          content_ids: contentIds,
+          content_type: 'product',
+          value: cart.total_price / 100,
+          currency: 'MAD',
+          num_items: cart.item_count
+        });
+      }
+    } catch(e){}
+    window.open('https://wa.me/491754264425?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  }
+
+  /* ── variant quick-pick sheet ── */
+  function openSheet(data, openerEl){
+    state.sheetOpener = openerEl || D.activeElement;
+    q('lbqaSheetT').textContent = data.n || '';
+    q('lbqaSheetPdp').href = data.u || '#';
+    q('lbqaSheetSzs').innerHTML = data.v.map(function(v){
+      return '<button type="button" class="lbqa-sz" data-lbqa-vid="' + v[0] + '"' + (v[2] ? '' : ' disabled aria-disabled="true"') + '>' + esc(v[1]) + (v[2] ? '' : ' — مباعة') + '</button>';
+    }).join('');
+    sheet.classList.add('show');
+    sheet.dataset.cond = data.c || '';
+    D.body.style.overflow = 'hidden';
+    D.addEventListener('keydown', keyHandler);
+    var f = focusables(sheet); if (f.length) f[0].focus();
+  }
+  function closeSheet(){
+    sheet.classList.remove('show');
+    if (!state.open) { D.body.style.overflow = ''; D.removeEventListener('keydown', keyHandler); }
+    if (state.sheetOpener && state.sheetOpener.focus) state.sheetOpener.focus();
+    state.sheetOpener = null;
+  }
+
+  function handleQuickAdd(btn){
+    if (btn.disabled || btn.classList.contains('busy')) return;
+    var data;
+    try { data = JSON.parse(btn.getAttribute('data-lbqa')); } catch(e){ return; }
+    if (!data || !data.v || !data.v.length) return;
+    var props = data.c ? { 'الحالة': data.c } : null;
+    var avail = data.v.filter(function(v){ return v[2]; });
+    if (!avail.length){ toast('⚠ هاد القطعة ما بقاتش متوفرة.'); return; }
+    if (data.v.length === 1){ add(avail[0][0], { btn: btn, props: props }); }
+    else { openSheet(data, btn); }
+  }
+
+  /* ── delegated events ── */
+  D.addEventListener('click', function(e){
+    var checkout = e.target.closest('#lbdrCheckout');
+    if (checkout){
+      var discoverySelect = q('lbdrDiscoverySource');
+      var discoveryValue = discoverySelect ? discoverySelect.value : '';
+      var savedValue = state.cart && state.cart.attributes ? (state.cart.attributes['منين عرفتي Lbass Original؟'] || '') : '';
+      if (discoveryValue && discoveryValue !== savedValue && window.LbassAiAttribution){
+        e.preventDefault();
+        window.LbassAiAttribution.saveAnswer(discoveryValue).then(function(){ location.href = checkout.href; });
+        return;
+      }
+      var vault = vaultAttribution();
+      if (vault && state.cart) track('lbass_vault_checkout_start', { channel: 'shopify_checkout', payment_hint: 'cod_or_paypal', value: state.cart.total_price / 100, currency: 'MAD', source: vault.source || 'vault', category: vault.category || 'unknown' });
+      
+      try {
+        if (state.cart && typeof window.fbq === 'function') {
+          var contentIds = state.cart.items.map(function(it){ return it.product_id; });
+          window.fbq('track', 'InitiateCheckout', {
+            content_ids: contentIds,
+            content_type: 'product',
+            value: state.cart.total_price / 100,
+            currency: 'MAD',
+            num_items: state.cart.item_count
+          });
+        }
+      } catch(e){}
+      return;
+    }
+    var qa = e.target.closest('[data-lbqa]');
+    if (qa){ e.preventDefault(); e.stopPropagation(); handleQuickAdd(qa); return; }
+    var vz = e.target.closest('[data-lbqa-vid]');
+    if (vz){
+      var props = sheet.dataset.cond ? { 'الحالة': sheet.dataset.cond } : null;
+      var vid = vz.getAttribute('data-lbqa-vid');
+      closeSheet();
+      add(vid, { props: props });
+      return;
+    }
+    var rm = e.target.closest('[data-lbdr-rm]');
+    if (rm){ removeItem(rm.getAttribute('data-lbdr-rm')); return; }
+    var lookAll = e.target.closest('#lookAddAll');
+    if (lookAll){
+      var ids = [];
+      var pf = q('pdpForm');
+      var pfId = pf && pf.querySelector('[name="id"]');
+      if (pfId) ids.push(pfId.value);
+      D.querySelectorAll('#lookGrid [data-look-vid]').forEach(function(w){ ids.push(w.getAttribute('data-look-vid')); });
+      addMany(ids, { btn: lookAll });
+      return;
+    }
+    var lookLink = e.target.closest('#lookGrid [data-look-link]');
+    if (lookLink){ track('lbass_look_click', { url: lookLink.getAttribute('href') }); /* navigation continues */ }
+    var op = e.target.closest('[data-lbass-cart-open]');
+    if (op){ e.preventDefault(); open(op); return; }
+    if (e.target === scrim){ close(); return; }
+    if (e.target === sheet){ closeSheet(); return; }
+    if (e.target.closest('#lbdrX')){ close(); return; }
+    if (e.target.closest('#lbdrKeep')){ close(); return; }
+    if (e.target.closest('#lbdrWa')){ waCheckout(); return; }
+    if (e.target.closest('#lbqaSheetX')){ closeSheet(); return; }
+  });
+
+  D.addEventListener('change', function(e){
+    if (e.target && e.target.id === 'lbdrDiscoverySource' && e.target.value && window.LbassAiAttribution){
+      window.LbassAiAttribution.saveAnswer(e.target.value).then(function(saved){
+        if (saved && state.cart && state.cart.attributes) state.cart.attributes['منين عرفتي Lbass Original؟'] = e.target.value;
+      });
+    }
+  });
+
+  /* ── PDP form enhancement: Ajax add + open drawer instead of page reload ── */
+  function enhancePdpForm(){
+    var pf = q('pdpForm');
+    if (!pf) return;
+    pf.addEventListener('submit', function(e){
+      e.preventDefault();
+      var idInput = pf.querySelector('[name="id"]');
+      if (!idInput) { pf.submit(); return; }
+      var btn = e.submitter || pf._lbassTrigger || q('pdpAdd');
+      pf._lbassTrigger = null;
+      var prev = btn ? (btn.dataset.idleLabel || btn.textContent) : '';
+      var wasDisabled = btn ? btn.disabled : false;
+      var source = btn && btn.dataset.croLabel ? btn.dataset.croLabel : 'pdp_primary';
+      if (btn){
+        btn.dataset.idleLabel = prev;
+        btn.textContent = 'جاري الإضافة…';
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+      }
+      add(idInput.value, { btn: null, source: source }).then(function(success){
+        if (!btn) return;
+        btn.removeAttribute('aria-busy');
+        if (success){
+          btn.classList.add('ok');
+          btn.textContent = '✓ تزادت فالسلة';
+          setTimeout(function(){
+            btn.classList.remove('ok');
+            btn.textContent = btn.dataset.idleLabel || prev;
+            btn.disabled = wasDisabled;
+          }, 1800);
+        } else {
+          btn.textContent = btn.dataset.idleLabel || prev;
+          btn.disabled = wasDisabled;
+        }
+      });
+    });
+  }
+
+  window.LbassCart = { add: add, addMany: addMany, open: open, close: close, refresh: refresh, remove: removeItem, waCheckout: waCheckout };
+
+  /* Look Builder impression — once per PDP view when the section rendered */
+  if (D.querySelector('#lookGrid [data-look-item]')){
+    track('lbass_look_view', { items_count: D.querySelectorAll('#lookGrid [data-look-item]').length });
+  }
+
+  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', function(){ refresh(); enhancePdpForm(); });
+  else { refresh(); enhancePdpForm(); }
+})();
+</script>

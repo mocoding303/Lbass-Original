@@ -1,0 +1,185 @@
+<div class="wrap cart-wrap" dir="rtl">
+  <div class="crumb">
+    <a href="/">الرئيسية</a> › <span>السلة</span>
+  </div>
+
+  <h1 class="cart-h1">السلة ديالك</h1>
+
+  {% if cart.item_count == 0 %}
+    <div class="cart-empty">
+      <div class="cart-empty-ico">🛍️</div>
+      <p class="cart-empty-t">السلة خاوية دابا</p>
+      <p class="cart-empty-s">دوّر فالكولكسيون و زيد اللي عجبك.</p>
+      <a href="/collections/all" class="btn btn-c">شوف الكولكسيون</a>
+    </div>
+  {% else %}
+    {% assign free_ship_threshold = 500 %}
+    {% assign free_ship_threshold_cents = free_ship_threshold | times: 100 %}
+    {% assign remaining = free_ship_threshold_cents | minus: cart.total_price | divided_by: 100.0 %}
+    <div class="cart-ship-bar">
+      {% if cart.total_price >= free_ship_threshold_cents %}
+        <p class="cart-ship-msg ok">🎉 مبروك! التوصيل مجاني لكل المغرب.</p>
+      {% else %}
+        <p class="cart-ship-msg">🚚 باقي ليك <b>{{ remaining | round }} درهم</b> و التوصيل مجاني لكل المغرب.</p>
+      {% endif %}
+      <div class="cart-ship-track"><div class="cart-ship-fill" style="width:{{ cart.total_price | times: 100.0 | divided_by: free_ship_threshold_cents | at_most: 100 }}%"></div></div>
+    </div>
+
+    <form action="/cart" method="post" novalidate class="cart-form">
+      <div class="cart-items">
+        {% for item in cart.items %}
+          <div class="ci-row">
+            <a class="ci-img" href="{{ item.url }}">
+              {% if item.image %}
+                <img src="{{ item.image | image_url: width: 240 }}" alt="{{ item.title | escape }}" loading="lazy" width="120" height="120">
+              {% else %}
+                <span class="ci-img-ph">{{ item.vendor | slice: 0, 1 | upcase }}</span>
+              {% endif %}
+            </a>
+            <div class="ci-info">
+              <p class="ci-vendor">{{ item.vendor }}</p>
+              <a class="ci-title" href="{{ item.url }}">{{ item.product.title }}</a>
+              {% unless item.variant_title == 'Default Title' or item.variant_title == blank %}
+                <p class="ci-variant">القياس: {{ item.variant_title }}</p>
+              {% endunless %}
+              {% if item.product.metafields.lbass.product_code != blank %}
+                <p class="ci-code">{{ item.product.metafields.lbass.product_code }}</p>
+              {% endif %}
+            </div>
+            <div class="ci-controls">
+              <div class="ci-qty">
+                <a class="qbtn" href="{{ item.url_to_remove }}" aria-label="حيّد القطعة">✕</a>
+                <span class="qval">×{{ item.quantity }}</span>
+              </div>
+              <div class="ci-price">{{ item.final_line_price | money }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="cart-foot">
+        <div class="cart-totals">
+          <div class="ct-row"><span>المجموع الفرعي</span><span>{{ cart.total_price | money }}</span></div>
+          {% if cart.total_price >= free_ship_threshold_cents %}
+            <div class="ct-row"><span>التوصيل</span><span class="ct-free">مجاني</span></div>
+          {% else %}
+            <div class="ct-row"><span>التوصيل</span><span>يحسب فالخلاص</span></div>
+          {% endif %}
+          <div class="ct-row ct-total"><span>المجموع</span><span>{{ cart.total_price | money }}</span></div>
+        </div>
+
+        <div class="cart-cod-info">
+          <div class="cod-badge">💳 <b>طريقتين ديال الخلاص — فيك الاختيار</b></div>
+          <ul>
+            <li><b>COD</b> (كاش عند الاستلام) — ما تدفع والو حتى توصلك القطعة</li>
+            <li><b>PayPal</b> — ادفع أونلاين بأمان (مفيد إلا كنت خارج المغرب)</li>
+            <li>غادي نتاصلو بيك فالواتساب لتأكيد قبل الشحن</li>
+            <li>مدة وثمن التوصيل كيتأكدو حسب المدينة وشركة التوصيل قبل الشحن</li>
+          </ul>
+        </div>
+
+        <div class="cart-actions">
+          {% assign discovery_source = cart.attributes['منين عرفتي Lbass Original؟'] %}
+          <div class="cart-source">
+            <label for="cartDiscoverySource">منين عرفتي Lbass Original؟ <span>(اختياري)</span></label>
+            <select id="cartDiscoverySource" name="attributes[منين عرفتي Lbass Original؟]">
+              <option value="">اختار إلا بغيتي</option>
+              <option value="Instagram"{% if discovery_source == 'Instagram' %} selected{% endif %}>Instagram</option>
+              <option value="TikTok"{% if discovery_source == 'TikTok' %} selected{% endif %}>TikTok</option>
+              <option value="Google"{% if discovery_source == 'Google' %} selected{% endif %}>Google</option>
+              <option value="ChatGPT"{% if discovery_source == 'ChatGPT' %} selected{% endif %}>ChatGPT</option>
+              <option value="Perplexity"{% if discovery_source == 'Perplexity' %} selected{% endif %}>Perplexity</option>
+              <option value="صديق / Friend"{% if discovery_source == 'صديق / Friend' %} selected{% endif %}>صديق / Friend</option>
+              <option value="WhatsApp"{% if discovery_source == 'WhatsApp' %} selected{% endif %}>WhatsApp</option>
+              <option value="Other"{% if discovery_source == 'Other' %} selected{% endif %}>شي مصدر آخر / Other</option>
+            </select>
+            <small>ماشي ضروري باش تكمل الطلب.</small>
+          </div>
+          <button type="submit" name="checkout" class="btn btn-g cart-checkout" data-vault-cart-checkout>كمّل الطلب ←</button>
+          <a href="/collections/all" class="btn btn-line cart-continue">↩ كمّل التسوّق</a>
+        </div>
+
+        <p class="cart-note">💬 بغيت المساعدة؟ <a href="https://wa.me/491754264425" target="_blank" rel="noopener">سول فالواتساب</a> أو <a href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a>.</p>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
+<style>
+.cart-wrap{padding:30px 24px 60px;max-width:980px}
+.cart-h1{font-size:clamp(28px,4vw,40px);font-weight:900;color:var(--cream);margin:8px 0 24px}
+.cart-empty{text-align:center;padding:60px 20px;border:1px dashed var(--line);border-radius:20px}
+.cart-empty-ico{font-size:64px;margin-bottom:14px;opacity:.6}
+.cart-empty-t{font-size:20px;font-weight:800;color:var(--cream);margin-bottom:6px}
+.cart-empty-s{color:var(--txt2);margin-bottom:20px}
+.cart-empty .btn{display:inline-block;padding:13px 26px}
+.cart-ship-bar{background:var(--ink2);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:24px}
+.cart-ship-msg{margin:0 0 10px;color:var(--cream);font-weight:700;font-size:14px}
+.cart-ship-msg.ok{color:#37c97a}
+.cart-ship-msg b{color:var(--gold)}
+.cart-ship-track{height:6px;background:var(--ink3);border-radius:6px;overflow:hidden}
+.cart-ship-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s ease}
+.cart-items{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.ci-row{display:grid;grid-template-columns:120px 1fr auto;gap:18px;background:var(--ink2);border:1px solid var(--line);border-radius:14px;padding:14px;align-items:center}
+.ci-img{display:block;width:120px;height:120px;border-radius:10px;overflow:hidden;background:var(--ink3);position:relative}
+.ci-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ci-img-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:900;font-size:32px;font-family:var(--lt,sans-serif)}
+.ci-info{min-width:0}
+.ci-vendor{color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;direction:ltr;margin:0 0 6px}
+.ci-title{display:block;color:var(--cream);font-weight:800;font-size:15px;line-height:1.35;margin-bottom:6px;text-decoration:none}
+.ci-title:hover{color:var(--gold)}
+.ci-variant,.ci-code{color:var(--txt2);font-size:12px;margin:2px 0}
+.ci-code{direction:ltr;font-family:var(--lt,monospace);color:var(--txt3)}
+.ci-controls{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.ci-qty{display:flex;align-items:center;gap:10px}
+.qbtn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--ink3);color:var(--txt2);display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:14px;transition:all .15s}
+.qbtn:hover{color:#ff6b6b;border-color:#ff6b6b}
+.qval{color:var(--cream);font-weight:700;font-size:14px}
+.ci-price{color:var(--gold);font-weight:900;font-size:18px;direction:ltr}
+.cart-foot{border-top:1px solid var(--line);padding-top:24px}
+.cart-totals{margin-bottom:20px}
+.ct-row{display:flex;justify-content:space-between;padding:8px 0;color:var(--txt);font-weight:700;font-size:15px}
+.ct-row.ct-total{border-top:1px solid var(--line);margin-top:8px;padding-top:14px;font-size:20px;color:var(--cream);font-weight:900}
+.ct-row.ct-total span:last-child{color:var(--gold);direction:ltr}
+.ct-free{color:#37c97a}
+.cart-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.cart-source{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--ink2);text-align:right}
+.cart-source label{display:block;margin-bottom:7px;color:var(--cream);font-weight:900;font-size:14px}
+.cart-source label span,.cart-source small{color:var(--txt3);font-weight:700;font-size:11.5px}
+.cart-source select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:9px;background:var(--ink);color:var(--cream);padding:10px 12px;font:inherit}
+.cart-source small{display:block;margin-top:6px}
+.cart-checkout{padding:16px;font-size:16px;width:100%}
+.cart-continue{padding:13px;font-size:14px;width:100%;background:transparent;border:1px solid var(--line);color:var(--txt2)}
+.cart-continue:hover{border-color:var(--gold);color:var(--gold)}
+.btn-line{background:transparent;border:1px solid var(--line);color:var(--txt2)}
+.cart-note{text-align:center;color:var(--txt3);font-size:13px;margin:8px 0 0}
+.cart-note a{color:var(--gold);font-weight:700}
+.cart-cod-info{background:var(--ink2);border:1px solid var(--gold-br);border-radius:14px;padding:14px 18px;margin-bottom:18px}
+.cod-badge{color:var(--cream);font-weight:800;font-size:14px;margin-bottom:8px}
+.cod-badge b{color:var(--gold)}
+.cart-cod-info ul{margin:0;padding-inline-start:18px;color:var(--txt);font-size:12.5px;line-height:1.7}
+.cart-cod-info li{margin:2px 0}
+@media(max-width:640px){
+  .ci-row{grid-template-columns:90px 1fr;gap:12px;padding:12px}
+  .ci-img{width:90px;height:90px}
+  .ci-controls{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+  .ci-controls{flex-direction:row}
+}
+</style>
+
+{% if cart.item_count > 0 %}
+<script>
+(function(){
+  var button=document.querySelector('[data-vault-cart-checkout]');
+  if(!button)return;
+  button.addEventListener('click',function(){
+    try{
+      var vault=JSON.parse(sessionStorage.getItem('lbass_vault_attribution_v1')||'null');
+      if(!vault||!vault.ts||(Date.now()-vault.ts)>86400000)return;
+      var params={channel:'cart_page',payment_hint:'cod_or_paypal',value:{{ cart.total_price | divided_by: 100.0 | json }},currency:'MAD',source:vault.source||'vault',category:vault.category||'unknown'};
+      if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish('lbass_vault_checkout_start',params);
+    }catch(e){}
+  });
+})();
+</script>
+{% endif %}

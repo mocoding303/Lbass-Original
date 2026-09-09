@@ -1,0 +1,86 @@
+{%- comment -%}
+  LBASS — HOMEPAGE ABOVE-THE-FOLD DENSITY (2026-08-10)
+  Homepage only. Rendered from snippets/lbass-cro-tracking.liquid.
+
+  ═══ WHAT THE PROBLEM ACTUALLY WAS ═══
+  Measured on the live homepage at 901×1034:
+      hero bottom ................ 1177px  (100svh)
+      first product CARD ......... 2786px
+      scroll needed to see it .... 1752px  ≈ 1.7 viewports
+
+  The brief assumed padding. It wasn't. Between the hero and THE DROP sat five
+  full sections totalling 1389px:
+      .mq marquee ........  63px
+      .lb-answer ......... 173px
+      .trust-strip ....... 138px
+      .intent-moments .... 277px
+      .sec.inspect ....... 666px   ← the real blocker
+  Section padding is only ~57px each, so zeroing ALL of it recovers ~250px of
+  1752. Trimming padding alone could not have solved this. The lever is ORDER.
+
+  ═══ WHY CSS ORDER AND NOT MOVING MARKUP ═══
+  All 13 sections are direct children of <main>. templates/index.liquid is
+  236KB and has already been the source of one storefront outage; cutting and
+  re-pasting a section inside it is exactly the risky operation to avoid.
+  Flex `order` achieves the same visual result, is reversible by deleting this
+  file, and touches no markup.
+
+  DOM order is preserved for SEO and for screen readers that follow source
+  order — only the visual order changes. The .lb-answer AEO block still sits
+  early in the HTML where answer engines read it; it simply renders below the
+  products now.
+
+  ═══ THE ORDER ═══
+  hero → marquee → THE DROP (products) → answer → trust → intent → inspect →
+  everything else in its original sequence.
+
+  `main > *{order:10}` is required: flex items default to order:0, so without
+  it every un-numbered section would jump ABOVE the numbered ones. Equal-order
+  items keep DOM order, so the remaining seven sections stay in sequence.
+
+  ═══ FLEX CAVEAT ═══
+  Making <main> a flex column disables margin collapsing between sections.
+  Verified after the change that this did not introduce extra vertical gaps —
+  these sections use padding, not margin, for rhythm.
+{%- endcomment -%}
+
+<style>
+/* ── 1. hero: 100svh → 82svh desktop, 76svh mobile ───────────────────────
+   Keeps the badge, animated H1, both CTAs and the chips above the fold —
+   verified — while returning ~190px to the page. */
+.lbh{min-height:82svh!important}
+@supports not (min-height:82svh){ .lbh{min-height:82vh!important} }
+@media(max-width:767px){
+  .lbh{min-height:76svh!important}
+  @supports not (min-height:76svh){ .lbh{min-height:76vh!important} }
+}
+
+/* ── 2. visual reorder: products immediately after the marquee ────────── */
+main{display:flex;flex-direction:column}
+main > *{order:10}
+main > .lbh,
+main > #top{order:0}
+main > .mq{order:1}
+main > #drop{order:2}          /* THE DROP — products */
+main > .lb-answer{order:3}
+main > .trust-strip{order:4}
+main > .intent-moments{order:5}
+main > #inspection{order:6}
+
+/* The homepage already has one full trust reminder and one brand story.
+   Suppress the repeated second/third versions so mobile visitors reach
+   discovery, proof and the footer without another copy of the same pitch. */
+main > .story-secondary,
+main > .value-reminder.alt,
+main > .value-reminder.dark{display:none!important}
+
+/* ── 3. tighten the seam, not the whole page ──────────────────────────────
+   Only the two edges that meet above the fold are trimmed (~35%). Sections
+   further down keep their original rhythm so the page does not read as
+   cramped once the customer is scrolling. */
+main > .mq{padding-block:11px!important}
+main > #drop{padding-top:38px!important}
+@media(max-width:767px){
+  main > #drop{padding-top:28px!important}
+}
+</style>

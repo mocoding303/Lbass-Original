@@ -1,0 +1,576 @@
+{% layout none %}
+<!DOCTYPE html>
+<html lang="ar-MA" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>VAULT — قطع عندها قيمة أكثر | Lbass Original</title>
+<meta name="description" content="The Vault من Lbass Original — اختيار من القطع المتوفرة ذات القيمة الأعلى، بصور حقيقية، وحالة ومخزون واضحين حسب كل منتج.">
+<link rel="canonical" href="https://www.lbassoriginal.com/pages/vault">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#FFFFFF">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lbass Original">
+<meta property="og:locale" content="ar_MA">
+<meta property="og:title" content="VAULT — Lbass Original">
+<meta property="og:description" content="قطع مختارة من المتوفر دابا، بصور حقيقية وحالة ومخزون حسب كل منتج.">
+<meta property="og:url" content="https://www.lbassoriginal.com/pages/vault">
+<meta property="og:image" content="https:{{ 'hero-lifestyle-3b.webp' | asset_url }}">
+<link rel="icon" href="{{ 'lbass-favicon-96.png' | asset_url }}" type="image/png" sizes="96x96">
+<link rel="shortcut icon" href="{{ 'lbass-favicon-96.png' | asset_url }}" type="image/png">
+<link rel="apple-touch-icon" href="{{ 'lbass-apple-touch-icon-180.png' | asset_url }}" sizes="180x180">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Alexandria:wght@400;700;900&family=Epilogue:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+{%- comment -%}
+  VAULT — REDESIGNED 2026-07-31 to the house identity.
+
+  This page uses {% layout none %}, so it does NOT inherit snippets/lbass-stamp
+  and gets none of the site tokens. It previously shipped its own DARK theme
+  (#0A0A0B ground, #C89A0E gold, 10–50px radii, Space Grotesk) while the rest
+  of the storefront is a LIGHT editorial system. Same brand, two identities.
+
+  Tokens below are copied from the live site so the two match exactly:
+     ink #0B0B0C · ink-2 #3A3A3C · bone #FFFFFF · bone-2 #F4F2ED
+     rule-soft rgba(11,11,12,.14) · red #BF2E15
+     display Anton · arabic Alexandria/Tajawal · latin Epilogue
+  Radius is 0 everywhere — the house style is hard-edged.
+
+  TWO THINGS THAT ONLY BITE BECAUSE OF {% layout none %} — do not remove:
+  1. The logo filter. lbass-wordmark-horizontal.svg and lbass-monogram.svg
+     hardcode cream (#F4EFE6) + gold (#C89A0E) for the OLD dark theme and expose
+     no currentColor, so on a white ground they render invisible. The light site
+     neutralises them in lbass-stamp with `filter:brightness(0)`. This page never
+     inherits that rule, so it is repeated below — same property, same value.
+  2. --red-lift. The brand red #BF2E15 on the ink CTA band measures only 3.39:1,
+     which fails WCAG AA. #F2603F is the same hue lifted to ~6.1:1 and is used
+     ONLY on ink grounds. Keep #BF2E15 everywhere on light grounds.
+{%- endcomment -%}
+<style>
+:root{
+  --ink:#0B0B0C; --ink-2:#3A3A3C; --ink-3:#6B6B6E;
+  --bone:#FFFFFF; --bone-2:#F4F2ED; --bone-3:#EDEAE3;
+  --rule:rgba(11,11,12,.14); --rule-hard:#0B0B0C;
+  --red:#BF2E15; --red-dark:#8F1F0D;
+  --red-lift:#F2603F;            /* red for use ON ink — AA-safe (~6.1:1) */
+  --ar:'Alexandria','Tajawal',system-ui,sans-serif;
+  --dp:'Anton',Impact,sans-serif;
+  --lt:'Epilogue',system-ui,sans-serif;
+  --pad:clamp(18px,5vw,64px); --max:1500px; --tr:.2s cubic-bezier(.4,0,.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bone);color:var(--ink);font-family:var(--ar);font-size:16px;line-height:1.7;overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;font-size:inherit}
+::selection{background:var(--ink);color:var(--bone)}
+.num{font-family:var(--lt);direction:ltr;unicode-bidi:embed;font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+
+/* Wordmark/monogram assets are dark-theme artwork (see header comment). */
+.brand-logo,.brand-monogram,.foot-logo{filter:brightness(0)}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:55;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--pad);background:var(--bone);border-bottom:1px solid var(--rule-hard)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{display:block;width:clamp(150px,15vw,190px);height:auto}
+.brand-monogram{display:none;width:36px;height:36px}
+.nav-back{display:inline-flex;align-items:center;height:40px;padding:0 16px;border:1px solid var(--rule-hard);color:var(--ink);font-weight:800;font-size:13.5px;transition:var(--tr)}
+.nav-back:hover{background:var(--ink);color:var(--bone)}
+@media(max-width:520px){.brand-logo{width:144px}}
+@media(max-width:380px){.brand-logo{display:none}.brand-monogram{display:block}}
+
+/* ── HERO ── */
+.vault-hero{position:relative;padding:clamp(48px,8vw,104px) var(--pad) clamp(34px,5vw,64px);background:var(--bone-2);border-bottom:1px solid var(--rule-hard);overflow:hidden}
+.vault-hero-in{max-width:var(--max);margin:0 auto;position:relative;z-index:2}
+.vh-kick{font-family:var(--dp);font-weight:400;letter-spacing:.28em;color:var(--red);font-size:14px;margin-bottom:18px;display:inline-flex;align-items:center;gap:14px;direction:ltr}
+.vh-kick::before,.vh-kick::after{content:"";width:34px;height:2px;background:var(--red)}
+.vh-h{font-family:var(--ar);font-size:clamp(38px,7vw,84px);font-weight:900;line-height:1.05;color:var(--ink);margin-bottom:18px;letter-spacing:-.01em}
+.vh-h em{font-style:normal;color:var(--red)}
+.vh-sub{font-size:clamp(15px,1.7vw,18px);color:var(--ink-2);max-width:62ch;margin-bottom:26px;line-height:1.8;font-weight:500}
+.vh-sub b{color:var(--ink);font-weight:900}
+.vh-stats{display:flex;flex-wrap:wrap;gap:clamp(20px,3vw,44px);padding-top:20px;border-top:1px solid var(--rule-hard)}
+.vh-stat b{font-family:var(--dp);font-weight:400;font-size:clamp(24px,3vw,34px);color:var(--ink);display:block;direction:ltr;line-height:1.1}
+.vh-stat span{font-family:var(--lt);font-size:11.5px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+
+/* ── WHY VAULT ── */
+.why{padding:clamp(40px,6vw,72px) var(--pad);background:var(--bone)}
+.why-in{max-width:var(--max);margin:0 auto}
+.why-kick{font-family:var(--lt);font-weight:700;letter-spacing:.16em;color:var(--red);font-size:12px;margin-bottom:10px;text-transform:uppercase}
+.why-h{font-size:clamp(26px,4vw,40px);font-weight:900;line-height:1.15;color:var(--ink);margin-bottom:30px}
+.why-h em{font-style:normal;color:var(--red)}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--rule-hard)}
+.why-card{padding:26px 24px;border-inline-start:1px solid var(--rule-hard);transition:var(--tr)}
+.why-card:first-child{border-inline-start:0}
+.why-card:hover{background:var(--bone-2)}
+.why-num{font-family:var(--dp);font-weight:400;color:var(--red);font-size:20px;direction:ltr;display:block;margin-bottom:12px}
+.why-card b{display:block;color:var(--ink);font-size:18px;margin-bottom:8px;font-weight:900}
+.why-card p{color:var(--ink-2);font-size:14px;line-height:1.75;font-weight:500}
+@media(max-width:780px){.why-grid{grid-template-columns:1fr}.why-card{border-inline-start:0;border-top:1px solid var(--rule-hard)}.why-card:first-child{border-top:0}}
+
+/* ── FILTER BAR ── */
+.fbar{padding:clamp(16px,2.5vw,24px) var(--pad);background:var(--bone);border-block:1px solid var(--rule-hard);position:sticky;top:70px;z-index:50}
+.fbar-in{max-width:var(--max);margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.fbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fbar-lbl{font-family:var(--lt);font-weight:700;color:var(--ink-3);font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;margin-inline-end:4px}
+.fchip{display:inline-flex;align-items:center;height:38px;padding:0 15px;border:1px solid var(--rule-hard);color:var(--ink);font-weight:800;font-size:13px;background:var(--bone);cursor:pointer;transition:var(--tr);font-family:var(--ar)}
+.fchip:hover{background:var(--bone-2)}
+.fchip.on{background:var(--ink);border-color:var(--ink);color:var(--bone)}
+.fsort{margin-inline-start:auto;display:flex;align-items:center;gap:10px}
+.fsort select{appearance:none;background:var(--bone);border:1px solid var(--rule-hard);border-radius:0;height:38px;padding:0 34px 0 14px;color:var(--ink);font-family:var(--ar);font-weight:800;font-size:13px;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.fsort select:focus{outline:none;border-color:var(--red)}
+@media(max-width:640px){.fbar{position:relative;top:0}.fsort{width:100%;justify-content:space-between}}
+
+/* ── PRODUCT GRID ── */
+.vault-main{padding:clamp(26px,4vw,44px) var(--pad) clamp(40px,6vw,76px);background:var(--bone);flex:1}
+.vault-main-in{max-width:var(--max);margin:0 auto}
+.vcount{font-size:13px;color:var(--ink-2);font-weight:700;margin-bottom:18px;font-family:var(--lt)}
+.vcount b{color:var(--ink);font-family:var(--dp);font-weight:400;font-size:18px;direction:ltr;margin-inline-end:4px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:clamp(14px,2vw,22px);transition:opacity .2s ease}
+.vgrid.busy{opacity:.45;pointer-events:none}
+.vcard{display:block;position:relative;border:1px solid var(--rule-hard);background:var(--bone);transition:transform .3s cubic-bezier(.7,0,.3,1),box-shadow var(--tr)}
+.vcard:hover{transform:translateY(-3px);box-shadow:8px 8px 0 var(--ink)}
+.vcard.hidden{display:none}
+.vc-img{position:relative;aspect-ratio:4/5;background:var(--bone-2);overflow:hidden;border-bottom:1px solid var(--rule-hard)}
+.vc-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.3,1)}
+.vcard:hover .vc-img img{transform:scale(1.06)}
+.vc-badges{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:5px;z-index:2;align-items:flex-end}
+/* ═══ CONDITION BADGE — MUST CARRY ITS OWN PLATE (2026-08-27) ═══
+   .vc-badges is position:absolute over the product PHOTO (see rule above), so a
+   badge with no background inherits whatever the photograph happens to be. This
+   rule used to declare no background and no shadow, only near-black type, so the
+   condition label vanished on any dark or busy image — reported on the black
+   North Face puffer, where it sat on a dark object and was unreadable.
+
+   snippets/lbass-stamp.liquid:828 already tries to fix exactly this
+   (`.vc-badge{background:rgba(255,255,255,.94)!important}`) and never applies:
+   THIS TEMPLATE DOES NOT RENDER lbass-stamp — page.vault.liquid renders only
+   lbass-cart-drawer. Do not "fix" this by loading the stamp snippet here; that
+   pulls in a whole homepage stylesheet. The plate is declared locally instead,
+   with the same values the stamp intended so the two can never disagree.
+
+   The two modifier badges below (.vc-bvault, .vc-bnew) come LATER at equal
+   specificity and set their own background/colour/border, so they still win.
+   Keep them after this rule. */
+.vc-badge{font-family:var(--ar);font-weight:800;font-size:11px;letter-spacing:normal;padding:6px 10px;border-radius:0;line-height:1.25;display:inline-block;background:rgba(255,255,255,.94);color:#0B0B0C;border:1px solid rgba(11,11,12,.22);box-shadow:0 1px 3px rgba(11,11,12,.18);backdrop-filter:saturate(140%) blur(2px);-webkit-backdrop-filter:saturate(140%) blur(2px)}
+/* ink plate + bone type — identical to the site-wide badge system */
+.vc-bvault{background:var(--ink);color:#F2F0EB;border:1px solid rgba(242,240,235,.28);font-family:var(--lt);letter-spacing:.12em;font-size:10px;font-weight:700}
+/* red stays reserved for جديد, exactly as site-wide */
+.vc-bnew{background:var(--red);color:#FFFFFF;border:1px solid rgba(255,255,255,.34)}
+.vc-info{padding:15px 16px 18px}
+.vc-vendor{font-family:var(--lt);font-weight:700;font-size:11px;letter-spacing:.14em;color:var(--red);text-transform:uppercase;direction:ltr}
+.vc-title{font-size:15.5px;font-weight:900;color:var(--ink);margin:6px 0 12px;line-height:1.35;min-height:2.7em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:11px;border-top:1px solid var(--rule)}
+.vc-price{font-family:var(--dp);font-weight:400;font-size:22px;color:var(--ink);direction:ltr;line-height:1}
+.vc-old{font-family:var(--lt);font-weight:500;font-size:13px;color:var(--ink-3);text-decoration:line-through;direction:ltr;margin-inline-start:6px}
+.vc-uniq{font-family:var(--lt);font-size:10.5px;font-weight:700;color:var(--bone);background:var(--red);padding:4px 9px;letter-spacing:.08em;direction:ltr}
+
+.vempty{text-align:center;padding:56px 20px;color:var(--ink-2);border:1px solid var(--rule-hard);background:var(--bone-2)}
+.vempty b{display:block;color:var(--ink);font-size:20px;margin-bottom:10px;font-weight:900}
+.vempty a{color:var(--red);font-weight:900;text-decoration:underline}
+
+/* ── CTA STRIP ── (ink band — uses --red-lift, never --red) */
+.vcta{padding:clamp(40px,6vw,72px) var(--pad);background:var(--ink);border-top:1px solid var(--rule-hard);text-align:center}
+.vcta-in{max-width:760px;margin:0 auto}
+.vcta h2{font-size:clamp(24px,3.5vw,36px);font-weight:900;color:var(--bone);line-height:1.2;margin-bottom:14px}
+.vcta h2 em{font-style:normal;color:var(--red-lift)}
+.vcta p{color:rgba(255,255,255,.78);font-size:15.5px;margin-bottom:24px;font-weight:500}
+/* p.vcta-kick, not .vcta-kick: `.vcta p` is (0,1,1) and would otherwise win. */
+.vcta p.vcta-kick{font-family:var(--lt);font-weight:700;letter-spacing:.16em;color:var(--red-lift);font-size:12px;margin-bottom:12px;text-transform:uppercase}
+.vcta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:900;font-size:15px;padding:15px 30px;border-radius:0;transition:var(--tr);font-family:var(--ar)}
+.vcta-btn:hover{background:var(--red-dark)}
+.vcta-btn svg{width:20px;height:20px;fill:currentColor}
+
+/* ── FOOTER ── */
+.foot{border-top:1px solid var(--rule-hard);background:var(--bone);padding:30px var(--pad);text-align:center;color:var(--ink-2);font-size:13.5px}
+.foot a{color:var(--ink);margin:0 8px;font-weight:800}
+.foot a:hover{color:var(--red)}
+.foot-logo{display:block;width:168px;height:auto;margin:0 auto 14px}
+
+/* ── WHATSAPP FLOAT ── (circular: matches the float used site-wide) */
+.wa-float{position:fixed;bottom:24px;right:24px;z-index:80;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(0,0,0,.22);transition:transform .25s ease,background .25s ease}
+.wa-float:hover{transform:scale(1.1);background:#20c157}
+.wa-float svg{width:27px;height:27px;fill:#fff}
+@media(max-width:640px){.wa-float{bottom:18px;right:16px;width:52px;height:52px}}
+
+/* ── REVEAL ── */
+.rev{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1)}
+.rev.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}.vcard:hover{transform:none;box-shadow:none}.vcard:hover .vc-img img{transform:none}}
+</style>
+{{ content_for_header }}
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" aria-label="القائمة">
+  <a class="brand" href="/" aria-label="Lbass Original — الرئيسية">
+    <img class="brand-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64">
+    <img class="brand-monogram" src="{{ 'lbass-monogram.svg' | asset_url }}" alt="Lbass Original" width="128" height="128">
+  </a>
+  <a class="nav-back" href="/">→ رجع للرئيسية</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<header class="vault-hero">
+  <div class="vault-hero-in">
+    <p class="vh-kick rev">THE VAULT</p>
+    <h1 class="vh-h rev">قطع <em>عندها قيمة أكثر.</em></h1>
+    <p class="vh-sub rev">اختيار محدود من القطع المتوفرة ذات القيمة الأعلى. الحالة والمخزون كيبانو فصفحة كل منتج، وشارة <b>1/1</b> كتظهر غير ملي Shopify كيأكد قطعة وحدة.</p>
+    <div class="vh-stats rev">
+      <div class="vh-stat"><b>STOCK</b><span>حسب كل منتج</span></div>
+      <div class="vh-stat"><b>DETAILS</b><span>حسب التأكيد</span></div>
+      <div class="vh-stat"><b>COD</b><span>أو PayPal</span></div>
+      <div class="vh-stat"><b>700+</b><span>درهم — عتبة الفولت</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ WHY VAULT ═══ -->
+<section class="why" aria-labelledby="why-h">
+  <div class="why-in">
+    <p class="why-kick rev">شنو كيخلي قطعة Vault؟</p>
+    <h2 class="why-h rev" id="why-h">٣ شروط، <em>وحدة كتكفي</em></h2>
+    <div class="why-grid">
+      <div class="why-card rev"><span class="why-num">01</span><b>براند مطلوب</b><p>Nike، Jordan، Adidas، Karl Kani، Levi's… براندات اللي ثمن الجديد ديالها كيتعدى بكثير، وعندها قيمة فالسوق ولا فالستايل.</p></div>
+      <div class="why-card rev"><span class="why-num">02</span><b>ستايل مميز</b><p>مخزون محدود أو قطعة بستايل مميز — التوفر الحقيقي كيبان فصفحة المنتج.</p></div>
+      <div class="why-card rev"><span class="why-num">03</span><b>حالة موضحة</b><p>الحالة كتختلف بين القطع، وكنبيّنو غير المعلومات والملاحظات المؤكدة فصفحة المنتج.</p></div>
+    </div>
+  </div>
+</section>
+
+{% comment %}
+  ═══ VAULT ELIGIBILITY ═══
+
+  RULE (owner, 2026-07-31): only products above 700 MAD belong on this page.
+
+  vault_floor is in CENTS, because Liquid's product.price is in cents.
+      70000 = 700.00 MAD
+  This is the ONLY place the floor is defined. Change it here.
+
+  The floor gates BOTH paths, and that is deliberate:
+    a) the `vault` tag — an explicit tag is "eligible for the Vault", NOT an
+       override. A tagged piece that gets marked down below the floor drops off
+       the page by itself, and climbs back on if it is repriced up. That is why
+       the tag is left in place rather than removed: the price decides.
+       (This is exactly what happened to the Nike Green Navy Puffer — tagged,
+       repriced 799 -> 600, and it must not sit on a page selling "value".)
+    b) the pad below — previously unbounded, so untagging cheap pieces did
+       nothing: they were the top-priced products, so the pad pulled them right
+       back onto a page whose promise is "قطع عندها قيمة أكثر".
+
+  The Vault may therefore render fewer than 6 items — or none. That is correct:
+  a thin honest Vault beats a padded one. Raise stock, not the pad.
+{% endcomment %}
+{% assign vault_floor = 70000 %}
+{% assign all_avail = collections.all.products | where: 'available', true %}
+{% capture vault_pool %},{% for p in all_avail %}{% if p.tags contains 'vault' and p.price >= vault_floor %}{{ p.id }},{% endif %}{% endfor %}{% endcapture %}
+{% assign tagged_count = vault_pool | split: ',' | size | minus: 1 %}
+
+{% if tagged_count < 6 %}
+  {% assign fallback_sorted = all_avail | sort: 'price' | reverse %}
+  {% for p in fallback_sorted limit: 14 %}
+    {% if p.price >= vault_floor %}
+      {% capture id_marker %},{{ p.id }},{% endcapture %}
+      {% unless vault_pool contains id_marker %}
+        {% assign vault_pool = vault_pool | append: p.id | append: ',' %}
+      {% endunless %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% assign vault_count = vault_pool | split: ',' | size | minus: 1 %}
+
+{% comment %} Collect unique brands for filter chips ─ only from products actually in vault_pool {% endcomment %}
+{% assign brand_list = '' %}
+{% for p in all_avail %}
+  {% capture id_marker %},{{ p.id }},{% endcapture %}
+  {% if vault_pool contains id_marker %}
+    {% unless brand_list contains p.vendor %}{% assign brand_list = brand_list | append: p.vendor | append: '|' %}{% endunless %}
+  {% endif %}
+{% endfor %}
+{% assign brands = brand_list | split: '|' %}
+
+<!-- ═══ FILTER BAR ═══ -->
+<section class="fbar" aria-label="فلتر القطع">
+  <div class="fbar-in">
+    <div class="fbar-row" role="group" aria-label="حسب النوع">
+      <span class="fbar-lbl">النوع</span>
+      <button class="fchip on" data-fcat="all">الكل</button>
+      <button class="fchip" data-fcat="shoes">سنيكرز</button>
+      <button class="fchip" data-fcat="streetwear">ستريت وير</button>
+      <button class="fchip" data-fcat="denim">دنيم وجاكيتات</button>
+      <button class="fchip" data-fcat="accessories">إكسسوارات</button>
+      <div class="fsort">
+        <span class="fbar-lbl">رتّب</span>
+        <select id="vsort" aria-label="ترتيب القطع">
+          <option value="manual">الإختيار ديالنا</option>
+          <option value="price-desc">الثمن: الأكبر → الأصغر</option>
+          <option value="price-asc">الثمن: الأصغر → الأكبر</option>
+          <option value="title">الإسم: A → Z</option>
+        </select>
+      </div>
+    </div>
+    {% if brands.size > 1 %}
+    <div class="fbar-row" role="group" aria-label="حسب البراند">
+      <span class="fbar-lbl">البراند</span>
+      <button class="fchip on" data-fbrand="all">الكل</button>
+      {% for b in brands %}{% if b != blank %}<button class="fchip" data-fbrand="{{ b | escape }}">{{ b }}</button>{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══ PRODUCT GRID ═══ -->
+<main class="vault-main">
+  <div class="vault-main-in">
+    <p class="vcount"><b id="vcountN">{{ vault_count }}</b> <span>قطعة فالـ Vault</span></p>
+    <div class="vgrid" id="vgrid">
+      {% for p in all_avail %}
+        {% capture id_marker %},{{ p.id }},{% endcapture %}
+        {% if vault_pool contains id_marker %}
+          {% assign cur = p.selected_or_first_available_variant.price %}
+          {% assign cap = p.selected_or_first_available_variant.compare_at_price %}
+          {% assign display_title = p.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first %}
+          {% assign vault_variant = p.selected_or_first_available_variant %}
+          {% assign vault_ticket = p.metafields.lbass.ticket_status.value | default: 'unknown' %}
+          {% assign vault_status = p.metafields.lbass.condition_status.value | default: 'unknown' %}
+          {% assign vault_inspection = p.metafields.lbass.inspection_status.value %}
+          {% assign vault_has_ticket = p.metafields.lbass.has_original_ticket.value %}
+          {% assign vault_notes = p.metafields.lbass.condition_notes.value %}
+          {% assign vault_defects = p.metafields.lbass.visible_defects.value %}
+          {% assign vault_condition = '' %}
+          {% assign vault_confirmed = false %}
+          {% if vault_inspection == 'inspected_confirmed' %}
+            {% if vault_has_ticket == true and vault_status == 'new_with_ticket' %}
+              {% if vault_ticket == 'ticket_attached' or vault_ticket == 'ticket_included' %}{% assign vault_condition = 'جديد بالتّيكيت' %}{% assign vault_confirmed = true %}{% endif %}
+            {% elsif vault_has_ticket == false and vault_ticket == 'no_ticket' and vault_status == 'new_without_ticket' %}
+              {% assign vault_condition = 'جديد بلا تيكيت' %}{% assign vault_confirmed = true %}
+            {% elsif vault_has_ticket == false and vault_ticket == 'no_ticket' and vault_status == 'excellent_almost_new' %}
+              {% assign vault_condition = 'بحالة ممتازة · شبه جديد' %}{% assign vault_confirmed = true %}
+            {% elsif vault_status == 'very_good' %}
+              {% assign vault_condition = 'بحالة مزيانة بزاف' %}{% assign vault_confirmed = true %}
+            {% elsif vault_status == 'good' %}
+              {% assign vault_condition = 'بحالة مزيانة' %}{% assign vault_confirmed = true %}
+            {% elsif vault_status == 'needs_note' %}
+              {% if vault_notes != blank or vault_defects != blank %}{% assign vault_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign vault_confirmed = true %}{% endif %}
+            {% endif %}
+          {% endif %}
+          {% capture vault_one_s %}{% render 'lbass-one-of-one', product: p %}{% endcapture %}{% assign vault_one_s = vault_one_s | strip %}
+          {% assign vault_one = false %}{% if vault_one_s == '1' %}{% assign vault_one = true %}{% endif %}
+          {% assign vault_promo = false %}
+          {% if vault_confirmed and p.metafields.lbass.promo_eligible.value == true %}
+            {% if vault_status == 'new_with_ticket' or vault_status == 'new_without_ticket' or vault_status == 'excellent_almost_new' %}{% assign vault_promo = true %}{% endif %}
+          {% endif %}
+          {% assign cat_slug = 'other' %}
+          {% assign tags_str = p.tags | join: ',' | downcase %}
+          {% assign type_str = p.product_type | downcase %}
+          {% if tags_str contains 'shoes' or tags_str contains 'sneakers' or tags_str contains 'slides' or tags_str contains 'sneaker' or type_str == 'shoes' %}
+            {% assign cat_slug = 'shoes' %}
+          {% elsif tags_str contains 'jacket' or tags_str contains 'jeans' or tags_str contains 'denim' or tags_str contains 'pants' or tags_str contains 'cargo' or type_str == 'jackets' or type_str == 'jeans' or type_str == 'pants' %}
+            {% assign cat_slug = 'denim' %}
+          {% elsif tags_str contains 't-shirt' or tags_str contains 'tshirt' or tags_str contains 'hoodie' or tags_str contains 'shirt' or tags_str contains 'streetwear' or type_str == 't-shirts' or type_str == 'hoodies' or type_str == 'sets' %}
+            {% assign cat_slug = 'streetwear' %}
+          {% elsif tags_str contains ',acc,' or tags_str contains 'accessory' or tags_str contains 'cap' or tags_str contains 'bag' or type_str == 'accessories' %}
+            {% assign cat_slug = 'accessories' %}
+          {% endif %}
+          <div class="lbqa-wrap">
+          <a class="vcard rev" href="{{ p.url }}" data-vault-product data-product-id="{{ p.id }}" data-cat="{{ cat_slug }}" data-brand="{{ p.vendor | escape }}" data-price="{{ cur }}" data-title="{{ display_title | escape }}" data-tagged="{% if p.tags contains 'vault' %}1{% else %}0{% endif %}">
+            <div class="vc-img">
+              {% if p.featured_image %}
+                <img src="{{ p.featured_image | image_url: width: 600 }}" alt="{{ display_title | escape }}" loading="lazy" width="600" height="750">
+              {% else %}
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--ink-3);font-size:80px;opacity:.35">{% case p.product_type %}{% when 'Jackets' %}🧥{% when 'Jeans' %}👖{% when 'T-Shirts' %}👕{% when 'Shoes' %}👟{% when 'Hoodies' %}🧣{% when 'Accessories' %}🕶{% else %}✦{% endcase %}</div>
+              {% endif %}
+              <div class="vc-badges">
+                {% if p.tags contains 'vault' %}<span class="vc-badge vc-bvault">VAULT</span>{% endif %}
+                {% if vault_promo %}<span class="vc-badge vc-bnew">قطعة مختارة</span>{% endif %}
+                <span class="vc-badge">{{ vault_condition }}</span>
+              </div>
+            </div>
+            <div class="vc-info">
+              <p class="vc-vendor">{{ p.vendor }}</p>
+              <h3 class="vc-title" style="font-weight:500; font-size:14px; min-height:0; margin-bottom:4px;">{{ display_title }}</h3>
+              <div style="font-size:12px; color:var(--ink-2); font-weight:500; margin-bottom:12px;">{% unless p.has_only_default_variant %}Size {% for v in p.variants %}{{ v.title }}{% unless forloop.last %}, {% endunless %}{% endfor %} · {% endunless %}{{ vault_condition }}</div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top: 12px;">
+                <div style="font-weight:900; font-size:18px; color:var(--ink);">{{ cur | money_without_currency | strip }} د.م.</div>
+                <div style="font-size:12px; font-weight:800; border-bottom:1px solid var(--ink); padding-bottom:2px; color:var(--ink);">شوف القطعة</div>
+              </div>
+            </div>
+          </a>
+          
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="vempty" id="vempty" {% if vault_count > 0 %}style="display:none"{% endif %}>
+      <b>ما لقيناش قطع بهاد الفلتر</b>
+      <p>جرّب فلتر آخر، أو <a href="/collections/all">شوف الكولكسيون كاملة ←</a></p>
+    </div>
+  </div>
+</main>
+
+<!-- ═══ CTA STRIP ═══ -->
+<section class="vcta">
+  <div class="vcta-in">
+    <p class="vcta-kick rev">ماعجبتك حتى وحدة؟</p>
+    <h2 class="rev">سولنا فالواتساب على <em>قطعة محددة</em></h2>
+    <p class="rev">كنزيدو قطع جديدة مع كل Drop. عرفنا الموديل، البراند، أو القياس اللي كتقلّب عليه — وغانعلموك ملي يدخل.</p>
+    <a class="vcta-btn rev" href="https://wa.me/491754264425?text=%D8%B3%D9%84%D8%A7%D9%85%2C%20%D8%A8%D8%BA%D9%8A%D8%AA%20%D9%86%D8%B3%D9%88%D9%84%20%D8%B9%D9%84%D9%89%20%D9%82%D8%B7%D8%B9%D8%A9%20%D9%85%D9%86%20Vault" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.5.4.1.1.1.7-.1 1.3Z"/></svg>
+      اطلب على واتساب
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="foot">
+  <img class="foot-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64">
+  <p>© {{ 'now' | date: '%Y' }} Lbass Original — حوايج براند أصلية فالمغرب</p>
+  <p>
+    <a href="https://wa.me/491754264425" target="_blank" rel="noopener">💬 واتساب</a>
+    <a href="mailto:contact@lbassoriginal.com">✉ contact@lbassoriginal.com</a>
+    <a href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener">📸 Instagram</a>
+  </p>
+</footer>
+
+<!-- ═══ WHATSAPP FLOAT ═══ -->
+<a class="wa-float" href="https://wa.me/491754264425" target="_blank" rel="noopener" aria-label="راسلنا فالواتساب">
+  <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.5.4.1.1.1.7-.1 1.3Z"/></svg>
+</a>
+
+<script>
+/* ── Reveal-on-scroll ── */
+(function(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){document.querySelectorAll('.rev').forEach(e=>e.classList.add('in'));return}
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -50px 0px'});
+  document.querySelectorAll('.rev').forEach(el=>io.observe(el));
+})();
+
+/* ── Filter + sort engine ── */
+(function(){
+  const grid=document.getElementById('vgrid');
+  const empty=document.getElementById('vempty');
+  const countEl=document.getElementById('vcountN');
+  if(!grid) return;
+  const cards=Array.from(grid.querySelectorAll('.vcard'));
+  let activeCat='all',activeBrand='all',activeSort='manual';
+
+  cards.forEach(card=>card.addEventListener('click',()=>{
+    const attribution={source:'vault_collection',touch:'product',category:card.dataset.cat||'unknown',product_id:card.dataset.productId||'',product_name:card.dataset.title||'',destination:card.getAttribute('href')||'',ts:Date.now()};
+    try{sessionStorage.setItem('lbass_vault_attribution_v1',JSON.stringify(attribution))}catch(e){}
+    try{if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish('lbass_vault_product_click',{category:attribution.category,product_id:attribution.product_id,product_name:attribution.product_name})}catch(e){}
+  }));
+
+  function applyFilters(){
+    grid.classList.add('busy');
+    let shown=0;
+    cards.forEach(c=>{
+      const catOK=activeCat==='all'||c.dataset.cat===activeCat;
+      const brandOK=activeBrand==='all'||c.dataset.brand===activeBrand;
+      const visible=catOK&&brandOK;
+      const cell=c.closest('.lbqa-wrap')||c;
+      cell.classList.toggle('hidden',!visible);
+      if(visible)shown++;
+    });
+    countEl.textContent=shown;
+    empty.style.display=shown===0?'block':'none';
+
+    /* Sort visible cards */
+    const visibleCards=cards.filter(c=>!(c.closest('.lbqa-wrap')||c).classList.contains('hidden'));
+    visibleCards.sort((a,b)=>{
+      if(activeSort==='price-desc')return parseFloat(b.dataset.price)-parseFloat(a.dataset.price);
+      if(activeSort==='price-asc')return parseFloat(a.dataset.price)-parseFloat(b.dataset.price);
+      if(activeSort==='title')return a.dataset.title.localeCompare(b.dataset.title);
+      const ta=parseInt(a.dataset.tagged)||0,tb=parseInt(b.dataset.tagged)||0;
+      if(ta!==tb)return tb-ta;
+      return 0;
+    });
+    visibleCards.forEach(c=>grid.appendChild(c.closest('.lbqa-wrap')||c));
+    setTimeout(()=>grid.classList.remove('busy'),120);
+  }
+
+  document.querySelectorAll('[data-fcat]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-fcat]').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      activeCat=btn.dataset.fcat;
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('[data-fbrand]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-fbrand]').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      activeBrand=btn.dataset.fbrand;
+      applyFilters();
+    });
+  });
+  const sortSel=document.getElementById('vsort');
+  if(sortSel)sortSel.addEventListener('change',e=>{activeSort=e.target.value;applyFilters()});
+
+  const urlCat=new URLSearchParams(location.search).get('cat');
+  if(urlCat){
+    const btn=document.querySelector(`[data-fcat="${urlCat}"]`);
+    if(btn){
+      document.querySelectorAll('[data-fcat]').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      activeCat=urlCat;
+    }
+  }
+
+  applyFilters();
+})();
+</script>
+
+{% comment %} ═══ VAULT SCHEMA: CollectionPage + ItemList + BreadcrumbList ═══ {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": "{{ shop.url }}/pages/vault#collectionpage",
+      "url": "{{ shop.url }}/pages/vault",
+      "name": "VAULT — قطع عندها قيمة أكثر",
+      "description": "اختيار محدود من القطع المتوفرة ذات القيمة الأعلى. الحالة والمخزون كيبانو فصفحة كل منتج، وشارة 1/1 كتظهر غير ملي Shopify كيأكد قطعة وحدة.",
+      "inLanguage": "ar-MA",
+      "isPartOf": {"@id": "{{ shop.url }}/#website"},
+      "mainEntity": {"@id": "{{ shop.url }}/pages/vault#itemlist"}
+    },
+    {
+      "@type": "ItemList",
+      "@id": "{{ shop.url }}/pages/vault#itemlist",
+      "name": "Lbass Vault — قطع مختارة",
+      "numberOfItems": {{ vault_count }},
+      "itemListOrder": "https://schema.org/ItemListOrderAscending",
+      "itemListElement": [
+        {%- assign pos = 0 -%}
+        {%- for p in all_avail -%}
+          {%- capture id_marker %},{{ p.id }},{% endcapture -%}
+          {%- if vault_pool contains id_marker -%}
+            {%- assign pos = pos | plus: 1 -%}
+            {%- unless pos == 1 -%},{%- endunless -%}
+            {"@type":"ListItem","position":{{ pos }},"url":"{{ shop.url }}{{ p.url }}","name":{{ p.title | split: ' — LBO-' | first | split: ' - LBO-' | first | json }}}
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "{{ shop.url }}/pages/vault#breadcrumb",
+      "itemListElement": [
+        {"@type":"ListItem","position":1,"name":"الرئيسية","item":"{{ shop.url }}/"},
+        {"@type":"ListItem","position":2,"name":"VAULT","item":"{{ shop.url }}/pages/vault"}
+      ]
+    }
+  ]
+}
+</script>
+
+{% render 'lbass-cart-drawer' %}
+</body>
+</html>

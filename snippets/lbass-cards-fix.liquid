@@ -1,0 +1,59 @@
+{%- comment -%}
+  LBASS — CATEGORY CARD LEGIBILITY (2026-08-02)
+  Rendered from snippets/lbass-cro-tracking.liquid so it loads after
+  templates/index.liquid's own body <style>.
+
+  THE BUG. The الفئات cards (Denim & Jackets / Streetwear / Sneakers) put text
+  over a dark photograph, but almost every line was still INK-coloured —
+  measured on the live card:
+
+      .vault-benefit   rgb(11,11,12)    ink       on a dark photo
+      .vlt-proof       rgb(58,58,60)    dark grey on a dark photo
+      .vlt-meta        rgb(11,11,12)    ink       on a dark photo
+      small / .vlt-live rgb(143,31,13)  dark red  on a dark photo
+
+  Only the <b> title and the CTA were white, which is why the headline read
+  fine and everything under it looked like a smudge. This is the same failure
+  as the "grey box" badge: rules authored for a LIGHT card, then a dark image
+  placed behind them without the colours being revisited.
+
+  TWO PARTS TO THE FIX, and both are needed:
+  1. Colour. Text over the photo is bone; the accent uses #F2603F, not the
+     brand #BF2E15 — the brand red measures ~3.4:1 on near-black and fails AA.
+     #F2603F is the same hue lifted to ~6:1 and is used ONLY on dark grounds.
+  2. A scrim. Colour alone is not enough: these are photographs, so the
+     luminance under the text changes per card and per crop. Recolouring
+     without a scrim just moves the failure to whichever card has a bright
+     patch. The gradient guarantees a contrast floor no matter what the image
+     does, and stays transparent at the top so the product photo still reads.
+
+  Colours are stated LITERALLY. The theme remapped --cream to #0B0B0C and --ink
+  to #FFFFFF, so any semantic token here would be a coin flip.
+{%- endcomment -%}
+<style>
+.vault-card{position:relative;isolation:isolate}
+
+/* contrast floor — opaque where the copy sits, clear where the product is */
+.vault-card::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(to top,
+    rgba(8,7,10,.94) 0%,
+    rgba(8,7,10,.82) 28%,
+    rgba(8,7,10,.46) 58%,
+    rgba(8,7,10,.16) 82%,
+    rgba(8,7,10,.06) 100%);
+}
+.vault-card > .vault-card-content{position:relative;z-index:2}
+
+.vault-card .vault-card-content b{color:#FFFFFF!important}
+.vault-card .vault-card-content small{color:#F2603F!important}
+.vault-card .vault-benefit{color:rgba(242,240,235,.94)!important}
+.vault-card .vlt-proof{color:rgba(242,240,235,.70)!important}
+.vault-card .vlt-meta{color:rgba(242,240,235,.84)!important}
+.vault-card .vlt-live{color:#F2603F!important}
+.vault-card .vlt-cta{color:#FFFFFF!important}
+.vault-card .vlt-thumbs img{border:1px solid rgba(242,240,235,.28)}
+
+/* the sold-out card carries its own note — keep it readable too */
+.vault-card .vlt-empty,.vault-card .vlt-soldout{color:rgba(242,240,235,.72)!important}
+</style>

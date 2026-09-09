@@ -1,0 +1,492 @@
+{%- comment -%}
+  LBASS — HEADER + SIDE MENU (2026-08-02, rev3; guides branch added 2026-08-03)
+  Rendered from snippets/lbass-cro-tracking.liquid — body-level on BOTH
+  templates/index.liquid ({% layout none %}) and layout/theme.liquid. It cannot
+  render from lbass-entity-schema: that sits in <head>, and a <button> there
+  makes the parser close <head> early and reparse the rest as body.
+
+  ── rev3 fixes three things rev2 got wrong ──
+
+  1. "IT TAKES ME TO ANOTHER PAGE." rev2 was a full-screen opaque overlay, so
+     opening it felt like a navigation, not a layer. The reference is a SIDE
+     PANEL: ~1/3 width, with the page still visible and blurred behind it. That
+     visible page is the entire reason it reads as an overlay — you never lose
+     your place. Now a 440px panel + blurred scrim.
+
+  2. THE TRIGGER FLOATED OVER THE ANNOUNCEMENT BAR. It was position:fixed with
+     no header to live in, so it collided with the promo strip. There is now a
+     real header and the trigger sits inside it.
+
+  3. NO CENTERED LOGO. Header is a 3-column grid: contact / logo / actions.
+     The logo is centred by grid, not by guessing margins, so it stays centred
+     regardless of how wide the side columns get in Arabic.
+
+  ── THE OLD HEADERS ARE HIDDEN, NOT DELETED ──
+  .top / nav.nav / .lb-catnav / .mmenu are CSS-hidden. Nothing is removed, so
+  reverting is one deleted rule. Cart, search and account are re-wired to the
+  SAME hooks the old header used — [data-lbass-cart-open] drives the existing
+  drawer, so the cart keeps working untouched.
+
+  CONSEQUENCE WORTH KNOWING: because .lb-catnav is hidden, THIS PANEL IS THE
+  SITE'S ONLY NAVIGATION. Anything not linked here is effectively unlinked —
+  which is how ten published guides ended up with one inbound link site-wide.
+  See snippets/lbass-menu-guides.liquid.
+
+  ── EMPTY CATEGORIES ARE NEVER PRINTED ──
+  Gated on products_count > 0 at RENDER time: نساء and أطفال are absent from
+  the markup until they hold stock. Tag one product `femme` and the branch
+  appears by itself.
+{%- endcomment -%}
+
+{%- liquid
+  assign c_men      = collections['men']
+  assign c_women    = collections['women']
+  assign c_kids     = collections['kids']
+  assign c_unisex   = collections['unisex']
+  assign c_oneofone = collections['one-of-one']
+  assign men_subs   = 'men-shoes,men-pants,men-shorts,men-jackets,men-tshirts,men-accessories,men-sets' | split: ','
+  assign women_subs = 'women-shoes,women-pants,women-jackets,women-tshirts,women-accessories' | split: ','
+  assign kids_subs  = 'kids-shoes,kids-pants,kids-jackets,kids-tshirts' | split: ','
+  comment
+    track-pants added 2026-08-23. It was reachable from nothing in the site
+    chrome — 0 links from the menu, 0 from Start Here — while Search Console
+    showed it as the store's strongest commercial cluster (244 impressions of
+    buyer intent, positions 13-39). Placed next to سراويل-و-كارغو because that
+    is where a shopper looking for trousers will look for it. The loop below
+    already skips any handle whose products_count is 0, so an emptied
+    collection drops out of the menu on its own.
+  endcomment
+  # TYPE-FIRST NAV (2026-09-01). Replaced the gender-first tree (رجال/نساء/
+  # أطفال/Unisex) plus the الفئات catch-all — 10 top-level entries down to 5.
+  # Reason: the catalogue is 64 products, of which 6 are womenswear and 0 are
+  # kidswear, so gender aisles were dead ends (نساء — صبابط held 2 products).
+  # Gender is now a FILTER, not a shelf. Restore gender-first when womenswear
+  # passes ~50 pieces. Every loop below still skips products_count == 0, so an
+  # emptied collection drops out of the menu on its own.
+  # NOTE: this sits inside a liquid block — only `#` comments are legal here.
+  assign c_newin    = collections['new-in']
+  assign c_shoes    = collections['صبابط']
+  assign c_clothing = collections['clothing']
+  assign c_acc      = collections['إكسسوارات']
+  # ZARA-STYLE GENDER TREE (2026-09-01, owner spec). Top level = MEN / WOMEN /
+  # KIDS. Inside each: numbered blocks — |01| COLLECTION (clothing), |02| SHOES,
+  # |03| ACCESSORIES. The reference screenshot is labelled |03| COLLECTION, i.e.
+  # Zara itself runs several numbered blocks per gender; shoes and accessories
+  # are 34 of 64 products here, so they get their own blocks rather than being
+  # dropped. Handle/label run as PARALLEL arrays so labels stay short and
+  # uppercase without renaming existing collections (men-pants -> "TROUSERS").
+  # Every row is gated on products_count > 0, so unbuilt shelves never render.
+  assign men_h = 'men-jackets,men-coats,men-blazers,men-knitwear,men-jumpers-cardigans,men-pants,men-jeans,men-shirts,men-tshirts,men-hoodies-sweatshirts,men-shorts,men-sets' | split: ','
+  assign men_l = 'جاكيطات,معاطف,بليزر,تريكو,بولوفر و كارديغان,سراويل,جينز,قمجان,تيشرتات,هوديات و سويت,شورطات,أطقم' | split: ','
+  assign wom_h = 'women-jackets,women-trench-coats,women-blazers,women-knitwear,women-jumpers-cardigans,women-pants,women-jeans,women-shirts,women-tops-bodies,women-tshirts,women-dresses,women-co-ord-sets,women-skirts,women-shorts' | split: ','
+  assign wom_l = 'جاكيطات,طرونش,بليزر,تريكو,بولوفر و كارديغان,سراويل,جينز,قمجان,توب و بودي,تيشرتات,روبات,أطقم,جيبات,شورطات و برمودا' | split: ','
+  assign kid_h = 'kids-jackets,kids-coats,kids-knitwear,kids-sweatshirts,kids-tshirts,kids-shirts,kids-pants,kids-jeans,kids-dresses,kids-sets,kids-shorts,kids-skirts' | split: ','
+  assign kid_l = 'جاكيطات,معاطف,تريكو,سويت,تيشرتات,قمجان,سراويل,جينز,روبات,أطقم,شورطات,جيبات' | split: ','
+  assign shoe_subs  = 'sneakers,football,slides' | split: ','
+  assign cloth_subs = 'سراويل-و-كارغو,track-pants,تيشرتات-و-بولو,جاكيطات-و-معاطف,شورطات' | split: ','
+  assign cat_subs   = 'صبابط,سراويل-و-كارغو,track-pants,جاكيطات-و-معاطف,تيشرتات-و-بولو,جينز-مستعمل,هوديات-و-سويت,إكسسوارات' | split: ','
+  assign brand_subs = 'nike,adidas-originals,brand-jordan,brand-new-balance,brand-karl-kani,brand-tommy-hilfiger,brand-converse,brand-vans,brand-carhartt,brand-the-north-face,brand-levis,brand-puma' | split: ','
+  assign c_men_count = c_men.products_count | default: 0 | plus: 0
+  assign c_women_count = c_women.products_count | default: 0 | plus: 0
+  assign c_kids_count = c_kids.products_count | default: 0 | plus: 0
+  assign c_unisex_count = c_unisex.products_count | default: 0 | plus: 0
+  assign c_oneofone_count = c_oneofone.products_count | default: 0 | plus: 0
+-%}
+
+<header class="lbh-bar" id="lbhBar">
+  <div class="lbh-bar-l">
+    <a class="lbh-contact" href="/pages/contact"><span aria-hidden="true">+</span> تواصل معنا</a>
+  </div>
+
+  <a class="lbh-mark" href="{{ routes.root_url }}" aria-label="Lbass Original — الرئيسية">
+    <img src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64">
+  </a>
+
+  <div class="lbh-bar-r">
+    <a class="lbh-ico" href="{{ routes.search_url }}" aria-label="قلّب">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 L21 21"/></svg>
+    </a>
+    <a class="lbh-ico" href="{{ routes.account_url }}" aria-label="حسابي">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1.6-3.6 4.3-5.4 7.5-5.4s5.9 1.8 7.5 5.4"/></svg>
+    </a>
+    <button type="button" class="lbh-ico" data-lbass-cart-open aria-label="السلة">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9.5 8V6.5a2.5 2.5 0 0 1 5 0V8"/></svg>
+      <span class="lbh-bub" data-lbass-count hidden>0</span>
+    </button>
+    <button type="button" class="lbm-trigger" id="lbmOpen"
+            aria-expanded="false" aria-controls="lbmPanel" aria-label="فتح Main navigation">
+      <span class="lbm-bars" aria-hidden="true"><i></i><i></i></span>
+      <span class="lbm-trigger-t">القائمة</span>
+    </button>
+  </div>
+</header>
+
+<div class="lbm-scrim" id="lbmScrim" hidden></div>
+
+<div class="lbm" id="lbmPanel" role="dialog" aria-modal="true"
+     aria-label="قائمة Lbass Original" hidden>
+
+  <button type="button" class="lbm-close" id="lbmClose" aria-label="سد القائمة">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <div class="lbm-scroll">
+    <nav class="lbm-main" aria-label="Main navigation">
+      <ul class="lbm-list">
+
+        {%- comment -%} ============ MEN / WOMEN / KIDS ============ {%- endcomment -%}
+        {%- for g in (1..3) -%}
+          {%- case g -%}
+            {%- when 1 -%}{%- assign gid='Men'   -%}{%- assign gpre='men'   -%}{%- assign glabel='رجال'  -%}{%- assign gsub='رجال'  -%}{%- assign gh=men_h -%}{%- assign gl=men_l -%}{%- assign groot=c_men   -%}
+            {%- when 2 -%}{%- assign gid='Women' -%}{%- assign gpre='women' -%}{%- assign glabel='نساء'  -%}{%- assign gsub='نساء'  -%}{%- assign gh=wom_h -%}{%- assign gl=wom_l -%}{%- assign groot=c_women -%}
+            {%- when 3 -%}{%- assign gid='Kids'  -%}{%- assign gpre='kids'  -%}{%- assign glabel='أطفال' -%}{%- assign gsub='أطفال' -%}{%- assign gh=kid_h -%}{%- assign gl=kid_l -%}{%- assign groot=c_kids  -%}
+          {%- endcase -%}
+          {%- assign groot_count = groot.products_count | default: 0 | plus: 0 -%}
+          {%- if groot_count > 0 -%}
+        <li class="lbm-item">
+          <button type="button" class="lbm-a lbm-toggle lbm-g" aria-expanded="false" aria-controls="lbmG{{ gid }}">{{ glabel }}<span class="lbm-chev" aria-hidden="true"></span></button>
+          <div class="lbm-panel" id="lbmG{{ gid }}" hidden>
+
+            {%- assign blk = 0 -%}
+
+            {%- assign coll_rows = 0 -%}
+            {%- for h in gh -%}{%- assign c = collections[h] -%}{%- assign cc = c.products_count | default: 0 | plus: 0 -%}{%- if cc > 0 -%}{%- assign coll_rows = coll_rows | plus: 1 -%}{%- endif -%}{%- endfor -%}
+            {%- if coll_rows > 0 -%}
+            {%- assign blk = blk | plus: 1 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">{% if blk < 10 %}0{% endif %}{{ blk }}</span> الكوليكسيون</p>
+              <ul class="lbm-zlist">
+                {%- for h in gh -%}
+                  {%- assign c = collections[h] -%}{%- assign cc = c.products_count | default: 0 | plus: 0 -%}
+                  {%- if cc > 0 -%}<li><a href="{{ c.url }}">{{ gl[forloop.index0] }}</a></li>{%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </div>
+            {%- endif -%}
+
+            {%- comment -%}
+              SHOES / SANDALS / ACCESSORIES are store-wide, not gender-scoped, on
+              purpose: of 25 shoes only 10 are gender:men and 2 gender:women — and
+              ALL 6 sandals are gender:unisex, so a men-slides collection would be
+              permanently empty. Scoping them per gender would hide most of the
+              footwear. Gender lives where it is real: the clothing block above.
+              Sandals get their own numbered block (owner request 2026-09-01) so
+              they are never buried inside صبابط.
+            {%- endcomment -%}
+            {%- assign hs = gpre | append: '-sneakers' -%}{%- assign c_sneak = collections[hs] -%}
+            {%- assign hf = gpre | append: '-football' -%}{%- assign c_foot  = collections[hf] -%}
+            {%- assign ha = gpre | append: '-shoes'    -%}{%- assign c_allsh = collections[ha] -%}
+            {%- assign hc = gpre | append: '-accessories' -%}{%- assign c_allacc = collections[hc] -%}
+            {%- comment -%}
+              Sandals stay STORE-WIDE on purpose: all 6 are gender:unisex, so a
+              women-slides / men-slides collection would be permanently empty.
+              Everything else here is gender-scoped, which is what stops men's
+              football boots appearing under نساء (owner report 2026-09-01).
+            {%- endcomment -%}
+            {%- assign c_slides = collections['slides'] -%}
+
+            {%- assign n_allsh = c_allsh.products_count | default: 0 | plus: 0 -%}
+            {%- if n_allsh > 0 -%}
+            {%- assign blk = blk | plus: 1 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">{% if blk < 10 %}0{% endif %}{{ blk }}</span> صبابط</p>
+              <ul class="lbm-zlist">
+                {%- assign n_sneak = c_sneak.products_count | default: 0 | plus: 0 -%}
+                {%- if n_sneak > 0 -%}<li><a href="{{ c_sneak.url }}">سنيكرز</a></li>{%- endif -%}
+                {%- assign n_foot = c_foot.products_count | default: 0 | plus: 0 -%}
+                {%- if n_foot > 0 -%}<li><a href="{{ c_foot.url }}">سبادري كورة</a></li>{%- endif -%}
+                <li><a href="{{ c_allsh.url }}">كل الصبابط</a></li>
+              </ul>
+            </div>
+            {%- endif -%}
+
+            {%- assign n_slides = c_slides.products_count | default: 0 | plus: 0 -%}
+            {%- if n_slides > 0 -%}
+            {%- assign blk = blk | plus: 1 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">{% if blk < 10 %}0{% endif %}{{ blk }}</span> صنادل</p>
+              <ul class="lbm-zlist"><li><a href="{{ c_slides.url }}">كل الصنادل</a></li></ul>
+            </div>
+            {%- endif -%}
+
+            {%- assign n_allacc = c_allacc.products_count | default: 0 | plus: 0 -%}
+            {%- if n_allacc > 0 -%}
+            {%- assign blk = blk | plus: 1 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">{% if blk < 10 %}0{% endif %}{{ blk }}</span> إكسسوارات</p>
+              <ul class="lbm-zlist"><li><a href="{{ c_allacc.url }}">كل الإكسسوارات</a></li></ul>
+            </div>
+            {%- endif -%}
+
+            <a class="lbm-all lbm-vall" href="{{ groot.url }}">شوف كل {{ gsub }}</a>
+          </div>
+        </li>
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%} ============ utility, demoted below a rule ============ {%- endcomment -%}
+        <li class="lbm-item lbm-rule">
+          <a class="lbm-a lbm-util" href="{% if c_newin %}{{ c_newin.url }}{% else %}{{ routes.all_products_collection_url }}?sort_by=created-descending{% endif %}">جديد</a>
+        </li>
+        <li class="lbm-item">
+          <button type="button" class="lbm-a lbm-util lbm-toggle" aria-expanded="false" aria-controls="lbmSubBrand">البراندات<span class="lbm-chev" aria-hidden="true"></span></button>
+          <ul class="lbm-sub" id="lbmSubBrand" hidden>
+            {%- for h in brand_subs -%}{%- assign sc = collections[h] -%}{%- assign sc_count = sc.products_count | default: 0 | plus: 0 -%}{%- if sc_count > 0 -%}
+              <li><a href="{{ sc.url }}">{{ sc.title }} <em>{{ sc_count }}</em></a></li>
+            {%- endif -%}{%- endfor -%}
+          </ul>
+        </li>
+        {% render 'lbass-menu-guides' %}
+      </ul>
+    </nav>
+
+    <div class="lbm-foot">
+      <p class="lbm-trust">صور حقيقية · قطع 1/1 · COD · توصيل لكل المغرب</p>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── old chrome: hidden, never deleted ── */
+header.top,nav.nav,.lb-catnav,.mmenu{display:none!important}
+
+/* ── header ── */
+.lbh-bar{position:sticky;top:0;z-index:90;display:grid;
+  grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
+  padding:14px clamp(14px,3vw,34px);background:#FFFFFF;
+  border-bottom:1px solid rgba(11,11,12,.10);
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif)}
+.lbh-bar-l{display:flex;align-items:center}
+.lbh-bar-r{display:flex;align-items:center;justify-content:flex-end;gap:clamp(8px,1.4vw,18px)}
+.lbh-contact{display:inline-flex;align-items:center;gap:7px;color:#0B0B0C;
+  font-size:12.5px;font-weight:700;text-decoration:none;transition:opacity .18s}
+.lbh-contact:hover{opacity:.6}
+.lbh-mark{display:block;justify-self:center}
+.lbh-mark img{display:block;width:clamp(128px,13vw,178px);height:auto;filter:brightness(0)}
+.lbh-ico{position:relative;display:inline-grid;place-items:center;width:38px;height:38px;
+  background:none;border:0;padding:0;cursor:pointer;color:#0B0B0C;text-decoration:none;
+  transition:opacity .18s}
+.lbh-ico:hover{opacity:.55}
+.lbh-ico svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.lbh-bub{position:absolute;top:2px;inset-inline-end:2px;min-width:16px;height:16px;
+  border-radius:9px;background:#BF2E15;color:#fff;font-size:10px;font-weight:800;
+  display:grid;place-items:center;padding:0 4px;direction:ltr}
+.lbh-bub[hidden]{display:none}
+.lbm-trigger{display:inline-flex;align-items:center;gap:9px;height:38px;padding:0 4px;
+  background:none;border:0;cursor:pointer;color:#0B0B0C;font-family:inherit;
+  font-size:12.5px;font-weight:700;transition:opacity .18s}
+.lbm-trigger:hover{opacity:.55}
+.lbm-bars{display:inline-flex;flex-direction:column;gap:5px;width:19px}
+.lbm-bars i{display:block;height:1.5px;background:currentColor}
+@media(max-width:640px){
+  .lbh-bar{padding:11px 12px;gap:8px}
+  .lbm-trigger-t{display:none}
+  .lbh-contact{font-size:0;gap:0}
+  .lbh-contact span[aria-hidden]{font-size:17px}
+}
+
+/* ── scrim: the page stays visible behind, which is what makes this read as a
+   layer instead of a new page ── */
+.lbm-scrim[hidden]{display:none}
+.lbm-scrim{position:fixed;inset:0;z-index:190;background:rgba(11,11,12,.34);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  opacity:0;transition:opacity .32s ease}
+.lbm-scrim.is-open{opacity:1}
+
+/* ── side panel ── */
+.lbm[hidden]{display:none}
+.lbm{position:fixed;inset-block:0;inset-inline-end:0;z-index:200;
+  width:min(440px,100vw);background:#FCFBF8;color:#0B0B0C;
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif);
+  box-shadow:0 0 60px rgba(11,11,12,.16);
+  transform:translateX(var(--lbm-out,100%));transition:transform .38s cubic-bezier(.16,1,.3,1)}
+[dir="rtl"] .lbm{--lbm-out:-100%}
+.lbm.is-open{transform:translateX(0)}
+@media(max-width:520px){.lbm{width:100vw}}
+
+.lbm-scroll{height:100%;overflow-y:auto;overscroll-behavior:contain;
+  padding:88px clamp(24px,5vw,42px) 36px}
+
+.lbm-close{position:absolute;top:18px;inset-inline-start:18px;z-index:3;
+  width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+  background:#0B0B0C;color:#FCFBF8;display:grid;place-items:center;
+  transition:background .2s ease,transform .2s ease}
+.lbm-close:hover{background:#BF2E15;transform:scale(1.06)}
+.lbm-close svg{width:19px;height:19px;fill:none}
+
+.lbm-list{list-style:none;margin:0;padding:0}
+.lbm-a{display:inline-flex;align-items:center;gap:12px;
+  padding:9px 0;background:none;border:0;cursor:pointer;
+  color:#0B0B0C;font-family:inherit;font-weight:700;text-align:start;
+  font-size:clamp(22px,2.1vw,27px);line-height:1.4;letter-spacing:normal;
+  text-decoration:none;transition:color .18s}
+.lbm-a:hover,.lbm-a:focus-visible{color:#BF2E15}
+.lbm-a--vault{font-style:italic}
+.lbm-chev{width:7px;height:7px;flex:0 0 auto;opacity:.34;
+  border-inline-end:1.5px solid currentColor;border-block-end:1.5px solid currentColor;
+  transform:rotate(45deg);transition:transform .22s ease,opacity .18s}
+.lbm-toggle[aria-expanded="true"] .lbm-chev{transform:rotate(-135deg);opacity:.8}
+
+.lbm-sub{list-style:none;margin:0 0 10px;padding:0 0 0 2px;display:grid;gap:0}
+.lbm-sub[hidden]{display:none}
+.lbm-sub a{display:inline-flex;align-items:baseline;gap:7px;padding:5px 0;
+  color:#3A3A3C;text-decoration:none;font-size:14.5px;font-weight:500;transition:color .18s}
+.lbm-sub a:hover,.lbm-sub a:focus-visible{color:#0B0B0C}
+.lbm-sub em{font-style:normal;font-family:var(--lb-latin,'Epilogue',sans-serif);
+  font-size:10.5px;color:#9A9A9E;direction:ltr}
+.lbm-all{color:#BF2E15!important;font-weight:700!important}
+.lbm-sep{margin-top:12px;padding-top:12px;border-top:1px solid rgba(11,11,12,.09)}
+/* ── Zara-style gender panel (2026-09-01) ───────────────────────────────── */
+.lbm-g{font-family:var(--ar,'Tajawal',sans-serif);font-size:21px;letter-spacing:normal;font-weight:600}
+.lbm-panel[hidden]{display:none}
+.lbm-panel{padding:6px 0 18px}
+.lbm-blk{margin:0 0 26px}
+.lbm-sec{display:flex;align-items:center;gap:9px;margin:0 0 14px;
+  font-family:var(--ar,'Tajawal',sans-serif);
+  font-size:11.5px;letter-spacing:normal;color:#9A9A9E;font-weight:700}
+.lbm-num{display:inline-block;padding:0 5px;border-inline-start:1px solid #C9C9CE;
+  border-inline-end:1px solid #C9C9CE;font-variant-numeric:tabular-nums}
+.lbm-zlist{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.lbm-zlist li{margin:0}
+.lbm-zlist a{display:block;padding:11px 0;font-size:16px;line-height:1.5;
+  font-family:var(--ar,'Tajawal',sans-serif);letter-spacing:normal;
+  color:#0B0B0C;font-weight:500;
+  text-decoration:none;transition:color .18s ease,padding-inline-start .18s ease}
+.lbm-zlist a:hover,.lbm-zlist a:focus-visible{color:#BF2E15;padding-inline-start:5px}
+.lbm-vall{display:inline-block;margin-top:2px;font-size:12.5px}
+.lbm-util{font-size:14px;color:#3A3A3C}
+.lbm-rule{margin-top:12px;padding-top:16px;border-top:1px solid rgba(11,11,12,.10)}
+@media (max-width:480px){
+  .lbm-g{font-size:19px}
+  .lbm-zlist a{padding:13px 0;font-size:16.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  .lbm-zlist a{transition:none}
+}
+
+.lbm-foot{margin-top:34px;padding-top:22px;border-top:1px solid rgba(11,11,12,.10)}
+.lbm-support{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:9px}
+.lbm-support a{color:#3A3A3C;font-size:12.5px;font-weight:500;
+  text-decoration:underline;text-underline-offset:4px;
+  text-decoration-color:rgba(11,11,12,.26);transition:color .18s}
+.lbm-support a:hover,.lbm-support a:focus-visible{color:#0B0B0C;text-decoration-color:#0B0B0C}
+.lbm-trust{margin:0;font-size:11px;line-height:1.9;color:#9A9A9E;font-weight:500}
+
+/* items rise in behind the panel slide. No !important on animated props. */
+.lbm-item,.lbm-foot{opacity:0;transform:translateY(6px)}
+.lbm.is-open .lbm-item,.lbm.is-open .lbm-foot{animation:lbmIn .42s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes lbmIn{to{opacity:1;transform:none}}
+.lbm.is-open .lbm-item:nth-child(1){animation-delay:.16s}
+.lbm.is-open .lbm-item:nth-child(2){animation-delay:.20s}
+.lbm.is-open .lbm-item:nth-child(3){animation-delay:.24s}
+.lbm.is-open .lbm-item:nth-child(4){animation-delay:.28s}
+.lbm.is-open .lbm-item:nth-child(5){animation-delay:.32s}
+.lbm.is-open .lbm-item:nth-child(6){animation-delay:.36s}
+.lbm.is-open .lbm-item:nth-child(7){animation-delay:.40s}
+.lbm.is-open .lbm-item:nth-child(8){animation-delay:.44s}
+.lbm.is-open .lbm-foot{animation-delay:.46s}
+
+@media(prefers-reduced-motion:reduce){
+  .lbm,.lbm-scrim{transition:none}
+  .lbm-item,.lbm-foot{opacity:1;transform:none;animation:none}
+  .lbm-chev,.lbm-close,.lbh-ico{transition:none}
+}
+</style>
+
+{%- comment -%} stagger delays for the added items + support-list styling {%- endcomment -%}
+{% render 'lbass-menu-nav-patch' %}
+
+<script>
+(function(){
+  var bar=document.getElementById('lbhBar');
+  var panel=document.getElementById('lbmPanel');
+  var scrim=document.getElementById('lbmScrim');
+  var openBtn=document.getElementById('lbmOpen');
+  var closeBtn=document.getElementById('lbmClose');
+  if(!bar||!panel||!openBtn) return;
+
+  /* This snippet renders at the END of body; the header has to sit at the top.
+     Moving server-rendered markup keeps every link crawlable — building it in
+     JS would not. */
+  var ann=document.querySelector('.announce');
+  if(ann && ann.parentNode) ann.parentNode.insertBefore(bar, ann.nextSibling);
+  else document.body.insertBefore(bar, document.body.firstChild);
+
+  var lastFocus=null, scrollY=0;
+  var FOCUSABLE='a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+
+  function focusables(){
+    return Array.prototype.filter.call(panel.querySelectorAll(FOCUSABLE),
+      function(n){ return n.offsetParent !== null; });
+  }
+  function unlock(){
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.width='';
+  }
+
+  function open(){
+    lastFocus=document.activeElement;
+    panel.hidden=false; scrim.hidden=false;
+    void panel.offsetWidth;                 /* commit before animating */
+    panel.classList.add('is-open'); scrim.classList.add('is-open');
+    openBtn.setAttribute('aria-expanded','true');
+    scrollY=window.scrollY||window.pageYOffset||0;
+    document.body.style.position='fixed';   /* scroll lock that survives iOS */
+    document.body.style.top=(-scrollY)+'px';
+    document.body.style.width='100%';
+    document.addEventListener('keydown',onKey);
+    (closeBtn||panel).focus({preventScroll:true});
+  }
+
+  function close(){
+    panel.classList.remove('is-open'); scrim.classList.remove('is-open');
+    openBtn.setAttribute('aria-expanded','false');
+    unlock(); window.scrollTo(0,scrollY);
+    document.removeEventListener('keydown',onKey);
+    var t=setTimeout(function(){ panel.hidden=true; scrim.hidden=true; }, 420);
+    panel.addEventListener('transitionend',function h(){
+      clearTimeout(t); panel.hidden=true; scrim.hidden=true;
+      panel.removeEventListener('transitionend',h);
+    },{once:true});
+    if(lastFocus&&lastFocus.focus) lastFocus.focus({preventScroll:true});
+  }
+
+  function onKey(e){
+    if(e.key==='Escape'){ e.preventDefault(); close(); return; }
+    if(e.key!=='Tab') return;
+    var f=focusables(); if(!f.length) return;
+    var first=f[0], last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+
+  openBtn.addEventListener('click',open);
+  if(closeBtn) closeBtn.addEventListener('click',close);
+  scrim.addEventListener('click',close);   /* click the page behind to dismiss */
+
+  panel.addEventListener('click',function(e){
+    var t=e.target.closest('.lbm-toggle');
+    if(t){
+      var sub=document.getElementById(t.getAttribute('aria-controls'));
+      var willOpen=t.getAttribute('aria-expanded')!=='true';
+      Array.prototype.forEach.call(
+        panel.querySelectorAll('.lbm-toggle[aria-expanded="true"]'),function(o){
+          if(o===t) return;
+          o.setAttribute('aria-expanded','false');
+          var s=document.getElementById(o.getAttribute('aria-controls'));
+          if(s) s.hidden=true;
+        });
+      t.setAttribute('aria-expanded', willOpen?'true':'false');
+      if(sub) sub.hidden=!willOpen;
+      return;
+    }
+    if(e.target.closest('a[href]')) unlock();
+  });
+
+  window.addEventListener('pageshow',function(ev){ if(ev.persisted) unlock(); });
+})();
+</script>

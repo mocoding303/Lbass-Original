@@ -1,0 +1,650 @@
+{%- comment -%}
+  ═══ COMMERCIAL FAQ, ADDED 2026-08-23 FROM SEARCH CONSOLE DATA ═══
+  The three FAQ entries further down are generic to every collection
+  ("are these available?", "how do I order?"). They answer nothing a shopper
+  actually typed into Google.
+
+  This array holds EXTRA, collection-specific questions built from real queries
+  in the 90-day pull, and it is the SINGLE SOURCE for both the visible <details>
+  list and the FAQPage schema — the two are hardcoded separately below, which is
+  exactly the drift risk this avoids. Format is "question||answer" so one array
+  can drive both. Add a handle here only when real query data justifies it.
+
+  NOTHING HERE PROMISES STOCK. Colour availability is phrased so it stays true
+  as inventory turns over; the colour chips themselves are generated from
+  collection.all_tags and disappear when the last item of that colour sells.
+{%- endcomment -%}
+{%- liquid
+  assign coll_extra_faq = ''
+  case collection.handle
+    when 'track-pants'
+      assign coll_extra_faq = 'فين نقدر نشري بنطال تراك أصلي فالمغرب؟||من Lbass Original أونلاين. القطع كتتختار من ألمانيا، كتتشيك فمراكش، وكتتصور وحدة بوحدة قبل ما تتعرض. التوصيل لكل المغرب مع الدفع عند الاستلام.@@واش بناطيل التراك عندكم أصلية؟||إيه. كل قطعة كتدوز من فحص قبل العرض — الإتيكيت، الخياطة، الخامة والتفاصيل — وأي قطعة فيها شك ما كتتعرضش. هاد الفحص داخلي ديال Lbass وماشي شهادة خارجية.@@واش كاين بنطال تراك أسود ولا أحمر؟||الألوان المتوفرة دابا كتبان فالشيبس ديال «شوف حسب اللون» فوق الكوليكشن. الشيب كيختافى بوحدو ملي تسالي القطع ديال داك اللون، باش ما توصلش لصفحة خاوية.@@كيفاش نعرف القياس ديال بنطال التراك؟||قيس بنطال عندك كيجيك مزيان (الوسط، وطول الرجل) وقارن مع القياسات المكتوبة فصفحة المنتج. label size بوحدو ماشي كافي فـ second-hand.@@واش كاين الدفع عند الاستلام؟||إيه، الدفع عند الاستلام (COD) متوفر فكل المغرب: كتوصلك القطعة، كتشوفها، ومن بعد كتخلص. PayPal متوفر حتا هو.@@شحال التوصيل؟||20 درهم داخل مراكش و40 درهم لباقي مدن المغرب، ومجاني ملي يوصل الطلب 500 درهم أو أكثر.'
+  endcase
+  assign coll_extra_faq_rows = coll_extra_faq | split: '@@'
+-%}
+{% liquid
+  assign collection_source_handle = collection.handle
+  assign collection_display_count = collection.products_count
+  assign collection_display_title = collection.title
+  assign collection_display_description = collection.description
+
+  if collection.handle == 'audited-drop-p001-p012'
+    assign collection_source_handle = 'all'
+    assign collection_display_count = collection.products_count
+    if current_tags == blank
+      assign collection_display_count = collections.all.products_count
+    endif
+    assign collection_display_title = 'Audited Drop'
+    assign collection_display_description = 'كل قطع Lbass Original فبلاصة وحدة: صور حقيقية، حالة وتوفر واضحين، والقطع المتوفرة كيبانو أولاً.'
+  endif
+
+  assign collection_answer_title = 'شنو خاصك تعرف على هاد الكوليكشن؟'
+  capture collection_answer
+    echo collection_display_title
+    echo ' من Lbass Original كتجمع قطع second-hand مختارة فالمغرب. كل منتج عندو صور حقيقية، ثمن وتوفر من Shopify، والحالة والقياس حسب المعلومات المؤكدة فصفحة القطعة.'
+  endcapture
+  assign collection_experience = 'كنعرضو نفس القطعة اللي غادي توصلك، وكنخليو الملاحظات المهمة والقياس ظاهرين قبل الطلب. المخزون كيتبدل مع كل Drop، لذلك راجع صفحة المنتج قبل ما تكمل.'
+
+  case collection.handle
+    when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+      assign collection_answer_title = 'صبابط أصلية فالمغرب: شنو كاين هنا؟'
+      assign collection_answer = 'فهاد الكوليكشن كتلقى صبابط second-hand أصلية فالمغرب بصور حقيقية ديال نفس الزوج، القياس واضح، والحالة مبيّنة قبل الطلب. القطع المتوفرة كيبانو أولاً.'
+      assign collection_experience = 'قبل ما نعرضو الصباط كنراجعو القياس المدوّن، الحالة الظاهرة، النعل والتفاصيل اللي باينة. إلا بغيتي قياس insole أو صور قريبة، سولنا فالواتساب قبل الطلب.'
+    when 'إكسسوارات', 'accessories', 'men-accessories', 'bags', 'caps-accessories'
+      assign collection_answer_title = 'إكسسوارات وشنط Second-Hand فالمغرب'
+      assign collection_answer = 'هاد الكوليكشن فيها شنط، كاسكيطات وإكسسوارات branded second-hand بصور حقيقية، حالة واضحة وثمن نهائي قبل التوصيل. كل منتج كيبين التوفر الحقيقي ديالو.'
+      assign collection_experience = 'الإكسسوارات كتقدر تكون أول شراء ساهل حيث القياس غالباً أقل تعقيداً من الحوايج والصباط؛ مع ذلك كنطلبو منك تراجع الأبعاد والحالة المكتوبة لكل قطعة.'
+    when 'brand-adidas', 'adidas-originals'
+      assign collection_answer_title = 'Adidas Second-Hand Maroc'
+      assign collection_answer = 'Adidas second-hand Maroc من Lbass Original كتجمع غير منتجات Adidas الموجودة فالمخزون: حوايج، صبابط أو إكسسوارات حسب الدروب، بصور حقيقية وحالة وقياس مؤكدين فصفحة كل قطعة.'
+      assign collection_experience = 'كنصورو logo، label والتفاصيل المتاحة فكل قطعة Adidas. حالة التّيكيت، القياس وأي ملاحظة كيبقاو خاصين بنفس المنتج وما كنعمموهمش على الكوليكشن كاملة.'
+    when 'brand-nike', 'nike'
+      assign collection_answer_title = 'Nike Second-Hand Maroc'
+      assign collection_answer = 'Nike second-hand Maroc كتجمع منتجات Nike المتوفرة دابا فـ Lbass Original، بصور حقيقية ديال نفس القطعة، قياس واضح وحالة حسب الفحص المؤكد.'
+      assign collection_experience = 'كنخليو صور logo، label والحالة ظاهرة باش تراجع نفس المنتج قبل الطلب. أي claim على التّيكيت أو الحالة كيبان غير ملي يكون مؤكد فصفحة القطعة.'
+    when 'brand-jordan'
+      assign collection_answer_title = 'Jordan Second-Hand Maroc'
+      assign collection_answer = 'هاد الصفحة كتجمع قطع Jordan second-hand المتوفرة فـ Lbass Original، بصور حقيقية ديال نفس القطعة، ثمن وتوفر حقيقيين، وحالة واضحة قبل الطلب.'
+      assign collection_experience = 'راجع logo، label، القياس والصور كاملة فصفحة المنتج، وسولنا على أي تفصيل ناقص قبل ما تدخل القطعة للسلة.'
+    when 'brand-converse'
+      assign collection_answer_title = 'Converse Second-Hand Maroc'
+      assign collection_answer = 'Converse second-hand Maroc كتجمع الأزواج والقطع المتوفرة حسب الدروب، بصور حقيقية، قياس وحالة موضحين قبل الطلب.'
+      assign collection_experience = 'فالصباط Converse مهم تقارن EU size وقياس النعل الداخلي مع زوج عندك، وتراجع sole، toe cap وأي أثر استعمال فالصور.'
+    when 'brand-new-balance'
+      assign collection_answer_title = 'New Balance Second-Hand Maroc'
+      assign collection_answer = 'New Balance second-hand Maroc كتجمع المنتجات الموجودة فعلاً فالمخزون، بصور حقيقية ديال نفس القطعة، قياس واضح وحالة مبيّنة.'
+      assign collection_experience = 'الـfit كيقدر يختلف بين موديلات New Balance؛ قارن القياس بالسنتيمتر واطلب insole measurement فالواتساب إلا ما كانش مكتوب.'
+    when 'track-pants'
+      assign collection_answer_title = 'Track Pants أصلية فالمغرب'
+      assign collection_answer = 'هنا كتلقى Track Pants second-hand أصلية فالمغرب بصور حقيقية ديال نفس السروال، قياس وحالة واضحين، والمنتجات المتوفرة كيبانو أولاً.'
+      assign collection_experience = 'فـtrack pants كننصحك تراجع waist، inseam والطول، ماشي label size بوحدو. أي أثر استعمال معروف خاصو يبان فالملاحظات أو الصور.'
+    when 'سراويل-و-كارغو', 'cargo-pants', 'pants', 'men-pants'
+      assign collection_answer_title = 'سراويل وكارغو Second-Hand فالمغرب'
+      assign collection_answer = 'هاد الكوليكشن كتجمع سراويل، cargo وtrack pants branded second-hand بصور حقيقية، قياسات وتوفر واضحين قبل الطلب.'
+      assign collection_experience = 'قارن waist، inseam والطول مع سروال عندك كيجيلك مزيان. label size بوحدو ما كافيش، خصوصاً فالقطع vintage وsecond-hand.'
+    when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
+      assign collection_answer_title = 'Jackets Second-Hand فالمغرب'
+      assign collection_answer = 'جاكيطات second-hand فالمغرب بصور حقيقية ديال نفس القطعة، قياس وحالة موضحين، والتوفر كيتحدث حسب مخزون Shopify.'
+      assign collection_experience = 'راجع chest width، length والكم، وشوف الصور ديال zipper، cuffs والسطح كامل. إلا ناقص شي قياس، سولنا قبل الطلب.'
+    when 'هوديات-و-سويت', 'hoodies', 'sweatshirts'
+      assign collection_answer_title = 'Hoodies Second-Hand فالمغرب'
+      assign collection_answer = 'هاد الصفحة كتجمع hoodies وsweatshirts branded second-hand بصور حقيقية، حالة وقياس واضحين قبل الطلب.'
+      assign collection_experience = 'قارن عرض الصدر والطول مع hoodie عندك، وراجع cuffs، hood والprint فالصور قبل ما تختار.'
+    when 'caps'
+      assign collection_answer_title = 'Caps Second-Hand فالمغرب'
+      assign collection_answer = 'كاسكيطات second-hand فالمغرب بصور حقيقية ديال نفس القطعة، الحالة والتوفر واضحين، والأبعاد أو طريقة التعديل كيبانو حسب المنتج.'
+      assign collection_experience = 'راجع strap، sweatband، shape وأي أثر استعمال فالصور. سولنا فالواتساب إلا بغيتي قياس المحيط قبل الطلب.'
+  endcase
+%}
+{% section 'lbass-collection-hero' %}
+{% comment %}
+  Keep the complete collection in one decision/filter surface. The previous
+  24-item page split made a 48-item collection look incomplete and meant the
+  client-side filters could only search half the catalogue. Shopify supports
+  up to 250 items per paginate page; product images remain lazy-loaded.
+{% endcomment %}
+{% paginate collections[collection_source_handle].products by 250 %}
+{%- comment -%}
+  ═══ GRID SOURCE — MUST BE collection.products (2026-08-26) ═══
+
+  The grid used to loop `collections[collection_source_handle].products`, i.e.
+  the collection looked up BY HANDLE. That lookup always returns the collection's
+  DEFAULT order and the FULL product set — it silently ignores both the URL's tag
+  filter and its ?sort_by=. Measured live before this fix:
+
+      /collections/track-pants          -> 9 unique products
+      /collections/track-pants/black    -> 9   (identical)
+      /collections/track-pants/red      -> 9   (identical)
+      /collections/all?sort_by=best-selling -> byte-identical order to default
+
+  So every tag-filtered URL rendered the unfiltered grid. That broke the
+  shop-by-colour chips in snippets/lbass-colour-nav.liquid, which link to
+  /collections/<handle>/<colour> — a shopper clicking «حمر» got every colour.
+
+  `collection.products` is the filtered, sorted view Shopify builds from the URL.
+  Use it for the GRID. The only exception is the audited-drop page, which
+  deliberately renders the whole catalogue.
+
+  Note the chip/vendor lists below now reflect the filtered view too, which is
+  correct — they describe what is actually on screen. The colour nav keeps its
+  own unfiltered lookup by handle on purpose, so every colour stays reachable
+  from a filtered page; do not "align" it with this.
+{%- endcomment -%}
+{%- comment -%}
+  audited-drop deliberately shows the WHOLE catalogue instead of just its own
+  members — but only while nothing is filtered. Before 2026-09-04 the override
+  was unconditional, so on that page the grid rendered collections.all.products
+  no matter what: applying أبيض showed the count drop to 10 while all 64 products
+  stayed on screen. Any active filter (tag, list value, or price) now falls back
+  to the real filtered view.
+{%- endcomment -%}
+{%- assign lb_any_filter = false -%}
+{%- if current_tags != blank -%}{%- assign lb_any_filter = true -%}{%- endif -%}
+{%- for f in collection.filters -%}
+  {%- if f.active_values.size > 0 -%}{%- assign lb_any_filter = true -%}{%- endif -%}
+  {%- if f.type == 'price_range' -%}
+    {%- if f.min_value.value -%}{%- assign lb_any_filter = true -%}{%- endif -%}
+    {%- if f.max_value.value -%}{%- assign lb_any_filter = true -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{% if collection.handle == 'audited-drop-p001-p012' and lb_any_filter == false %}
+  {% assign collection_product_source = collections.all.products %}
+{% else %}
+  {% assign collection_product_source = collection.products %}
+{% endif %}
+{%- comment -%}
+  ═══ IN-STOCK FIRST (2026-08-26) ═══
+  Sold-out pieces used to take the opening slots of the grid purely on their
+  sort position. Measured 2026-08-26, /collections/all opened with
+  adidas-black-3-stripes-track-pants, which has 0 inventory — the first thing a
+  visitor saw could not be bought. Every product here is one-of-one, so sold-out
+  is permanent, not a restock away.
+
+  Available pieces are floated to the front while sold-out ones stay on the page
+  (they are still useful proof that stock genuinely moves, and they keep their
+  URLs alive for anything already linking to them). Order within each group is
+  untouched, so the collection's own sort order still applies.
+{%- endcomment -%}
+{% assign _in_stock = collection_product_source | where: 'available', true %}
+{% assign _sold_out = collection_product_source | where: 'available', false %}
+{% assign collection_product_source = _in_stock | concat: _sold_out %}
+{% assign collection_product_ids = ',' %}
+{% for collection_item in collection.products %}{% assign collection_product_ids = collection_product_ids | append: collection_item.id | append: ',' %}{% endfor %}
+<style>
+/* .chip-uniq removed 2026-08-29 — it never painted: .chip{...!important} in
+   lbass-stamp outranked it at any specificity. The pièce-unique plate now
+   lives in snippets/lbass-unique-badge.liquid, anchored so it cannot lose. */
+.chip-sold{background:rgba(255,107,107,.10);border-color:rgba(255,107,107,.30);color:#ff8a8a}
+.chip-cond{background:rgba(200,154,14,.10);border-color:rgba(200,154,14,.30);color:var(--gold)}
+.chip-sz{background:rgba(255,255,255,.045)}
+.coll-shop-head{scroll-margin-top:92px;display:flex;align-items:end;justify-content:space-between;gap:20px;padding:34px 0 20px;border-bottom:1px solid var(--line)}
+.coll-shop-head__label{display:block;margin:0 0 6px;color:var(--gold);font-family:var(--lt);font-size:10px;font-weight:800;letter-spacing:.18em;direction:ltr}
+.coll-shop-head h2{margin:0;color:var(--cream);font-size:clamp(25px,3vw,40px);line-height:1.2}
+.coll-shop-head p{max-width:650px;margin:8px 0 0;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.7}
+.coll-shop-head__count{flex:none;color:var(--txt3)!important;font-family:var(--lt);font-size:11px!important;letter-spacing:.08em;direction:rtl}
+.coll-query-links{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.coll-discovery{margin:58px 0 24px;padding-top:38px;border-top:1px solid var(--line)}
+.coll-discovery__intro{max-width:860px;margin:0 0 18px}
+.coll-discovery__intro h2{font-size:clamp(24px,3vw,38px);margin:0 0 10px}
+.coll-discovery__intro p,.coll-discovery__description{color:var(--txt2);margin:0;line-height:1.85}
+.coll-discovery__description{max-width:760px;margin:10px 0 0}
+.coll-experience{max-width:860px;margin:14px 0 18px;padding:14px 16px;border-inline-start:3px solid var(--gold);border-radius:10px;background:rgba(200,154,14,.06);color:var(--txt2);line-height:1.8}
+.coll-experience strong{color:var(--cream)}
+.coll-help-links{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.coll-intent{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:1080px;margin:0 0 20px}
+.coll-intent-card{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.032);padding:13px 14px;min-height:132px}
+.coll-intent-card i{display:block;font-style:normal;font-family:var(--lt);font-size:10px;letter-spacing:.18em;color:var(--gold);direction:ltr;font-weight:800;margin-bottom:6px}
+.coll-intent-card b{display:block;color:var(--cream);font-size:14.5px;line-height:1.35;margin-bottom:5px}
+.coll-intent-card p{color:var(--txt2);font-size:12.5px;font-weight:700;line-height:1.65;margin:0}
+.coll-faq{max-width:980px;margin:0 0 24px;display:grid;gap:8px}
+.coll-faq details{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);overflow:hidden}
+.coll-faq summary{list-style:none;cursor:pointer;padding:12px 14px;color:var(--cream);font-weight:900}
+.coll-faq summary::-webkit-details-marker{display:none}
+.coll-faq p{padding:0 14px 13px;margin:0;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.75}
+.coll-decision{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 20px;padding:14px 16px;border:1px solid rgba(200,154,14,.26);border-radius:14px;background:rgba(200,154,14,.07)}
+.coll-decision p{margin:0;color:var(--cream);font-size:13.5px;font-weight:800;line-height:1.7}
+.coll-decision a{flex:none;color:var(--ink);background:var(--gold);border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:900;text-decoration:none}
+@media(max-width:820px){.coll-intent{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.coll-shop-head{align-items:start;flex-direction:column;padding-top:26px}.coll-shop-head__count{margin-top:0!important}.coll-discovery{margin-top:42px;padding-top:28px}.coll-intent{grid-template-columns:1fr}.coll-intent-card{min-height:auto}.coll-decision{align-items:stretch;flex-direction:column}.coll-decision a{text-align:center;min-height:44px;display:grid;place-items:center}}
+</style>
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح">
+    <a href="{{ routes.root_url }}">الرئيسية</a> ›
+    <a href="{{ routes.collections_url }}">المتجر</a> ›
+    <span aria-current="page">{{ collection_display_title }}</span>
+  </nav>
+
+  {% render 'lbass-bridge-trust' %}
+
+  {%- comment -%}
+    Shop-by-colour. Renders nothing unless this collection actually has colour
+    tags on its products, so it stays inert on collections it does not suit.
+  {%- endcomment -%}
+  {% render 'lbass-colour-nav' %}
+
+  <section class="coll-shop-head" id="lbassCollectionProducts" aria-labelledby="collShopTitle" tabindex="-1">
+    <div>
+      <span class="coll-shop-head__label">SHOP THE EDIT</span>
+      <h2 id="collShopTitle">{{ collection_display_title }} — كل القطع</h2>
+      <p>المنتجات المتوفرة كيبانو أولاً. فلتر حسب البراند، القياس والثمن، ودخل للقطعة باش تشوف الصور والحالة كاملة.</p>
+    </div>
+    <p class="coll-shop-head__count">{{ collection_display_count }} قطعة</p>
+  </section>
+  {% if collection.handle == 'brand-adidas' or collection.handle == 'adidas-originals' %}
+    <nav class="coll-query-links" aria-label="قطع Adidas مرتبطة">
+      <a class="chip" href="{{ all_products['adidas-track-pants-black-red'].url }}">بنطال تراك أحمر Adidas</a>
+      <a class="chip" href="{{ all_products['adidas-black-3-stripes-track-pants-سروال-أديداس'].url }}">بنطال تراك أسود Adidas</a>
+      <a class="chip" href="{{ collections['track-pants'].url }}">Adidas Track Pants</a>
+    </nav>
+  {% elsif collection.handle == 'صبابط' or collection.handle == 'sneakers' or collection.handle == 'shoes' %}
+    <nav class="coll-query-links" aria-label="براندات الصبابط">
+      <a class="chip" href="{{ collections['adidas-originals'].url }}">صبابط Adidas أصلية</a>
+      <a class="chip" href="{{ collections['nike'].url }}">صبابط Nike أصلية</a>
+      <a class="chip" href="{{ collections['brand-vans'].url }}">Vans second-hand</a>
+      <a class="chip" href="/pages/sneakers-second-hand-maroc">دليل Sneakers Second-Hand Maroc</a>
+    </nav>
+  {% endif %}
+
+  {% if _in_stock.size == 0 %}
+    <section class="coll-decision" aria-label="حالة المخزون">
+      <p><strong>هاد الكوليكشن ما بقى فيها حتى قطعة متوفرة دابا.</strong><br>خليّنا القطع المباعة باينة للمعلومة، ولقينا ليك بدائل حية مباشرة تحت.</p>
+      <a href="{{ routes.all_products_collection_url }}" data-cro-event="available_now_click" data-cro-label="empty_collection">شوف المتوفر دابا</a>
+    </section>
+    {% render 'lbass-live-products-rail',
+      heading: 'هاد القطع تباعت — شوف بدائل متوفرة دابا',
+      intro: 'اختيارات حية من الدروب الحالي باش ما تساليش فصفحة مسدودة.',
+      placement: 'empty_collection_alternatives',
+      limit: 4,
+      exclude_ids: collection_product_ids
+    %}
+  {% endif %}
+
+  {% assign is_brand_coll = false %}
+  {% assign coll_vendors = collection_product_source | map: 'vendor' | uniq %}
+  {% if coll_vendors.size == 1 and coll_vendors.first == collection_display_title %}{% assign is_brand_coll = true %}{% endif %}
+
+  {% render 'lbass-collection-filters', collection: collection, count_override: collection_display_count %}
+
+  <div class="grid" id="lbfGrid">
+    {% for product in collection_product_source %}
+      {% assign cv = product.selected_or_first_available_variant %}
+      {% assign card_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
+      {% assign card_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
+      {% assign card_inspection = product.metafields.lbass.inspection_status.value %}
+      {% assign card_has_ticket = product.metafields.lbass.has_original_ticket.value %}
+      {% assign card_notes = product.metafields.lbass.condition_notes.value %}
+      {% assign card_defects = product.metafields.lbass.visible_defects.value %}
+      {% assign card_condition = '' %}
+      {% assign card_confirmed = false %}
+      {% if card_inspection == 'inspected_confirmed' %}
+        {% if card_has_ticket == true and card_status == 'new_with_ticket' %}
+          {% if card_ticket == 'ticket_attached' or card_ticket == 'ticket_included' %}{% assign card_condition = 'جديد بالتّيكيت' %}{% assign card_confirmed = true %}{% endif %}
+        {% elsif card_has_ticket == false and card_ticket == 'no_ticket' and card_status == 'new_without_ticket' %}
+          {% assign card_condition = 'جديد بلا تيكيت' %}{% assign card_confirmed = true %}
+        {% elsif card_has_ticket == false and card_ticket == 'no_ticket' and card_status == 'excellent_almost_new' %}
+          {% assign card_condition = 'بحالة ممتازة · شبه جديد' %}{% assign card_confirmed = true %}
+        {% elsif card_status == 'very_good' %}
+          {% assign card_condition = 'بحالة مزيانة بزاف' %}{% assign card_confirmed = true %}
+        {% elsif card_status == 'good' %}
+          {% assign card_condition = 'بحالة مزيانة' %}{% assign card_confirmed = true %}
+        {% elsif card_status == 'needs_note' %}
+          {% if card_notes != blank or card_defects != blank %}{% assign card_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign card_confirmed = true %}{% endif %}
+        {% endif %}
+      {% endif %}
+      {% capture card_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign card_one_s = card_one_s | strip %}
+      {% assign card_one = false %}{% if card_one_s == '1' %}{% assign card_one = true %}{% endif %}
+      {% assign card_promo = false %}
+      {% if cv.available and card_confirmed and product.metafields.lbass.promo_eligible.value == true %}
+        {% if card_status == 'new_with_ticket' or card_status == 'new_without_ticket' or card_status == 'excellent_almost_new' %}{% assign card_promo = true %}{% endif %}
+      {% endif %}
+      {% capture card_alt %}{{ product.vendor }} {{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first }} second-hand original in Morocco{% unless product.has_only_default_variant %}, size {{ cv.title }}{% endunless %}{% if card_condition != blank %}, {{ card_condition }}{% endif %}, photographed by Lbass Original{% endcapture %}
+      {% assign p_gender = '' %}
+      {% for t in product.tags %}
+        {% assign td = t | downcase %}
+        {% if td == 'homme' or td == 'men' or td == 'رجال' %}{% assign p_gender = 'm' %}{% break %}{% endif %}
+        {% if td == 'femme' or td == 'women' or td == 'نساء' %}{% assign p_gender = 'f' %}{% break %}{% endif %}
+      {% endfor %}
+      <div class="lbqa-wrap{% unless product.available %} lb-sold{% endunless %}"
+           data-avail="{% if product.available %}1{% else %}0{% endif %}"
+           data-brand="{{ product.vendor | escape }}"
+           data-price="{{ product.price | divided_by: 100.0 }}"
+           data-gender="{{ p_gender }}"
+           data-sizes="{% for v in product.variants %}{{ v.title | escape }}|{% endfor %}">
+      <a class="card" href="{{ product.url }}" data-collection-product data-cro-product-card data-cro-placement="collection" data-product-id="{{ product.id }}" data-product-name="{{ product.title | escape }}">
+        <div class="card-img">
+          {% if card_one %}<span class="lb-stamp" aria-hidden="true">1/1</span>{% elsif product.available %}<span class="lb-stamp" aria-hidden="true">LIVE</span>{% else %}<span class="lb-stamp lb-stamp--sold" aria-hidden="true">SOLD</span>{% endif %}
+          {% if product.featured_image %}
+            <img src="{{ product.featured_image | image_url: width: 500 }}" alt="{{ product.featured_image.alt | default: card_alt | strip | escape }}" loading="lazy" decoding="async" width="500" height="625">
+          {% else %}
+            <span style="font-size:64px;opacity:.4">{% case product.product_type %}{% when 'Jackets' %}🧥{% when 'Jeans' %}👖{% when 'T-Shirts' %}👕{% when 'Shoes' %}👟{% when 'Hoodies' %}🧣{% when 'Accessories' %}🕶{% else %}👕{% endcase %}</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {%- comment -%}
+            ONE vendor + ONE title. Both were previously rendered TWICE — once
+            plain, once with itemprop — so every card on every collection page
+            showed the brand and product name doubled. The microdata pair is the
+            one kept; the plain pair was the leftover.
+
+            `dir="auto"` on the title matters here: these names mix Latin and
+            Arabic ("Adidas Copa Black Football Boots - Size 44 | سبادري كورة
+            أديداس"). Without it the browser applies the page's RTL direction to
+            the whole string and the Latin half lands in the wrong visual order.
+            `auto` lets each run resolve from its own first strong character.
+          {%- endcomment -%}
+          <div class="card-vendor" itemprop="brand">{{ product.vendor }}</div>
+          <div class="card-title" itemprop="name" dir="auto">{{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first }}</div>
+          <div class="card-price" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+            <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
+            <meta itemprop="price" content="{{ product.price | divided_by: 100.0 }}">
+            <span itemprop="availability" content="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}"></span>
+            {{ product.price | money }}
+          </div>
+          {% if product.available %}<p style="margin:7px 0 0;color:var(--gold2);font-size:12px;font-weight:900">شوفها قبل ما تتباع ←</p>{% endif %}
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+            {% unless product.has_only_default_variant %}<span class="chip chip-sz" style="font-size:11px;padding:3px 8px">{{ cv.title }}</span>{% endunless %}
+            {% if card_confirmed %}<span class="chip chip-cond" style="font-size:11px;padding:3px 8px">{{ card_condition }}</span>{% endif %}
+            {% if card_promo %}<span class="chip" style="font-size:11px;padding:3px 8px">عرض على منتجات مختارة</span>{% endif %}
+            {% if card_one %}<span class="chip lb-uniq" dir="auto">Pièce unique <i>· قطعة وحدة</i></span>{% elsif product.available %}<span class="chip" style="font-size:11px;padding:3px 8px">متوفرة دابا</span>{% else %}
+      {%- comment -%}
+        No sold notice in the card body. The card keeps the SAME structure as an
+        available product — image, brand, title, price, size, condition — and the
+        only difference is the SOLD stamp on the image plus the muted sold button
+        rendered by snippets/lbass-quick-add.liquid.
+
+        Previously this spot held a full PDP sold-out <section> (h2 + paragraph +
+        related links) repeated on every sold card, which is what made the grid
+        look crowded. Replacing it with a one-line notice still left TWO sold
+        messages per card once the quick-add link was added, so the line is gone
+        entirely — one message, in the same place every card has its button.
+      {%- endcomment -%}
+          {% endif %}
+          </div>
+        </div>
+      </a>
+      {% render 'lbass-quick-add', product: product %}
+      </div>
+    {% else %}
+      <div style="grid-column:1/-1;border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--ink2)">
+        <p class="coll-empty-msg" role="status" style="margin-top:0;font-weight:600">ما كاينش منتجات دابا فهاد القسم.</p>
+        <p style="color:var(--txt2);margin:0 0 14px">حيت القطع second-hand غالبا كتكون نسخة وحدة، بعض الأقسام كيتبدلو بسرعة. شوف كل المنتجات أو سولنا على شنو كتقلب.</p>
+        <a class="btn btn-c" href="{{ routes.all_products_collection_url }}">شوف كل القطع</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if _in_stock.size > 0 and _in_stock.size < 4 %}
+    {% render 'lbass-live-products-rail',
+      heading: 'قطع مشابهة متوفرة دابا',
+      intro: 'هاد الكوليكشن فيها اختيارات قليلة، لذلك زدنا قطع حية من الدروب الحالي.',
+      placement: 'low_stock_collection_alternatives',
+      limit: 4,
+      exclude_ids: collection_product_ids
+    %}
+  {% endif %}
+
+
+  {% comment %}
+    Pagination — see snippets/lbass-pagination.liquid.
+    Replaces {{ paginate | default_pagination }}, which emitted unstyled English
+    markup that rendered as "« Next 2 1" under RTL.
+  {% endcomment %}
+  {% render 'lbass-pagination', paginate: paginate %}
+
+  {%- comment -%}
+    Query-cluster H2 sections. Placed AFTER the product grid on purpose: the
+    brief's rule is products above long text, and page-level GSC showed the
+    problem is topical BREADTH, not depth of intro copy. Renders only on the
+    handles it is written for.
+  {%- endcomment -%}
+  {% render 'lbass-collection-topics' %}
+
+  <section class="coll-discovery" aria-labelledby="collDiscoveryTitle">
+    <div class="coll-discovery__intro">
+      <h2 id="collDiscoveryTitle">{{ collection_answer_title }}</h2>
+      <p>{{ collection_answer | strip }}</p>
+      {% if collection_display_description != blank %}
+        <div class="coll-discovery__description">{{ collection_display_description }}</div>
+      {% endif %}
+    </div>
+    <p class="coll-experience"><strong>من التجربة ديال Lbass:</strong> {{ collection_experience }}</p>
+
+    <div class="coll-help-links" aria-label="أدلة مساعدة">
+      <a class="chip" href="/pages/condition-guide">دليل الحالة</a>
+      <a class="chip" href="/pages/size-guide">دليل القياسات</a>
+      <a class="chip" href="/pages/shipping-and-payment">التوصيل والخلاص</a>
+      <a class="chip" href="https://wa.me/491754264425?text={{ 'سلام Lbass Original! محتاج مساعدة نختار من ' | append: collection_display_title | url_encode }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="collection_guide">سولنا فالواتساب</a>
+    </div>
+
+    <nav class="coll-help-links" aria-label="كوليكشنات وصفحات مرتبطة">
+      {% case collection.handle %}
+        {% when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes' %}
+          {% if collections['adidas-originals'] != blank and collections['adidas-originals'].products_count > 0 %}<a class="chip" href="{{ collections['adidas-originals'].url }}">Adidas second-hand Maroc</a>{% endif %}
+          {% if collections['nike'] != blank and collections['nike'].products_count > 0 %}<a class="chip" href="{{ collections['nike'].url }}">Nike second-hand Maroc</a>{% endif %}
+          <a class="chip" href="/pages/sneakers-second-hand-maroc">دليل Sneakers Second-Hand Maroc</a>
+        {% when 'brand-adidas', 'adidas-originals', 'brand-nike', 'nike', 'brand-jordan', 'brand-converse', 'brand-new-balance' %}
+          {% if collections['صبابط'] != blank and collections['صبابط'].products_count > 0 %}<a class="chip" href="{{ collections['صبابط'].url }}">صبابط أصلية فالمغرب</a>{% endif %}
+          {% if collections['إكسسوارات'] != blank and collections['إكسسوارات'].products_count > 0 %}<a class="chip" href="{{ collections['إكسسوارات'].url }}">إكسسوارات</a>{% endif %}
+          <a class="chip" href="/pages/how-we-check-items">كيفاش كنشيكو القطع</a>
+        {% else %}
+          {% if collections['صبابط'] != blank and collections['صبابط'].products_count > 0 %}<a class="chip" href="{{ collections['صبابط'].url }}">صبابط</a>{% endif %}
+          {% if collections['إكسسوارات'] != blank and collections['إكسسوارات'].products_count > 0 %}<a class="chip" href="{{ collections['إكسسوارات'].url }}">إكسسوارات</a>{% endif %}
+          <a class="chip" href="/pages/about">على Lbass Original</a>
+      {% endcase %}
+    </nav>
+
+    <div class="coll-decision" aria-label="مساعدة قبل الاختيار">
+      <p>ما عارفش شنو يجيك؟ قارن القياس والحالة بين القطع، أو سولنا قبل الطلب. أغلب القطع محدودة، والمخزون الحقيقي كيبان فصفحة كل منتج.</p>
+      <a href="https://wa.me/491754264425?text={{ 'سلام، محتاج مساعدة نختار من ' | append: collection_display_title | url_encode }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="collection_help">عاونّي نختار</a>
+    </div>
+
+    <section class="coll-intent" aria-label="دليل الشراء حسب نية الزبون">
+      <article class="coll-intent-card">
+        <i>KNOW</i>
+        <b>شنو خاصني نعرف قبل ما نختار؟</b>
+        <p>قرا الحالة، شوف الصور كاملة، وقارن القياس مع قطعة عندك قبل ما تدخل المنتج للسلة.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>GO</i>
+        <b>{{ collection_display_title }} فالمغرب</b>
+        <p>هاد القسم كيعاونك تلقى قطع second-hand أصلية متوفرة دابا من Lbass Original أونلاين.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>DO</i>
+        <b>كيفاش نختار القياس؟</b>
+        <p>استعمل القياس ديال variant، القياسات المكتوبة فالمنتج، أو سولنا فالواتساب على fit قبل الطلب.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>BUY</i>
+        <b>وجدتي القطعة؟</b>
+        <p>دخل لصفحة المنتج، تأكد من الصورة والحالة والثمن، وكمل بـ COD أو PayPal حسب الطرق المتاحة.</p>
+      </article>
+    </section>
+
+    <section class="coll-faq" id="collectionFaq" aria-label="أسئلة حول {{ collection_display_title | escape }}">
+      <details>
+        <summary>واش هاد المنتجات كاملة متوفرة؟</summary>
+        <p>المنتجات اللي كيبان فيها زر الطلب كتكون متوفرة حسب Shopify. إلا تباعت قطعة، كتبدل الحالة ديالها وما خاصهاش تبقى قابلة للطلب.</p>
+      </details>
+      <details>
+        <summary>واش كل قطعة عندها نفس الحالة؟</summary>
+        <p>لا. كل قطعة second-hand كتكون بوحدها. شوف الحالة والصور فصفحة المنتج، وسولنا إلا بغيتي تفاصيل أكثر.</p>
+      </details>
+      <details>
+        <summary>كيفاش نطلب من هاد الكوليكشن؟</summary>
+        <p>اختار المنتج، راجع القياس والصور، ومن بعد كمل الطلب أو صيفط لينا فالواتساب باش نأكدو معاك قبل الإرسال.</p>
+      </details>
+      {%- for row in coll_extra_faq_rows -%}
+        {%- assign qa = row | split: '||' -%}
+        {%- if qa[1] != blank -%}
+          <details>
+            <summary>{{ qa[0] }}</summary>
+            <p>{{ qa[1] }}</p>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+      {% if is_brand_coll %}
+        <details>
+          <summary>واش حوايج {{ collection_display_title }} اللي كتبيعو أصلية؟</summary>
+          <p>Lbass Original كيعرض قطع {{ collection_display_title }} بصور حقيقية ديال نفس القطعة. حالة التّيكيت والفحص والمخزون كيبانو حسب المعلومات المؤكدة فصفحة كل منتج، والخلاص عند الاستلام (COD) متاح فالمغرب حسب خيارات الطلب.</p>
+        </details>
+      {% endif %}
+    </section>
+
+    <nav aria-label="أقسام أخرى">
+      <p style="color:var(--txt3);font-size:12.5px;font-weight:800;margin:0 0 8px">تصفح حسب البراند والفئة</p>
+      {% for c in collections %}
+        {% unless c.handle == 'frontpage' or c.handle == collection.handle or c.products_count == 0 %}
+          <a class="chip" href="{{ c.url }}">{{ c.title }}</a>
+        {% endunless %}
+      {% endfor %}
+      <a class="chip" href="/pages/vault" style="border-color:rgba(200,154,14,.4);color:var(--gold)">VAULT</a>
+    </nav>
+  </section>
+</div>
+
+<style>
+.lbf{margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.028)}
+.lbf-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lbf-chip{cursor:pointer;background:var(--ink2);font-family:inherit;transition:border-color .2s,color .2s}
+.lbf-chip.on{border-color:var(--gold);color:var(--gold);background:rgba(200,154,14,.1)}
+.lbf-select{padding:8px 12px;border-radius:30px;border:1px solid var(--line);background:var(--ink2);color:var(--txt2);font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.lbf-clear{cursor:pointer;background:transparent;font-family:inherit;color:#ff8a8a;border-color:rgba(255,107,107,.3)}
+.lbf-count{margin:8px 0 0;color:var(--txt3);font-size:12.5px;font-weight:800}
+.lbf-scope{margin:6px 0 0;color:var(--txt3);font-size:12px;font-weight:700;line-height:1.6}
+.grid>.lbqa-wrap{order:1}
+.grid>.lb-sold{order:9;opacity:.75}
+.grid>.lbqa-wrap.lbf-hide{display:none}
+</style>
+<script>
+(function(){
+  'use strict';
+  var grid = document.getElementById('lbfGrid');
+  if (!grid) return;
+  var wraps = Array.prototype.slice.call(grid.querySelectorAll('.lbqa-wrap'));
+  if (!wraps.length) return;
+  var state = { avail:false, gender:null, brand:null, size:null, price:null };
+
+  grid.addEventListener('click', function(e){
+    var card = e.target.closest('[data-collection-product]');
+    if (!card) return;
+    try {
+      var vault = JSON.parse(sessionStorage.getItem('lbass_vault_attribution_v1') || 'null');
+      if (!vault || !vault.ts || (Date.now() - vault.ts) > 86400000) return;
+      vault.touch = 'product';
+      vault.source = 'vault_collection';
+      vault.product_id = card.getAttribute('data-product-id') || '';
+      vault.product_name = card.getAttribute('data-product-name') || '';
+      vault.destination = card.getAttribute('href') || '';
+      vault.ts = Date.now();
+      sessionStorage.setItem('lbass_vault_attribution_v1', JSON.stringify(vault));
+      var params = { category: vault.category || 'unknown', product_id: vault.product_id, product_name: vault.product_name, collection: {{ collection.handle | json }} };
+      if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_vault_product_click', params);
+    } catch(err){}
+  });
+
+
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": {{ collection_display_title | json }},
+  "description": {{ collection_display_description | strip_html | json }},
+  "url": "{{ shop.url }}{{ collection.url }}",
+  "isPartOf": {"@id":"{{ shop.url }}/#website"},
+  "publisher": {"@id":"{{ shop.url }}/#organization"}
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ collection_display_title | json }},
+  "itemListElement": [
+    {% for product in collection_product_source limit: 48 %}
+      {
+        "@type": "ListItem",
+        "position": {{ forloop.index }},
+        "item": {
+          "@type": "Product",
+          "name": {{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | json }},
+          "url": "{{ shop.url }}{{ product.url }}",
+          {% if product.featured_image %}"image": "https:{{ product.featured_image | image_url: width: 600 }}",{% endif %}
+          "brand": {"@type": "Brand", "name": {{ product.vendor | json }}},
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "MAD",
+            "price": {{ product.price | divided_by: 100.0 }},
+            "availability": "{% if product.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+          }
+        }
+      }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}},
+    {"@type": "ListItem", "position": 2, "name": "المتجر", "item": "{{ shop.url }}/collections"},
+    {"@type": "ListItem", "position": 3, "name": {{ collection_display_title | json }}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "{{ shop.url }}{{ collection.url }}#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "واش هاد المنتجات كاملة متوفرة؟",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "المنتجات اللي كيبان فيها زر الطلب كتكون متوفرة حسب Shopify. إلا تباعت قطعة، كتبدل الحالة ديالها وما خاصهاش تبقى قابلة للطلب."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "واش كل قطعة عندها نفس الحالة؟",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "لا. كل قطعة second-hand كتكون بوحدها. شوف الحالة والصور فصفحة المنتج، وسولنا إلا بغيتي تفاصيل أكثر."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "كيفاش نطلب من هاد الكوليكشن؟",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "اختار المنتج، راجع القياس والصور، ومن بعد كمل الطلب أو صيفط لينا فالواتساب باش نأكدو معاك قبل الإرسال."
+      }
+    }{%- for row in coll_extra_faq_rows -%}
+      {%- assign qa = row | split: '||' -%}
+      {%- if qa[1] != blank -%},
+    {
+      "@type": "Question",
+      "name": {{ qa[0] | json }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ qa[1] | json }} }
+    }
+      {%- endif -%}
+    {%- endfor -%}{% if is_brand_coll %},
+    {
+      "@type": "Question",
+      "name": {{ 'واش حوايج ' | append: collection_display_title | append: ' اللي كتبيعو أصلية؟' | json }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ 'Lbass Original كيعرض قطع ' | append: collection_display_title | append: ' بصور حقيقية ديال نفس القطعة. حالة التّيكيت والفحص والمخزون كيبانو حسب المعلومات المؤكدة فصفحة كل منتج، والخلاص عند الاستلام متاح فالمغرب حسب خيارات الطلب.' | json }}
+      }
+    }{% endif %}
+  ]
+}
+</script>
+{% endpaginate %}

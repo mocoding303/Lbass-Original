@@ -1,0 +1,135 @@
+{% comment %}
+  AI-search attribution layer.
+
+  - Detects only observable referral hosts / explicit UTM source values.
+  - Persists first-touch context for 30 days in localStorage.
+  - Adds that context to Lbass custom Shopify analytics events.
+  - Does NOT emit GA4 standard ecommerce events. The official Google & YouTube
+    app pixel remains the single owner of view_item/add_to_cart/checkout/purchase.
+  - The voluntary answer is stored as a Shopify cart attribute and follows the
+    cart into the order. No customer identity is stored in localStorage.
+{% endcomment %}
+<script>
+(function(){
+  'use strict';
+  if (window.LbassAiAttribution) return;
+
+  var KEY = 'lbass_ai_touch_v1';
+  var TTL = 30 * 24 * 60 * 60 * 1000;
+  var providers = {
+    'chatgpt.com':'chatgpt', 'chat.openai.com':'chatgpt',
+    'perplexity.ai':'perplexity',
+    'claude.ai':'claude',
+    'gemini.google.com':'gemini', 'bard.google.com':'gemini',
+    'copilot.microsoft.com':'copilot', 'bing.com':'copilot',
+    'you.com':'you', 'phind.com':'phind'
+  };
+
+  function clean(value, max){
+    return String(value || '').replace(/[\r\n\t]/g, ' ').trim().slice(0, max || 120);
+  }
+  function hostFrom(value){
+    if (!value) return '';
+    try {
+      var parser = document.createElement('a');
+      parser.href = value;
+      return String(parser.hostname || '').toLowerCase().replace(/^www\./, '');
+    }
+    catch(e){ return ''; }
+  }
+  function providerFrom(host, source){
+    var key;
+    for (key in providers){
+      if (host === key || host.endsWith('.' + key)) return providers[key];
+    }
+    source = clean(source, 80).toLowerCase();
+    for (key in providers){
+      if (source === providers[key] || source.indexOf(providers[key]) !== -1) return providers[key];
+    }
+    return '';
+  }
+  function read(){
+    try {
+      var value = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!value || !value.ts || Date.now() - value.ts > TTL) return null;
+      return value;
+    } catch(e){ return null; }
+  }
+  function detect(){
+    var source = '', medium = '';
+    try {
+      var query = new URLSearchParams(location.search);
+      source = clean(query.get('utm_source'), 80);
+      medium = clean(query.get('utm_medium'), 80);
+    } catch(e){
+      var pairs = String(location.search || '').replace(/^\?/, '').split('&');
+      pairs.forEach(function(pair){
+        var parts = pair.split('=');
+        var key = decodeURIComponent(parts.shift() || '');
+        var val = decodeURIComponent(parts.join('=') || '').replace(/\+/g, ' ');
+        if (key === 'utm_source') source = clean(val, 80);
+        if (key === 'utm_medium') medium = clean(val, 80);
+      });
+    }
+    var referrerHost = hostFrom(document.referrer);
+    var provider = providerFrom(referrerHost, source);
+    if (!provider) return read();
+    var value = {
+      provider: provider,
+      source: source || referrerHost,
+      medium: medium || 'ai-assistant',
+      landing_path: clean(location.pathname + location.search, 240),
+      referrer_host: referrerHost,
+      ts: Date.now()
+    };
+    try { localStorage.setItem(KEY, JSON.stringify(value)); } catch(e){}
+    return value;
+  }
+  function enrich(params){
+    params = params || {};
+    var touch = read();
+    if (touch){
+      params.ai_provider = touch.provider;
+      params.ai_source = touch.source;
+      params.ai_medium = touch.medium;
+      params.ai_landing_path = touch.landing_path;
+    }
+    return params;
+  }
+  function publish(name, params){
+    try {
+      if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function'){
+        Shopify.analytics.publish(name, enrich(params || {}));
+      }
+    } catch(e){}
+  }
+  function saveAnswer(value){
+    value = clean(value, 80);
+    if (!value) return Promise.resolve(false);
+    var root = (window.Shopify && Shopify.routes && Shopify.routes.root) || '/';
+    return fetch(root + 'cart/update.js', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({attributes:{'منين عرفتي Lbass Original؟':value}})
+    }).then(function(response){
+      if (!response.ok) throw new Error('cart_attribute_failed');
+      publish('lbass_discovery_source_saved', {discovery_source:value});
+      return true;
+    }).catch(function(){ return false; });
+  }
+
+  var initial = detect();
+  window.LbassAiAttribution = {read:read, enrich:enrich, publish:publish, saveAnswer:saveAnswer};
+  if (initial && initial.provider){
+    var announceLanding = function(){
+      publish('lbass_ai_referral_landing', {
+        provider: initial.provider,
+        landing_path: initial.landing_path,
+        referrer_host: initial.referrer_host
+      });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', announceLanding, {once:true});
+    else announceLanding();
+  }
+})();
+</script>

@@ -1,0 +1,52 @@
+{%- comment -%}
+  ═══ LBASS — JUDGE.ME CAROUSEL BROKEN-IMAGE GUARD (2026-09-04) ═══
+
+  THE BUG
+  Judge.me's review carousel renders some product thumbnails with NO `src`
+  attribute at all (verified live: `img.jdgm-carousel-item__product-image`
+  with `getAttribute('src') === null` for "Tommy Hilfiger Black Cap" and
+  "Jordan Jumpman White T-shirt"). The element still occupies 290x56, so the
+  homepage carousel shows blank slots next to real review text.
+
+  It is NOT a catalog gap — both products have images in Shopify
+  (lbass-prod-p012-01.jpg, lbass-prod-p014-01.jpg). Judge.me's own cached
+  review data is missing the URL, so the ROOT FIX is a product re-sync inside
+  the Judge.me app. This snippet only stops the blank box from being shown
+  while that is outstanding.
+
+  WHY JS AND NOT CSS
+  A plain `img:not([src])` rule would also hide any thumbnail Judge.me
+  lazy-loads a moment later, silently deleting good images. This checks
+  `naturalWidth === 0` AFTER load instead, so it only ever hides an image that
+  genuinely failed. It hides the <img>, never the review, so the customer's
+  words and star rating stay on the page.
+
+  Scoped to `.jdgm-carousel-item__product-image` — it cannot touch store imagery.
+{%- endcomment -%}
+
+<style>
+  /* collapse the slot rather than leaving a 290x56 gap */
+  img.jdgm-carousel-item__product-image[data-lbass-broken="1"]{display:none!important}
+</style>
+<script>
+(function(){
+  var SEL = 'img.jdgm-carousel-item__product-image';
+  function sweep(){
+    var imgs = document.querySelectorAll(SEL), n = 0;
+    for (var i = 0; i < imgs.length; i++){
+      var im = imgs[i];
+      var src = im.getAttribute('src');
+      var failed = (!src) || (im.complete && im.naturalWidth === 0);
+      if (failed){ im.setAttribute('data-lbass-broken', '1'); n++; }
+    }
+    return n;
+  }
+  /* the widget is injected async, so sweep a few times then stop */
+  var passes = 0;
+  var t = setInterval(function(){
+    sweep();
+    if (++passes >= 10) clearInterval(t);
+  }, 700);
+  window.addEventListener('load', sweep);
+})();
+</script>

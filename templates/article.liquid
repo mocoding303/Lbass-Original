@@ -1,0 +1,223 @@
+{%- comment -%}
+  LBASS — ARTICLE (2026-08-03)
+  Created alongside templates/blog.liquid — see the note there about
+  /blogs/news returning 404 while being listed in the sitemap.
+
+  SCHEMA DISCIPLINE
+  BlogPosting only, and only from fields that are actually on the page:
+  headline, image, datePublished, dateModified, author, publisher,
+  mainEntityOfPage. No aggregateRating, no fabricated author persona.
+
+  FAQ: an article can carry its own FAQ via metafield lbass.faq (a list of
+  {q,a}). If it is absent NO FAQPage schema is emitted — FAQPage markup
+  without matching visible Q&A on the page is a structured-data violation.
+{%- endcomment -%}
+
+{%- assign query_article_title = article.title -%}
+{%- assign query_article_answer = blank -%}
+{%- assign query_article_faq = false -%}
+{%- assign query_article_handle = article.handle | split: '/' | last -%}
+{%- case query_article_handle -%}
+  {%- when 'farq-bin-vintage-second-hand-thrift' -%}
+    {%- assign query_article_title = 'Thrift معنى: شنو الفرق بين Thrift وVintage وSecond-Hand؟' -%}
+    {%- assign query_article_answer = 'Thrift معنى: شراء حوايج مستعملة من متجر أو سوق كيركّز على الثمن وإعادة الاستعمال؛ أما vintage كيرتبط بعمر وستايل القطعة، وsecond-hand كيعني كان عندها مالك من قبل.' -%}
+    {%- assign query_article_faq = true -%}
+  {%- when 'chno-ma3na-one-of-one-fashion' -%}
+    {%- assign query_article_title = 'معنى One-of-One (1/1) فالموضة' -%}
+    {%- assign query_article_answer = 'معنى One-of-One (1/1): كاينة نسخة وحدة فقط من هاد القطعة فالمخزون؛ ملي كتباع، نفس القطعة بنفس القياس والحالة ما كتبقاش متوفرة.' -%}
+  {%- when 'friperie-en-ligne-maroc-cest-quoi' -%}
+    {%- assign query_article_title = 'Friperie en ligne Maroc: شنو هي؟' -%}
+    {%- assign query_article_answer = 'Friperie en ligne Maroc هي boutique أونلاين كتبيع حوايج second-hand مختارة، بصور القطعة نفسها وحالتها وقياسها قبل الطلب.' -%}
+{%- endcase -%}
+
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح">
+    <a href="{{ routes.root_url }}">الرئيسية</a> ›
+    <a href="{{ blog.url }}">{{ blog.title }}</a> ›
+    <span aria-current="page">{{ query_article_title }}</span>
+  </nav>
+
+  <article>
+    <h1>{{ query_article_title }}</h1>
+    <p style="color:var(--txt3);font-size:13px;margin:0 0 18px">
+      <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: '%d.%m.%Y' }}</time>{% if article.author != blank %} · {{ article.author }}{% endif %}
+    </p>
+
+    {% if article.image %}
+      <img src="{{ article.image | image_url: width: 1400 }}"
+           srcset="{{ article.image | image_url: width: 700 }} 700w, {{ article.image | image_url: width: 1400 }} 1400w"
+           sizes="(max-width:900px) 100vw, 900px"
+           alt="{{ query_article_title | escape }} — Lbass Original المغرب"
+           style="width:100%;height:auto;border-radius:16px;margin:0 0 22px;border:1px solid var(--line)"
+           loading="eager" fetchpriority="high" width="{{ article.image.width }}" height="{{ article.image.height }}">
+    {% endif %}
+
+    {% if query_article_answer != blank %}
+      <section class="lbart-answer" aria-label="الجواب المختصر">
+        <p>{{ query_article_answer }}</p>
+      </section>
+    {% endif %}
+
+    {%- comment -%}
+      AI/search visitors reach these articles before they are ready to browse.
+      Put live inventory immediately after the direct answer so the first
+      commercial action is visible before the long-form article begins.
+    {%- endcomment -%}
+    {%- if query_article_handle == 'chno-ma3na-one-of-one-fashion' -%}
+      {% render 'lbass-live-products-rail',
+        heading: 'قطع 1/1 متوفرة دابا',
+        intro: 'كل قطعة وحدة، بصورها الحقيقية، القياس والحالة واضحين قبل الطلب.',
+        placement: 'article_one_of_one',
+        limit: 4,
+        one_only: true
+      %}
+    {%- elsif query_article_handle == 'farq-bin-vintage-second-hand-thrift' -%}
+      {% render 'lbass-live-products-rail',
+        heading: 'باغي تشوف الفرق فالحقيقة؟',
+        intro: 'شوف قطع vintage وsecond-hand اللي باقية متوفرة دابا، بصورها الحقيقية.',
+        placement: 'article_vintage_thrift',
+        limit: 4
+      %}
+    {%- elsif query_article_handle == 'guide-achat-second-hand-original-maroc' -%}
+      {% render 'lbass-live-products-rail',
+        heading: 'بدا بقطع سهلة تحت 400 درهم',
+        intro: 'اختيارات متوفرة دابا بين 199 و399 درهم باش تطبّق دليل الشراء مباشرة.',
+        placement: 'article_buying_guide',
+        limit: 4,
+        min_price: 19900,
+        max_price: 39900
+      %}
+    {%- endif -%}
+
+    <div class="lbart">
+      {{ article.content }}
+    </div>
+  </article>
+
+  {%- assign faq = article.metafields.lbass.faq.value -%}
+  {%- if query_article_faq -%}
+    <section class="lbart-faq" aria-label="أسئلة متكررة">
+      <h2>أسئلة على Thrift وVintage وSecond-Hand</h2>
+      <details><summary>شنو معنى thrift؟</summary><p>Thrift معنى شراء حوايج مستعملة من متجر أو سوق كيركّز على الثمن المناسب وإعادة الاستعمال.</p></details>
+      <details><summary>شنو الفرق بين thrift وsecond-hand؟</summary><p>Second-hand كيعني القطعة كان عندها مالك من قبل؛ thrift كيوصف طريقة الشراء من متجر أو سوق ديال الحوايج المستعملة.</p></details>
+      <details><summary>واش كل vintage هو second-hand؟</summary><p>لا. Vintage كيوصف عمر أو ستايل القطعة، بينما second-hand كيعني أنها كانت مملوكة من قبل؛ ممكن قطعة vintage تكون قديمة ولكن ما تلبساتش.</p></details>
+    </section>
+  {%- elsif faq != blank -%}
+    <section class="lbart-faq" aria-label="أسئلة متكررة">
+      <h2>أسئلة متكررة</h2>
+      {% for item in faq %}
+        <details>
+          <summary>{{ item.q }}</summary>
+          <p>{{ item.a }}</p>
+        </details>
+      {% endfor %}
+    </section>
+  {%- endif -%}
+
+  {% render 'lbass-bridge-shop' %}
+  {% render 'lbass-bridge-categories' %}
+  {% render 'lbass-bridge-trust' %}
+
+  {% if blog.articles_count > 1 %}
+  <nav style="margin:26px 0 0" aria-label="مقالات أخرى">
+    <p style="color:var(--txt3);font-size:12.5px;font-weight:800;margin:0 0 8px">مقالات أخرى</p>
+    {% for a in blog.articles limit: 6 %}
+      {% unless a.id == article.id %}<a class="chip" href="{{ a.url }}">{{ a.title }}</a>{% endunless %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+
+{% if query_article_handle == 'guide-achat-second-hand-original-maroc' %}
+  <a class="lbart-sticky-shop"
+     href="{{ routes.all_products_collection_url }}"
+     data-cro-event="available_now_click"
+     data-cro-label="article_buying_guide_sticky"
+     data-source-section="article_buying_guide">شوف القطع المتوفرة</a>
+{% endif %}
+
+<style>
+.lbart{max-width:900px;color:var(--txt);line-height:1.95;font-size:16px}
+.lbart-answer{max-width:900px;margin:0 0 20px;padding:16px 18px;border:1px solid rgba(200,154,14,.38);border-radius:14px;background:rgba(200,154,14,.07)}
+.lbart-answer p{margin:0;color:var(--cream);font-weight:800;line-height:1.9}
+.lbart p{margin:0 0 16px}
+.lbart h2{margin:28px 0 10px}
+.lbart h3{margin:22px 0 8px}
+.lbart ul,.lbart ol{padding-inline-start:22px;margin:0 0 16px}
+.lbart li{margin:6px 0}
+.lbart a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+.lbart a:hover{color:var(--gold2)}
+.lbart img{max-width:100%;height:auto;border-radius:14px;margin:10px 0}
+.lbart blockquote{margin:18px 0;padding:14px 18px;border-inline-start:3px solid var(--gold);background:rgba(200,154,14,.06);border-radius:0 12px 12px 0}
+.lbart table{width:100%;border-collapse:collapse;margin:16px 0;display:block;overflow-x:auto}
+.lbart th,.lbart td{border:1px solid var(--line);padding:9px 12px;text-align:start;font-size:14px}
+.lbart-faq{max-width:900px;margin:30px 0 0;display:grid;gap:8px}
+.lbart-faq details{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);overflow:hidden}
+.lbart-faq summary{list-style:none;cursor:pointer;padding:12px 14px;color:var(--cream);font-weight:900}
+.lbart-faq summary::-webkit-details-marker{display:none}
+.lbart-faq p{padding:0 14px 13px;margin:0;color:var(--txt2);font-size:13.5px;line-height:1.8}
+.lbart-sticky-shop{display:none}
+@media(max-width:700px){
+  .lbart-sticky-shop{display:flex;position:fixed;z-index:115;right:14px;left:14px;bottom:14px;min-height:52px;align-items:center;justify-content:center;border-radius:12px;background:var(--gold,#c89a0e);color:#0B0B0C;font-size:14px;font-weight:950;text-decoration:none;box-shadow:0 14px 38px rgba(0,0,0,.28)}
+  body{padding-bottom:76px}
+}
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {"@type":"WebPage","@id":"{{ shop.url }}{{ article.url }}"},
+  "headline": {{ query_article_title | json }},
+  "description": {% if query_article_answer != blank %}{{ query_article_answer | json }}{% else %}{{ article.excerpt_or_content | strip_html | truncate: 200 | json }}{% endif %},
+  "inLanguage": "ar-MA",
+  "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},
+  "dateModified": {{ article.updated_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},
+  {% if article.image %}"image": ["https:{{ article.image | image_url: width: 1400 }}"],{% endif %}
+  "author": {"@type":"Organization","name":"Lbass Original","url":{{ shop.url | json }}},
+  "publisher": {
+    "@type": "Organization",
+    "name": "Lbass Original",
+    "url": {{ shop.url | json }},
+    "logo": {"@type":"ImageObject","url":"https:{{ 'lbass-wordmark-horizontal.svg' | asset_url }}"}
+  },
+  "isPartOf": {"@type":"Blog","name":{{ blog.title | json }},"url":"{{ shop.url }}{{ blog.url }}"}
+}
+</script>
+{%- if query_article_faq -%}
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {"@type":"Question","name":"شنو معنى thrift؟","acceptedAnswer":{"@type":"Answer","text":"Thrift معنى شراء حوايج مستعملة من متجر أو سوق كيركّز على الثمن المناسب وإعادة الاستعمال."}},
+    {"@type":"Question","name":"شنو الفرق بين thrift وsecond-hand؟","acceptedAnswer":{"@type":"Answer","text":"Second-hand كيعني القطعة كان عندها مالك من قبل؛ thrift كيوصف طريقة الشراء من متجر أو سوق ديال الحوايج المستعملة."}},
+    {"@type":"Question","name":"واش كل vintage هو second-hand؟","acceptedAnswer":{"@type":"Answer","text":"لا. Vintage كيوصف عمر أو ستايل القطعة، بينما second-hand كيعني أنها كانت مملوكة من قبل؛ ممكن قطعة vintage تكون قديمة ولكن ما تلبساتش."}}
+  ]
+}
+</script>
+{%- elsif faq != blank -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in faq %}
+    {"@type":"Question","name":{{ item.q | json }},
+     "acceptedAnswer":{"@type":"Answer","text":{{ item.a | json }}}}{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+{%- endif -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"الرئيسية","item":{{ shop.url | json }}},
+    {"@type":"ListItem","position":2,"name":{{ blog.title | json }},"item":"{{ shop.url }}{{ blog.url }}"},
+    {"@type":"ListItem","position":3,"name":{{ query_article_title | json }}}
+  ]
+}
+</script>

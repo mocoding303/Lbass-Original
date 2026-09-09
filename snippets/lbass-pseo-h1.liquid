@@ -1,0 +1,38 @@
+{%- comment -%}
+  LBASS — pSEO H1 / RATE NOTES (2026-08-04)
+  Documentation only. The logic is INLINE in templates/page.pseo.liquid,
+  because {% render %} has an isolated scope and could never reassign ps_h1.
+
+  ── WHAT CHANGED AND WHY ──
+
+  1. H1 NOW FOLLOWS page.title.
+     Each pSEO page hardcoded its heading:
+         assign ps_h1 = 'سنيكرز second-hand أصلية فالمغرب'
+     On 2026-08-03 the nine page TITLES were rewritten to informational
+     framing ("دليل: كيفاش تختار…") so the collections could own the
+     transactional query. The hardcoded H1s did not move, leaving every page
+     promising a guide in the <title> and delivering a category in the <h1>.
+     Verified live: title "دليل: كيفاش تختار صبابط…" vs h1 "سنيكرز second-hand
+     أصلية فالمغرب".
+
+     One line after the case block now does it for all nine:
+         {%- if page.title != blank -%}{%- assign ps_h1 = page.title -%}{%- endif -%}
+
+     The hardcoded values stay as fallbacks, so a page with no title still
+     renders. And because ps_h1 also feeds the breadcrumb, the WhatsApp
+     prefill, BreadcrumbList and CollectionPage schema, all of those follow
+     the Admin title automatically from now on. No more hardcoded headings.
+
+  2. SHIPPING 40 → 30.
+     Verified shipping is 20 MAD inside Marrakech and 40 MAD elsewhere in
+     Morocco (free at 500 MAD).
+     This template still said 40 in four places — the Darija answer block, the
+     French mirror, the visible FAQ, and the FAQ JSON-LD — plus the trust chip
+     that renders on EVERY pSEO page. Schema stating a wrong price is worse
+     than body copy doing it, because it is machine-read as fact.
+
+  3. COLLECTION LINKS.
+     Parent links use the currently published /collections/nike and
+     /collections/adidas-originals handles. Do not repoint them to unpublished
+     /brand-* resources; those were verified 404 on 2026-08-20.
+{%- endcomment -%}

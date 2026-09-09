@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ar-MA" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+{% capture default_description %}Lbass Original: حوايج براند أصلية second-hand فالمغرب، قطع مختارة بصور حقيقية، حالة واضحة، وخلاص بـ COD أو PayPal.{% endcapture %}
+
+{% comment %}
+  Admin "Search engine listing" fields, whatever the resource type.
+  Shopify stores them as global.title_tag / global.description_tag.
+  Rationale: a {% render %} would drop the assigns (isolated scope), so this
+  logic must remain inline. See snippets/lbass-canonical-map.liquid for detail.
+{% endcomment %}
+{%- assign seo_title = nil -%}
+{%- assign seo_desc = nil -%}
+{%- if product -%}
+  {%- assign seo_title = product.metafields.global.title_tag -%}
+  {%- assign seo_desc = product.metafields.global.description_tag -%}
+{%- elsif collection -%}
+  {%- assign seo_title = collection.metafields.global.title_tag -%}
+  {%- assign seo_desc = collection.metafields.global.description_tag -%}
+{%- elsif article -%}
+  {%- assign seo_title = article.metafields.global.title_tag -%}
+  {%- assign seo_desc = article.metafields.global.description_tag -%}
+{%- elsif blog -%}
+  {%- assign seo_title = blog.metafields.global.title_tag -%}
+  {%- assign seo_desc = blog.metafields.global.description_tag -%}
+{%- elsif page -%}
+  {%- assign seo_title = page.metafields.global.title_tag -%}
+  {%- assign seo_desc = page.metafields.global.description_tag -%}
+{%- endif -%}
+
+{% comment %}
+  ⚠ THE index BRANCHES BELOW DO NOT CURRENTLY RUN. READ THIS BEFORE EDITING.
+
+  templates/index.liquid declares {% layout none %} and emits its own complete
+  HTML document — its own <html>, <head>, <title>, robots meta and footer.
+  Verified on the live homepage 2026-08-05: none of this file's output appears
+  there (no og:locale:alternate, no .lbent footer block, and a robots value
+  this file never emits). So THIS LAYOUT NEVER RUNS ON "/".
+
+  The `template == 'index'` branches are kept as a correct fallback: the day
+  index.liquid drops {% layout none %}, the homepage inherits sane multilingual
+  metadata instead of falling through to the generic `page_title`. They are
+  cheap and harmless. They are NOT the fix.
+
+  THE HOMEPAGE TITLE IS STILL WRONG AND IS FIXED IN index.liquid, NOWHERE ELSE:
+      current: "Lbass Original | براند أصلي بثمن يناسبك 🇲🇦"
+      no category noun, no "Maroc", no "friperie", no "second-hand"
+  Admin → Online Store → Preferences will NOT fix it either: shop.description
+  is empty and index.liquid hardcodes both tags. Replacement strings are in the
+  owner-action list; see snippets/lbass-cro-tracking-hook.liquid for the full
+  structural write-up.
+
+  Darija still leads the visible page — this is metadata, the discovery layer.
+{% endcomment %}
+{% if seo_title != blank %}
+  {% assign safe_page_title = seo_title %}
+  {% assign title_is_explicit = true %}
+{% elsif product %}
+  {% assign safe_product_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
+  {% assign safe_product_condition = blank %}
+  {% assign seo_ticket_status = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
+  {% assign seo_condition_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
+  {% assign seo_inspection_status = product.metafields.lbass.inspection_status.value %}
+  {% assign seo_has_ticket = product.metafields.lbass.has_original_ticket.value %}
+  {% assign seo_condition_notes = product.metafields.lbass.condition_notes.value %}
+  {% assign seo_visible_defects = product.metafields.lbass.visible_defects.value %}
+  {% if seo_inspection_status == 'inspected_confirmed' %}
+    {% if seo_has_ticket == true and seo_condition_status == 'new_with_ticket' %}
+      {% if seo_ticket_status == 'ticket_attached' or seo_ticket_status == 'ticket_included' %}{% assign safe_product_condition = 'جديد بالتّيكيت' %}{% endif %}
+    {% elsif seo_has_ticket == false and seo_ticket_status == 'no_ticket' and seo_condition_status == 'new_without_ticket' %}
+      {% assign safe_product_condition = 'جديد بلا تيكيت' %}
+    {% elsif seo_has_ticket == false and seo_ticket_status == 'no_ticket' and seo_condition_status == 'excellent_almost_new' %}
+      {% assign safe_product_condition = 'بحالة ممتازة شبه جديد' %}
+    {% elsif seo_condition_status == 'very_good' %}
+      {% assign safe_product_condition = 'بحالة مزيانة بزاف' %}
+    {% elsif seo_condition_status == 'good' %}
+      {% assign safe_product_condition = 'بحالة مزيانة' %}
+    {% elsif seo_condition_status == 'needs_note' %}
+      {% if seo_condition_notes != blank or seo_visible_defects != blank %}{% assign safe_product_condition = 'بحالة مزيانة' %}{% endif %}
+    {% endif %}
+  {% endif %}
+  {%- comment -%}
+    ═══ PRODUCT TITLE BUDGET — added 2026-08-19 ═══
+    Measured on the live sitemap: 23 of 90 titles exceeded 60 chars, worst at
+    102, and every worst offender was a PRODUCT page. The cause was
+    compositional, not per-product — so it is fixed once, here, rather than by
+    editing 23 product records that would drift again with the next 23 products.
+
+    Product titles are ALREADY bilingual ("English Name | العربية"), roughly
+    55 chars on their own. This line then appended two more segments:
+        " | {condition}"            ~16 chars
+        " | Lbass Original المغرب"   ~23 chars
+    which is how a 55-char title became 102.
+
+    What changed:
+      • CONDITION dropped from <title>. It still renders on the page and in the
+        Product schema, which is where it belongs — in a SERP it displaces the
+        buying term for a detail the shopper cannot act on before clicking.
+      • Brand suffix shortened to " | Lbass" (8 chars, was 23).
+      • Hard cap only as a last resort, so the Arabic half survives: the report
+        notes Arabic glyphs render narrower than Latin, so ≤60 is a working
+        target and a bilingual title may run slightly longer before it cuts.
+
+    An explicit global.title_tag still overrides all of this — see the
+    seo_title branch above. This is only the fallback.
+  {%- endcomment -%}
+  {%- assign t_base = safe_product_title | strip -%}
+  {%- if t_base.size > 60 -%}
+    {%- assign t_base = t_base | truncate: 60, '' | strip -%}
+  {%- endif -%}
+  {%- capture safe_page_title -%}{{ t_base }} | Lbass{%- endcapture -%}
+  {% assign title_is_explicit = true %}
+{% elsif collection %}
+  {% case collection.handle %}
+    {% when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes' %}
+      {% assign safe_page_title = 'صبابط براند أصلية فالمغرب | Sneakers Second-Hand Maroc | Lbass Original' %}
+      {% assign safe_page_description = 'صبابط براند أصلية second-hand فالمغرب: Nike، Adidas، Vans، Converse، On Running، Salomon وأكثر. كل جوج بصور حقيقية وحالة واضحة. Livraison Maroc, COD disponible.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-adidas', 'adidas-originals' %}
+      {% assign safe_page_title = 'Adidas Second-Hand Maroc | ملابس Adidas أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'قطع Adidas أصلية second-hand: track pants، sneakers، shorts، jackets وأكثر. صور حقيقية، حالة واضحة، توصيل لكل المغرب بـ COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'track-pants' %}
+      {% assign safe_page_title = 'Track Pants أصلية فالمغرب | Second-Hand | Lbass Original' %}
+      {% assign safe_page_description = 'Track Pants second-hand أصلية فالمغرب، بصور حقيقية، قياس وحالة موضحين، وخلاص بـ COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'streetwear' %}
+      {% assign safe_page_title = 'Streetwear Maroc | حوايج Streetwear Second-Hand أصلية | Lbass Original' %}
+      {% assign safe_page_description = 'streetwear second-hand أصلي فالمغرب: قطع براند one-of-one بصور حقيقية وحالة واضحة. Livraison dans tout le Maroc, paiement à la livraison.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'سراويل-و-كارغو', 'cargo-pants', 'men-pants' %}
+      {% assign safe_page_title = 'سراويل كارغو Second-Hand فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'سراويل cargo وtrack pants branded second-hand فالمغرب، بصور حقيقية، قياس وحالة موضحين قبل الطلب.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'إكسسوارات', 'accessories', 'bags', 'men-accessories' %}
+      {% assign safe_page_title = 'إكسسوارات Second-Hand فالمغرب | Bags & Caps | Lbass Original' %}
+      {% assign safe_page_description = 'إكسسوارات، شنط وكاسكيطات branded second-hand بصور حقيقية، حالة واضحة، COD أو PayPal من Lbass Original.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-nike', 'nike' %}
+      {% assign safe_page_title = 'Nike Second-Hand Maroc | حوايج Nike أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'سبادري، جاكيطات، تيشرتات وملابس Nike أصلية second-hand فالمغرب. كل قطعة بصور حقيقية وحالة واضحة. Basé à Marrakech — livraison COD partout au Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'audited-drop-p001-p012' %}
+      {% assign safe_page_title = 'Audited Drop | كل قطع Lbass Original فبلاصة وحدة' %}
+      {% assign safe_page_description = 'Audited Drop كيجمع كل قطع Lbass Original فصفحة وحدة: صور حقيقية، حالة وتوفر واضحين، والقطع المتوفرة كيبانو أولاً.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'all', 'new-drop' %}
+      {% assign safe_page_title = 'New Drop Maroc | حوايج Second-Hand أصلية دابا | Lbass Original' %}
+      {% assign safe_page_description = 'أحدث قطع second-hand الأصلية فالمغرب من Lbass Original. كل drop جديد بصور حقيقية وحالة واضحة، وخلاص بـ COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'جاكيطات-و-معاطف', 'jackets', 'manteaux', 'winter', 'جاكيطات' %}
+      {% assign safe_page_title = 'جاكيطات براند Second-Hand Maroc | Vestes & Manteaux فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'جاكيطات وبالطوات براند second-hand أصلية فالمغرب: North Face، Nike، Adidas، Ellesse، Tommy وأكثر. صور حقيقية، COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'men', 'رجال', 'homme' %}
+      {% assign safe_page_title = 'ملابس رجالية Second-Hand أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'حوايج رجالية براند second-hand: sneakers، jackets، joggers، t-shirts وأكثر. صور حقيقية وخلاص بـ COD من مراكش. Vêtements homme second hand Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'women', 'نساء', 'femme' %}
+      {% assign safe_page_title = 'ملابس نسائية Second-Hand أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'حوايج نسائية براند second-hand: jackets، sneakers، streetwear وأكثر. صور حقيقية وخلاص بـ COD من مراكش. Vêtements femme second hand Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'one-of-one', 'vault', '1-1' %}
+      {% assign safe_page_title = 'قطع 1/1 Second-Hand أصلية فالمغرب | Pièces Uniques | Lbass Original' %}
+      {% assign safe_page_description = 'قطع وحيدة one-of-one second-hand أصلية فالمغرب: كل قطعة نسخة واحدة فقط. ملي كتباع ما كترجعش. صور حقيقية، COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'هوديات-و-سويت', 'hoodies', 'sweatshirts' %}
+      {% assign safe_page_title = 'Hoodies & Sweatshirts Second-Hand Maroc | هوديات براند أصلية | Lbass Original' %}
+      {% assign safe_page_description = 'هوديات وسويتشيرت براند second-hand أصلية فالمغرب. صور حقيقية وحالة واضحة من Lbass Original. Livraison COD dans tout le Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'تيشرتات-و-بولو', 't-shirts', 'tops' %}
+      {% assign safe_page_title = 'T-Shirts & Tops Second-Hand Maroc | تيشرتات براند أصلية | Lbass Original' %}
+      {% assign safe_page_description = 'تيشرتات وتوبات براند second-hand: Nike، Adidas، Jordan، HUGO وأكثر. صور حقيقية وحالة واضحة. COD فالمغرب من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'جينز-مستعمل', 'jeans', 'denim' %}
+      {% assign safe_page_title = 'Jeans Second-Hand Maroc | جينز براند أصلي فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'جينز براند second-hand أصلي فالمغرب بصور حقيقية وحالة واضحة. توصيل لكل المغرب بـ COD من مراكش مع Lbass Original.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-jordan', 'jordan' %}
+      {% assign safe_page_title = 'Jordan Second-Hand Maroc | حوايج Jordan أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'قطع Jordan Brand أصلية second-hand فالمغرب: t-shirts، pants وأكثر. صور حقيقية، حالة واضحة، COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-converse', 'converse' %}
+      {% assign safe_page_title = 'Converse Second-Hand Maroc | سبادري Converse أصلية | Lbass Original' %}
+      {% assign safe_page_description = 'سبادري Converse أصلية second-hand فالمغرب. صور حقيقية وحالة واضحة. Livraison COD partout au Maroc depuis Marrakech.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-vans', 'vans' %}
+      {% assign safe_page_title = 'Vans Second-Hand Maroc | سبادري Vans أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'سبادري Vans أصلية second-hand فالمغرب. Old Skool وغيرها بصور حقيقية وحالة واضحة. COD من مراكش.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-north-face', 'the-north-face' %}
+      {% assign safe_page_title = 'The North Face Second-Hand Maroc | جاكيطات TNF أصلية | Lbass Original' %}
+      {% assign safe_page_description = 'جاكيطات The North Face أصلية second-hand فالمغرب. صور حقيقية وحالة واضحة من Lbass Original. Livraison COD dans tout le Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% else %}
+      {% assign safe_page_title = collection.title | append: ' | حوايج Second-Hand فالمغرب | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% elsif article %}
+  {% assign safe_page_title = article.title %}
+{% elsif blog %}
+  {% assign safe_page_title = blog.title | append: ' — أدلة second-hand فالمغرب' %}
+{% elsif template == 'index' %}
+  {% assign safe_page_title = "Friperie en ligne Maroc | حوايج Second-Hand أصلية | Lbass Original" %}
+  {% assign title_is_explicit = true %}
+{% elsif page %}
+  {% case page.handle %}
+    {% when 'second-hand-clothing-morocco', 'vetements-second-hand-maroc' %}
+      {% assign safe_page_title = 'Second-Hand Clothing Morocco | Friperie en ligne Maroc | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
+      {% assign safe_page_title = 'Friperie en ligne Maroc | Paiement à la livraison | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'size-guide' %}
+      {% assign safe_page_title = 'دليل القياسات Vintage | Guide des tailles Maroc | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'condition-guide' %}
+      {% assign safe_page_title = 'دليل حالة الحوايج Second-Hand | État des pièces | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'shipping-and-payment' %}
+      {% assign safe_page_title = 'التوصيل والدفع عند الاستلام فالمغرب | COD | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'refund-policy' %}
+      {% assign safe_page_title = 'سياسة الإرجاع والتبديل | Second-Hand Maroc | Lbass Original' %}
+      {% assign title_is_explicit = true %}
+    {% when 'about' %}
+      {% assign safe_page_title = 'Lbass Original Marrakech | Friperie en ligne مغربية' %}
+      {% assign title_is_explicit = true %}
+    {% when 'contact' %}
+      {% assign safe_page_title = 'تواصل مع Lbass Original من مراكش | WhatsApp | المغرب' %}
+      {% assign title_is_explicit = true %}
+    {% else %}
+      {% assign safe_page_title = page.title | append: ' | Lbass Original المغرب' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% else %}
+  {% assign safe_page_title = page_title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
+{% endif %}
+
+{% if seo_desc != blank %}
+  {% assign safe_page_description = seo_desc %}
+{% elsif product %}
+  {% assign seo_variant = product.selected_or_first_available_variant %}
+  {%- comment -%}
+    ═══ PRODUCT META DESCRIPTION BUDGET — added 2026-08-19 ═══
+    Measured: 8 of 90 descriptions exceeded 155 chars, worst at 173, and 6 of
+    the 8 were products. Same compositional cause as the title rule above — it
+    opened with the FULL bilingual product title (~55 chars) and then appended
+    five more clauses.
+
+    Two changes:
+      • Opens with the short (first-segment) product name instead of repeating
+        the whole title. The title already sits directly above the description
+        in a SERP; repeating it spends the snippet on words the user just read.
+      • States the ACTUAL shipping prices. The old copy said only
+        "التوصيل لكل المغرب" — no figures. The report's whole CTR argument is
+        that the COD and price hooks must survive the truncation point, so the
+        numbers now sit inside the budget rather than past it.
+
+    Falls back to a shorter form if the composed string still exceeds 155,
+    which can happen with a long size value.
+  {%- endcomment -%}
+  {%- assign d_name = safe_product_title | split: ' | ' | first | strip -%}
+  {%- capture d_size -%}{% unless seo_variant.title == 'Default Title' %}قياس {{ seo_variant.title }}. {% endunless %}{%- endcapture -%}
+  {%- capture safe_page_description -%}{{ d_name }}{% if safe_product_condition != blank %} — {{ safe_product_condition }}{% endif %}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش و40 خارجها، والدفع عند الاستلام.{%- endcapture -%}
+  {%- if safe_page_description.size > 155 -%}
+    {%- capture safe_page_description -%}{{ d_name }}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش، 40 خارجها. الدفع عند الاستلام.{%- endcapture -%}
+  {%- endif -%}
+{% elsif collection %}
+  {% if safe_page_description == blank %}
+  {% capture safe_page_description %}تسوق {{ collection.title | escape }} second-hand أصلية فالمغرب من Lbass Original: صور حقيقية، حالة واضحة، قطع 1/1 حسب المتوفر، والتوصيل مع الدفع عند الاستلام.{% endcapture %}
+  {% endif %}
+{% elsif article %}
+  {% assign safe_page_description = article.excerpt_or_content | strip_html | strip | truncate: 158 %}
+{% elsif blog %}
+  {% capture safe_page_description %}أدلة Lbass Original على شراء حوايج second-hand أصلية فالمغرب: الحالة، القياس، الأصالة، والدفع عند الاستلام.{% endcapture %}
+{% elsif page and page.handle == 'shipping-and-payment' %}
+  {% capture safe_page_description %}التوصيل والخلاص مع Lbass Original: 20 درهم داخل مراكش و40 درهم لباقي المغرب، مجاني من 500 درهم، مع COD أو PayPal. المدة كتتأكد حسب المدينة.{% endcapture %}
+{% elsif page and page.handle == 'size-guide' %}
+  {% capture safe_page_description %}تعرف كيفاش تختار قياس الحوايج vintage وsecond-hand فالمغرب بخطوات واضحة ومقارنة القياسات، مع صور حقيقية ومساعدة فالواتساب من Lbass Original.{% endcapture %}
+{% elsif page and page.handle == 'condition-guide' %}
+  {% capture safe_page_description %}دليل حالة حوايج second-hand فالمغرب: الفرق بين جديد بالتّيكيت وشبه جديد وحالة مزيانة، وكيفاش تقرا الصور والملاحظات قبل الطلب.{% endcapture %}
+{% elsif page and page.handle == 'refund-policy' %}
+  {% capture safe_page_description %}قرا شروط الإرجاع والتبديل ديال Lbass Original قبل الطلب: الفرق بين COD وPayPal، حالة القطعة، والمهلة المنشورة لكل طريقة خلاص.{% endcapture %}
+  {% elsif page and page.handle == 'about' %}
+  {% capture safe_page_description %}Lbass Original Marrakech: متجر مغربي أونلاين لحوايج second-hand أصلية مختارة من ألمانيا، مفحوصة ومصورة قطعة بقطعة فمراكش.{% endcapture %}
+{% elsif page and page.handle == 'contact' %}
+  {% capture safe_page_description %}تواصل مع Lbass Original من مراكش — أسئلة على القياس، الحالة، الصور، التوصيل أو الطلب ديال حوايج second-hand أصلية فالمغرب. Lbass Original est basé à Marrakech, Maroc.{% endcapture %}
+{% elsif page %}
+  {% capture safe_page_description %}{{ page.title }} مع Lbass Original: معلومات واضحة على الحوايج second-hand الأصلية، الصور الحقيقية، الحالة، التوصيل والدفع عند الاستلام فالمغرب.{% endcapture %}
+{% elsif template == 'index' %}
+  {% capture safe_page_description %}حوايج second-hand أصلية فالمغرب: sneakers، streetwear، jackets وقطع one-of-one بصور حقيقية وحالة واضحة. Friperie en ligne au Maroc, paiement à la livraison.{% endcapture %}
+{% else %}
+  {% assign safe_page_description = page_description | default: default_description %}
+{% endif %}
+
+{% comment %}
+  QUERY-FIRST SEO/AEO BATCH — approved 2026-08-13.
+  These narrow, evidence-backed overrides intentionally run after Admin SEO
+  metafields so the unpublished theme can be reviewed without mutating the
+  underlying Shopify resources or their URLs. Product price, availability,
+  condition and Offer data remain sourced from Shopify.
+{% endcomment %}
+{% if product %}
+  {% case product.handle %}
+    {% when 'adidas-track-pants-black-red' %}
+      {% assign safe_page_title = 'بنطال تراك أحمر وأسود Adidas | قياس L | Lbass Original' %}
+      {% assign safe_page_description = 'بنطال تراك أحمر وأسود Adidas أصلي، قياس L. صور حقيقية لنفس القطعة، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'adidas-black-3-stripes-track-pants-سروال-أديداس' %}
+      {% assign safe_page_title = 'بنطال تراك أسود Adidas 3-Stripes | قياس L | Lbass Original' %}
+      {% assign safe_page_description = 'بنطال تراك أسود Adidas 3-Stripes، قياس L. صور حقيقية لنفس القطعة، الحالة والملاحظات واضحتان، COD أو PayPal فالمغرب.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'vans-old-skool-black' %}
+      {% assign safe_page_title = 'Vans Old Skool Black | Size 42 EU | Lbass Original المغرب' %}
+      {% assign safe_page_description = 'Vans Old Skool Black أصلي، قياس 42 EU. صور حقيقية لنفس الزوج، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% elsif collection %}
+  {% case collection.handle %}
+    {% when 'صبابط', 'sneakers', 'shoes' %}
+      {%- comment -%}
+        Title trimmed 2026-08-23: it ran to 64 chars and Google truncated the
+        " | Lbass Original" suffix anyway. 146 impr at position 6.3 and 4.11%
+        CTR — ranking well, so the job here is purely the snippet.
+      {%- endcomment -%}
+      {% assign safe_page_title = 'صبابط أصلية فالمغرب | Sneakers Second-Hand Maroc' %}
+      {% assign safe_page_description = 'صبابط second-hand أصلية فالمغرب بصور حقيقية، قياس واضح، وحالة مبيّنة. قطع مختارة من ألمانيا ومفحوصة فمراكش. COD وPayPal متوفرين.' %}
+      {% assign title_is_explicit = true %}
+    {%- comment -%}
+      men-* SPLIT OUT 2026-08-22. These handles previously shared the `when`
+      clause of their parent collection, so each men's subset emitted a
+      byte-identical <title> to its parent — three duplicate-title pairs,
+      self-cannibalising. Verified live with cache-busting before the fix.
+      NOTE: this batch deliberately runs AFTER Admin SEO metafields, so a
+      collection's global.title_tag cannot fix a duplicate here — it must be
+      fixed in this block.
+    {%- endcomment -%}
+    {% when 'men-shoes', 'women-shoes' %}
+      {% assign safe_page_title = 'صبابط رجال Second-Hand فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'صبابط رجال second-hand أصلية: Nike، Adidas، Vans وأكثر. صور حقيقية، قياس وحالة واضحين، والدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'men-accessories' %}
+      {% assign safe_page_title = 'إكسسوارات رجال Second-Hand فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'كاسكيطات، شنط وإكسسوارات رجال second-hand أصلية بصور حقيقية وحالة واضحة. الدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'men-pants' %}
+      {% assign safe_page_title = 'سراويل وكارغو رجال Second-Hand | Lbass Original' %}
+      {% assign safe_page_description = 'كارغو، جوغرز وسراويل رجال second-hand أصلية فالمغرب بقياسات مبيّنة وصور حقيقية. الدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+    {%- comment -%}
+      ADIDAS SPLIT 2026-08-23. These two handles shared one `when` clause, so
+      both pages emitted a byte-identical <title> — the same self-cannibalising
+      pattern the men-* split above fixed.
+
+      They are genuinely different collections and now say so:
+        adidas-originals  VENDOR = "Adidas Originals" or "Adidas"  (the query
+                          "اديداس اورجينال ملابس" = 106 impr, pos 8.4, and the
+                          page converts at 0.75% CTR — ranking fine, snippet not
+                          earning the click)
+        brand-adidas      the broader Adidas set; 35 impr at 14.29% CTR, pos 9.5
+                          — already the better-performing snippet of the two.
+
+      Titles trimmed below 60 chars so Google shows them whole; the old one ran
+      to 66 and was being truncated mid-phrase.
+    {%- endcomment -%}
+    {% when 'adidas-originals' %}
+      {%- comment -%}
+        ═══ ADIDAS SNIPPET REWRITE — 2026-08-29 ═══
+
+        THE PROBLEM THIS SOLVES
+        Live GSC, 28d to 2026-08-26: this page took 226 impressions at average
+        position 6.5–7.3 and earned ONE click. 0.44% CTR. Desktop was 91
+        impressions and ZERO clicks. Position 7 should return 2–3%.
+
+            اديداس اورجينال ملابس   145 impr   1 clk   pos 6.5
+            اديداس اورجينال          45 impr   0 clk   pos 8.6
+            أديداس اورجينال المغرب   26 impr   0 clk   pos 9.5
+
+        WHY THE OLD SNIPPET FAILED
+        Every query is a variant of «اديداس اورجينال» — ORIGINAL Adidas — and the
+        cluster includes «كم ثمنه» and «ثمن في المغرب». These are people checking
+        whether Adidas is authentic and what it costs. The old description led with
+        "second-hand", which answers neither, and named no price at all.
+
+        WHY THE PRICE IS COMPUTED, NOT WRITTEN
+        The cheapest Adidas piece is 199 MAD and it is SOLD OUT. The cheapest
+        IN-STOCK piece is 230 MAD. A hardcoded "من 199 درهم" would be a false
+        claim the day it shipped, and would go stale again on every restock.
+        Same for categories: T-Shirts are entirely sold out, so a static list
+        naming تيشرتات would advertise nothing. Both are read from live stock.
+
+        If nothing is in stock, the price and category clauses drop out and the
+        description falls back to trust copy — never "من 0 درهم".
+      {%- endcomment -%}
+      {%- liquid
+        assign ad_min = 0
+        assign ad_types = ''
+        for p in collections['adidas-originals'].products limit: 60
+          unless p.available
+            continue
+          endunless
+          if ad_min == 0 or p.price < ad_min
+            assign ad_min = p.price
+          endif
+          comment
+            p.type, NOT p.product_type. Measured on the live storefront
+            2026-08-29: every in-stock product returned product_type='' from
+            collections[handle].products, while p.type is populated. The theme's
+            own Adidas block in lbass-collection-topics.liquid already reads
+            `p.type | default: p.product_type` for this reason. Same class of
+            trap as collection.all_tags returning [] (see lbass-colour-nav.liquid).
+          endcomment
+          assign pt = p.type | default: p.product_type | strip
+          case pt
+            when 'Shoes'
+              assign lbl = 'صبابط'
+            when 'Jackets'
+              assign lbl = 'جاكيطات'
+            when 'Pants'
+              assign lbl = 'سراويل'
+            when 'Shorts'
+              assign lbl = 'شورط'
+            when 'T-Shirts'
+              assign lbl = 'تيشرتات'
+            when 'Accessories'
+              assign lbl = 'إكسسوارات'
+            else
+              assign lbl = ''
+          endcase
+          if lbl != blank
+            assign needle = lbl | prepend: '|' | append: '|'
+            unless ad_types contains needle
+              assign ad_types = ad_types | append: needle
+            endunless
+          endif
+        endfor
+
+        assign ad_type_arr = ad_types | remove_first: '|' | replace: '||', '|' | split: '|'
+        assign ad_type_list = ''
+        for t in ad_type_arr limit: 4
+          if t != blank
+            if ad_type_list == blank
+              assign ad_type_list = t
+            else
+              assign ad_type_list = ad_type_list | append: '، ' | append: t
+            endif
+          endif
+        endfor
+        assign ad_price_mad = ad_min | divided_by: 100
+      -%}
+      {%- if ad_min > 0 -%}
+        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | أصلي من ' | append: ad_price_mad | append: ' درهم' %}
+        {%- capture ad_types_clause -%}{% if ad_type_list != blank %}: {{ ad_type_list }}{% endif %}{%- endcapture -%}
+        {% assign safe_page_description = 'اديداس اورجينال أصلي فالمغرب من ' | append: ad_price_mad | append: ' درهم' | append: ad_types_clause | append: '. صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين، وخلّص عند الاستلام.' %}
+      {%- else -%}
+        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | Adidas Originals' %}
+        {% assign safe_page_description = 'ملابس اديداس اورجينال أصلية فالمغرب: صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين قبل الطلب، وخلّص عند الاستلام. مختارة من ألمانيا ومفحوصة فمراكش.' %}
+      {%- endif -%}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-adidas' %}
+      {% assign safe_page_title = 'حوايج Adidas Second-Hand فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'كل قطع Adidas second-hand فالمغرب: بناطيل تراك، صبابط، شورط وجاكيطات. صور حقيقية لنفس القطعة، حالة وقياس واضحين، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'brand-nike', 'nike' %}
+      {% assign safe_page_title = 'Nike Second-Hand Maroc | حوايج Nike أصلية فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'Nike second-hand Maroc: سبادري، جاكيطات، تيشرتات وإكسسوارات Nike بصور حقيقية، حالة وقياس واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'إكسسوارات', 'accessories', 'bags' %}
+      {% assign safe_page_title = 'إكسسوارات Second-Hand فالمغرب | Bags & Caps | Lbass Original' %}
+      {% assign safe_page_description = 'إكسسوارات second-hand فالمغرب: شنط، crossbody bags، caps وقطع branded بصور حقيقية وحالة واضحة. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {%- comment -%}
+      TRACK PANTS — rewritten 2026-08-23 from 90 days of Search Console data.
+
+      The old title led with the ENGLISH "Track Pants" and contained no Arabic
+      form of the query at all. Every query this collection actually surfaces
+      for is Arabic, and the collection sat at position 21.6 — BELOW its own
+      product pages:
+
+          بنطال تراك أسود              79 impr   pos 15.8   2 clicks
+          بنطال تراك أحمر              64 impr   pos 13.1   0 clicks
+          بنطال تراك أسود للرجال       23 impr   pos 21.7   0 clicks
+          بنطال تراك لكرة القدم للرجال  15 impr   pos 22.9   0 clicks
+          بناطيل التراك                14 impr   pos 13.2   1 click
+          + بوليستر / رمادي / مستقيم / شتوي
+
+      244 impressions of buyer intent, 3 clicks. The colour and cut modifiers
+      are named in the queries, so they are named in the description — those
+      are real attributes of stock on hand, not keyword padding.
+    {%- endcomment -%}
+    {% when 'track-pants' %}
+      {% assign safe_page_title = 'بناطيل تراك أصلية فالمغرب | Track Pants Second-Hand' %}
+      {% assign safe_page_description = 'شوف بناطيل تراك second-hand فالمغرب: أسود، أحمر، رمادي، مستقيم، رياضي وبوليستر. صور حقيقية، قياس واضح، وحالة مبيّنة قبل الطلب.' %}
+      {% assign title_is_explicit = true %}
+    {%- comment -%}
+      JACKETS + T-SHIRTS added 2026-08-23. Both had impressions and no
+      query-first title, so they inherited English-led defaults and sat deep:
+          /collections/جاكيطات-و-معاطف   15 impr  pos 29.4
+          /collections/men-jackets       60 impr  pos 48.3   (query: جاكيت بومبر رجالي, 11 impr pos 41.5)
+          /collections/تيشرتات-و-بولو    45 impr  pos 41.5   CTR 0.00%
+      The old titles ran 58-67 chars and led with "Jackets Second-Hand Maroc" /
+      "T-Shirts & Polos", so the Arabic a Moroccan shopper types was buried or
+      truncated away entirely.
+    {%- endcomment -%}
+    {% when 'جاكيطات-و-معاطف', 'jackets' %}
+      {% assign safe_page_title = 'جاكيطات Second-Hand أصلية فالمغرب | Lbass' %}
+      {% assign safe_page_description = 'جاكيطات ومعاطف second-hand أصلية فالمغرب: بومبر، بوفر وقطع streetwear بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'men-jackets' %}
+      {% assign safe_page_title = 'جاكيطات رجال Second-Hand فالمغرب | Lbass' %}
+      {% assign safe_page_description = 'جاكيطات رجال second-hand أصلية: بومبر، بوفر وجاكيطات براند بصور حقيقية لنفس القطعة، قياس وحالة واضحين. توصيل لكل المغرب والدفع عند الاستلام.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'تيشرتات-و-بولو', 't-shirts' %}
+      {% assign safe_page_title = 'تيشرتات وبولو Second-Hand فالمغرب | Lbass' %}
+      {% assign safe_page_description = 'تيشرتات وبولو second-hand أصلية فالمغرب بصور حقيقية لنفس القطعة، قياس وحالة مبيّنين قبل الطلب. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'سراويل-و-كارغو', 'cargo-pants' %}
+      {% assign safe_page_title = 'سراويل كارغو Second-Hand فالمغرب | Lbass Original' %}
+      {% assign safe_page_description = 'سراويل cargo وjoggers وtrack pants second-hand فالمغرب، بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% elsif article %}
+  {% assign query_article_handle = article.handle | split: '/' | last %}
+  {% case query_article_handle %}
+    {% when 'farq-bin-vintage-second-hand-thrift' %}
+      {% assign safe_page_title = 'Thrift معنى | الفرق بين Thrift وVintage وSecond-Hand' %}
+      {% assign safe_page_description = 'Thrift معنى: كلمة كتشرح طريقة شراء حوايج مستعملة بثمن مناسب. تعرّف على الفرق بين thrift وvintage وsecond-hand مع أمثلة واضحة من Lbass Original.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'chno-ma3na-one-of-one-fashion' %}
+      {% assign safe_page_title = 'معنى One-of-One (1/1) | شنو كتعني فالموضة؟' %}
+      {% assign safe_page_description = 'معنى One-of-One أو 1/1: نسخة وحدة فقط من القطعة فالمخزون. تعرّف على الفرق بينها وبين limited edition وعلاش كتهم فـ second-hand.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'friperie-en-ligne-maroc-cest-quoi' %}
+      {% assign safe_page_title = 'Friperie en ligne Maroc | شنو هي وكيفاش تختار؟' %}
+      {% assign safe_page_description = 'Friperie en ligne Maroc: متجر كيعرض حوايج second-hand مختارة بصور وحالة واضحتين. شوف كيفاش تختار متجر موثوق قبل الطلب.' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% elsif page %}
+  {% case page.handle %}
+    {% when 'size-guide' %}
+      {% assign safe_page_title = 'القياسات ديال Second-Hand | دليل القياس Vintage | Lbass Original' %}
+      {% assign safe_page_description = 'القياسات ديال الحوايج second-hand كتختلف حسب البراند والموديل. قارن الصدر، الطول، الخصر أو قياس الصباط مع قطعة عندك قبل الطلب.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'vetements-second-hand-maroc' %}
+      {% assign safe_page_title = 'Vêtements Second Hand Maroc | Marques originales | Lbass Original' %}
+      {% assign safe_page_description = 'Vêtements second hand Maroc: pièces de marque, sneakers et accessoires sourcés en Allemagne, vérifiés à Marrakech et photographiés individuellement.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'ma3na-thrift-second-hand-vintage-one-of-one' %}
+      {% assign safe_page_title = 'معنى Thrift و Second-Hand و Vintage و One-of-One | Lbass Original' %}
+      {% assign safe_page_description = 'معنى thrift وsecond-hand وvintage وone-of-one بالدارجة مع أمثلة واضحة — دليل Lbass Original لشراء حوايج براند مستعملة فالمغرب.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'second-hand-clothing-morocco' %}
+      {% assign safe_page_title = 'Second-Hand Clothing Morocco | Branded Streetwear | Lbass Original' %}
+      {% assign safe_page_description = 'Second-hand clothing Morocco: branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'second-hand-clothing-marrakech' %}
+      {% assign safe_page_title = 'Friperie Marrakech | Second-Hand de marque | Lbass Original' %}
+      {% assign safe_page_description = 'Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 40 MAD ailleurs au Maroc.' %}
+      {% assign title_is_explicit = true %}
+    {% when 'about' %}
+      {% assign safe_page_title = 'Lbass Original Marrakech | Friperie en ligne Maroc' %}
+      {% assign safe_page_description = 'Lbass Original Marrakech est une friperie en ligne marocaine: pièces second-hand sélectionnées en Allemagne, vérifiées et photographiées à Marrakech.' %}
+      {% assign title_is_explicit = true %}
+  {% endcase %}
+{% endif %}
+
+{% comment %}
+  Audited Drop is a customer-facing name. Its Admin SEO title still contains
+  the old internal photography batch code, so this handle-scoped override must
+  run after Admin metadata and the query-first SEO batch.
+{% endcomment %}
+{% if collection and collection.handle == 'audited-drop-p001-p012' %}
+  {% assign safe_page_title = 'Audited Drop | كل قطع Lbass Original فبلاصة وحدة' %}
+  {% assign safe_page_description = 'Audited Drop كيجمع كل قطع Lbass Original فصفحة وحدة: صور حقيقية، حالة وتوفر واضحين، والقطع المتوفرة كيبانو أولاً.' %}
+  {% assign title_is_explicit = true %}
+{% endif %}
+
+{% comment %}
+  title_is_explicit suppresses ONLY the " — {{ shop.name }}" suffix. shop.name is
+  "lbassoriginal" (one word), so an authored title ending "Lbass Original" does
+  not satisfy `contains` and would double-brand: "… | Lbass Original — lbassoriginal".
+  Measured 86 chars on /collections/men before this. Pagination suffix stays.
+{% endcomment %}
+{%- comment -%}
+  2026-08-29 — the tag suffix now renders the ARABIC colour term, not the raw
+  English tag. `بنطال تراك أحمر` held 64 impressions at position 13.1 with ZERO
+  clicks while the title it was shown under said "— red". See
+  snippets/lbass-tag-ar.liquid for the measurement and the MSA-vs-Darija rule.
+  Unmapped tags fall through unchanged, so this cannot blank a title.
+{%- endcomment -%}
+{%- capture current_tag_ar -%}{%- render 'lbass-tag-ar', tags: current_tags -%}{%- endcapture -%}
+<title>{{ safe_page_title }}{% if current_tags %} — {{ current_tag_ar | strip }}{% endif %}{% if current_page != 1 %} — صفحة {{ current_page }}{% endif %}{% unless title_is_explicit %}{% unless safe_page_title contains shop.name %} — {{ shop.name }}{% endunless %}{% endunless %}</title>
+<meta name="description" content="{{ safe_page_description | strip | escape }}">
+
+{% comment %}
+  Keep Shopify's canonical URL. A previous consolidation override pointed the
+  live /nike and /adidas-originals collections at unpublished/nonexistent
+  /brand-* handles, creating 404 canonical targets. The active collection URLs
+  now self-canonicalize until an Admin-level collection merge + 301 is approved.
+{% endcomment %}
+{%- assign canonical_final = canonical_url -%}
+<link rel="canonical" href="{{ canonical_final }}">
+
+{% comment %}
+  ROBOTS — empty collections are noindex,follow.
+
+  Measured 2026-08-05: 11 collections have 0 products. Two of them (women,
+  kids) carry fully authored SEO titles and descriptions promising sneakers,
+  jackets and hoodies, and both render "ما كاينش منتجات دابا فهاد القسم."
+  That is a page that ranks on a promise it cannot keep — the fastest way to
+  earn a thin-content impression and a bounce.
+
+  noindex,follow (not nofollow, not a redirect, not deletion): the page keeps
+  working for anyone who lands on it, keeps passing link equity onward, and
+  returns to the index automatically the moment a product is added — because
+  this is computed from live products_count, not a manual flag. Nothing to
+  remember to undo.
+{% endcomment %}
+{%- comment -%}
+  2026-08-05 — INTERNAL BUCKETS ARE NOW NOINDEX TOO.
+
+  These utility collections stay reachable but should not compete with the
+  customer-facing category URLs in search:
+
+    frontpage               Shopify's default "Home page" collection. Referenced
+                            in this theme only inside `unless` guards, i.e. only
+                            ever EXCLUDED — nothing renders from it. Its URL is
+                            pure duplicate content.
+
+    audited-drop-p001-p012  Customer-facing merchandising view that mirrors the
+                            full catalogue. Keep it noindex,follow because its
+                            product set intentionally duplicates /collections/all.
+  WHY THIS ONLY HALF-SOLVES THE PROBLEM: Shopify auto-generates sitemap.xml from
+  everything published to the Online Store channel, and a theme cannot exclude a
+  URL from it. So these stay listed in sitemap_collections_1.xml while telling
+  Google not to index them — a contradictory signal.
+
+  The complete fix is to UNPUBLISH the empty ones from the Online Store channel
+  so they leave the sitemap. That is an owner action — publishableUnpublish is
+  blocked for this integration. See the owner-confirmation list.
+
+  noindex,follow (never nofollow): these pages keep passing equity onward, and
+  the empty ones return to the index automatically when stocked, because that
+  branch is computed from live products_count rather than a manual flag.
+{%- endcomment -%}
+{%- assign noindex_handles = 'frontpage,audited-drop-p001-p012' | split: ',' -%}
+{%- comment -%}
+  pSEO INDEXING ALLOWLIST — a pSEO page NOT listed here is served noindex.
+  Added 2026-08-22: ma3na-thrift-second-hand-vintage-one-of-one.
+  The template case for it was already live, but creating the page alone was
+  not enough — without this handle the page rendered perfectly and carried
+  `noindex, follow`, so it could never rank. If you add a pSEO case, add the
+  handle HERE too or the page is invisible.
+{%- endcomment -%}
+{%- assign pseo_indexable_handles = 'sneakers-second-hand-maroc,nike-second-hand-maroc,friperie-en-ligne-paiement-a-la-livraison-maroc,adidas-second-hand-maroc,jordan-second-hand-maroc,jackets-second-hand-maroc,cargo-pants-second-hand-maroc,streetwear-original-maroc,comment-acheter-second-hand-original-maroc,ma3na-thrift-second-hand-vintage-one-of-one' | split: ',' -%}
+{%- assign robots_directive = 'index, follow' -%}
+{%- if template == 'cart' or template == 'search' or template == '404' or template contains 'customers' -%}
+  {%- assign robots_directive = 'noindex, follow' -%}
+{%- endif -%}
+{%- if collection and current_tags == blank -%}
+  {%- if collection.products_count == 0 or noindex_handles contains collection.handle -%}
+    {%- assign robots_directive = 'noindex, follow' -%}
+  {%- endif -%}
+{%- endif -%}
+{%- comment -%} Confirmation page: thin, reachable only after a POST, must never rank. {%- endcomment -%}
+{%- if page and page.handle == 'newsletter-confirmation' -%}
+  {%- assign robots_directive = 'noindex, follow' -%}
+{%- endif -%}
+{%- if page and page.template_suffix == 'pseo' -%}
+  {%- unless pseo_indexable_handles contains page.handle -%}
+    {%- assign robots_directive = 'noindex, follow' -%}
+  {%- endunless -%}
+{%- endif -%}
+{%- comment -%}
+  max-image-preview:large added 2026-08-23.
+
+  Audited across the priority pages: only templates/index.liquid and
+  templates/page.vault.liquid carried this directive, and both bypass this
+  layout with {% layout none %}. Everything routed through here — EVERY product
+  page, EVERY collection, EVERY SEO page — emitted a bare "index, follow" and so
+  inherited Google's default of max-image-preview:standard, a small thumbnail.
+
+  This store sells one-of-one second-hand pieces and its whole promise is "real
+  photos of the exact item". The photograph IS the product. Large image previews
+  are the difference between a thumbnail and a picture someone can actually
+  judge a garment from, in image results and in AI surfaces that show images.
+
+  Only appended when the page is indexable — on a noindex page an image-preview
+  hint has nothing to apply to. Google's docs treat these as independent
+  directives on the same tag, so order does not matter.
+{%- endcomment -%}
+{%- if robots_directive contains 'noindex' -%}
+  <meta name="robots" content="{{ robots_directive }}">
+{%- else -%}
+  <meta name="robots" content="{{ robots_directive }}, max-image-preview:large">
+{%- endif -%}
+
+{% comment %}
+  NO HREFLANG — deliberate, verified 2026-08-05.
+
+  hreflang describes a set of EQUIVALENT pages at DIFFERENT URLs. This store
+  has exactly one URL per resource. Checked via the Admin API:
+      shopLocales      → [{ locale: "en", primary: true, published: true }]
+      Market "Morocco" → webPresences: []
+  There is no /fr/ or /en/ tree, no alternate-locale domains, no translated
+  URLs. Emitting hreflang here would either self-reference (no effect, noise)
+  or point at URLs that do not exist (a real error in Search Console).
+
+  The French and English copy on this site is ADDITIONAL CONTENT ON THE SAME
+  PAGE, not a translation at another address, so the correct markup for it is
+  per-element lang attributes — which lbass-entity-block and lbass-brand-proof
+  both use — not hreflang.
+
+  html lang="ar-MA" is correct and should stay: it matches the dominant visible
+  language. Note it deliberately disagrees with Shopify's internal locale (en),
+  which only governs Shopify's own translation system — unused here.
+
+  Revisit ONLY if real alternate URLs are ever published. Then every one must be
+  indexable, self-canonical, and reciprocally linked, or hreflang is ignored.
+{% endcomment %}
+
+{%- assign social_image = blank -%}
+{%- assign social_image_alt = safe_page_title -%}
+{%- if product.featured_image -%}
+  {%- assign social_image = product.featured_image | image_url: width: 1200 -%}
+  {%- assign social_image_alt = product.featured_image.alt | default: safe_product_title -%}
+{%- elsif article.image -%}
+  {%- assign social_image = article.image | image_url: width: 1200 -%}
+  {%- assign social_image_alt = article.image.alt | default: article.title -%}
+{%- elsif collection.metafields.lbass.hero_image.value -%}
+  {%- assign social_image = collection.metafields.lbass.hero_image.value | image_url: width: 1200 -%}
+{%- elsif collection.image -%}
+  {%- assign social_image = collection.image | image_url: width: 1200 -%}
+  {%- assign social_image_alt = collection.image.alt | default: collection.title -%}
+{%- elsif collection and collection.products.first.featured_image -%}
+  {%- assign social_image = collection.products.first.featured_image | image_url: width: 1200 -%}
+  {%- assign social_image_alt = collection.products.first.featured_image.alt | default: collection.title -%}
+{%- else -%}
+  {%- assign social_image = 'hero-lifestyle-1.webp' | asset_url -%}
+  {%- assign social_image_alt = 'Lbass Original — حوايج second-hand أصلية فالمغرب' -%}
+{%- endif -%}
+
+<meta property="og:site_name" content="Lbass Original">
+<meta property="og:url" content="{{ canonical_final }}">
+<meta property="og:title" content="{{ safe_page_title | escape }}">
+<meta property="og:description" content="{{ safe_page_description | strip | escape }}">
+<meta property="og:locale" content="ar_MA">
+<meta property="og:locale:alternate" content="fr_MA">
+<meta property="og:locale:alternate" content="en_US">
+{% if template contains 'product' %}<meta property="og:type" content="product">{% elsif article %}<meta property="og:type" content="article"><meta property="article:published_time" content="{{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}"><meta property="article:modified_time" content="{{ article.updated_at | date: '%Y-%m-%dT%H:%M:%S%z' }}">{% else %}<meta property="og:type" content="website">{% endif %}
+<meta property="og:image" content="https:{{ social_image }}">
+<meta property="og:image:secure_url" content="https:{{ social_image }}">
+<meta property="og:image:alt" content="{{ social_image_alt | escape }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ safe_page_title | escape }}">
+<meta name="twitter:description" content="{{ safe_page_description | strip | escape }}">
+<meta name="twitter:image" content="https:{{ social_image }}">
+<meta name="twitter:image:alt" content="{{ social_image_alt | escape }}">
+<link rel="icon" href="{{ 'lbass-favicon-96.png' | asset_url | split: '?' | first }}" type="image/png" sizes="96x96">
+<link rel="shortcut icon" href="{{ 'lbass-favicon-96.png' | asset_url | split: '?' | first }}" type="image/png">
+<link rel="apple-touch-icon" href="{{ 'lbass-apple-touch-icon-180.png' | asset_url | split: '?' | first }}" sizes="180x180">
+{% render 'lbass-entity-schema' %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#0A0A0B;--ink2:#121214;--ink3:#1A1A1E;--line:#26262B;--gold:#C89A0E;--gold2:#E0B52A;--green:#1FA855;--txt:#D8D4CC;--txt2:#97928A;--txt3:#5E5A55;--cream:#F4EFE6}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--txt);font-family:'Tajawal',system-ui,sans-serif;line-height:1.7;font-size:16px;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1100px;margin:0 auto;padding:24px;width:100%}
+.top{display:flex;align-items:center;justify-content:flex-start;padding:18px 24px;border-bottom:1px solid var(--line);background:rgba(9,9,10,.94);backdrop-filter:saturate(140%) blur(14px);position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-logo{display:block;width:clamp(154px,16vw,196px);height:auto;transition:transform .35s ease,filter .35s ease}
+.brand-monogram{display:none;width:38px;height:38px;transition:transform .35s ease,filter .35s ease}
+.brand:hover .brand-logo,.brand:hover .brand-monogram{transform:translateY(-1px);filter:drop-shadow(0 0 10px rgba(200,154,14,.22))}
+@media (max-width:520px){
+  .top{padding:14px 16px}
+  .brand-logo{width:154px}
+}
+@media (max-width:340px){
+  .brand-logo{display:none}
+  .brand-monogram{display:block}
+}
+h1{font-size:clamp(24px,4vw,36px);font-weight:900;color:var(--cream);line-height:1.2;margin:14px 0 8px}
+h2{font-size:clamp(18px,3vw,22px);color:var(--cream);margin:24px 0 8px;font-weight:800}
+h3{font-size:16px;color:var(--cream);margin:18px 0 6px;font-weight:700}
+.crumb{font-size:13px;color:var(--txt3);padding:14px 0}
+.crumb a{color:var(--txt2)}.crumb a:hover{color:var(--gold)}
+.price{font-size:32px;font-weight:900;color:var(--gold);direction:ltr;display:inline-block}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--txt2);margin:3px}
+.btn{display:inline-block;padding:14px 22px;border-radius:12px;font-weight:800;text-decoration:none;text-align:center;border:0;cursor:pointer}
+.btn-g{background:var(--green);color:#fff}
+.btn-c{background:var(--cream);color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin:18px 0}
+.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink2);transition:transform .2s,border-color .2s;display:block}
+.card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.card-img{aspect-ratio:4/5;background:linear-gradient(135deg,#1a1a1e,#0a0a0b);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-body{padding:14px}
+.card-title{font-weight:800;color:var(--cream);font-size:15px;margin:4px 0}
+.card-vendor{color:var(--gold);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.card-price{font-weight:800;color:var(--gold);font-size:18px;direction:ltr;margin-top:6px}
+.foot{border-top:1px solid var(--line);background:var(--ink2);padding:clamp(36px,5vw,60px) clamp(16px,3vw,32px) 24px;margin-top:auto;text-align:right;color:var(--txt2);font-size:14px;direction:rtl}
+.foot-in{max-width:1280px;margin:0 auto}
+.foot-grid{display:grid;grid-template-columns:1.4fr repeat(3,minmax(0,1fr));gap:clamp(24px,3.5vw,48px);padding-bottom:28px}
+.fcol-brand{display:flex;flex-direction:column;align-items:flex-start}
+.foot-logo{display:block;width:180px;height:auto;margin:0 0 12px;opacity:.95}
+.foot-desc{font-size:13.5px;line-height:1.7;color:var(--txt2);margin:0 0 14px;max-width:320px}
+.foot-desc-sub{display:block;font-size:12px;color:var(--txt3);margin-top:4px}
+.foot-soc{display:flex;gap:8px;margin-top:4px}
+.fs-b{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--txt)!important;text-decoration:none!important;transition:all .2s ease}
+.fs-b:hover{border-color:var(--gold);background:var(--gold-dim);transform:translateY(-2px)}
+.fcol-t{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--cream);text-transform:uppercase;margin:0 0 14px}
+.fcol a{display:block;padding:5px 0;color:var(--txt2)!important;font-size:13.5px;font-weight:600;text-decoration:none!important;transition:color .2s ease,transform .2s ease}
+.fcol a:hover{color:var(--gold2)!important;transform:translateX(-3px)}
+.foot-bot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--txt3)}
+.foot-pay{display:flex;align-items:center;gap:8px}
+.foot-pay .pay-badge{border:1px solid var(--line2);border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:700;color:var(--txt2)}
+@media(max-width:860px){.foot-grid{grid-template-columns:1fr 1fr;gap:28px 20px}.fcol-brand{grid-column:1/-1}}
+@media(max-width:520px){.foot-grid{grid-template-columns:1fr;gap:24px}.foot-bot{flex-direction:column;align-items:flex-start;gap:10px}}
+ul{padding-inline-start:22px;margin:8px 0}
+li{margin:4px 0;color:var(--txt)}
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0;align-items:start}
+@media(max-width:768px){.product-grid{grid-template-columns:1fr}}
+.product-img{aspect-ratio:4/5;background:var(--ink2);border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--line)}
+.product-img img{width:100%;height:100%;object-fit:cover}
+.product-img .emoji{font-size:120px;opacity:.4}
+.product-info{display:flex;flex-direction:column;gap:8px}
+.form{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+select,button.btn{padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--ink2);color:var(--cream);font-weight:700;font-family:inherit;font-size:15px}
+button.btn-g{border-color:var(--green);background:var(--green);color:#fff}
+button.btn-c{border-color:var(--cream);background:var(--cream);color:var(--ink)}
+strong{color:var(--cream)}
+.lb-catnav{display:flex;gap:6px;overflow-x:auto;padding:10px 24px;border-bottom:1px solid var(--line);background:rgba(9,9,10,.9);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.lb-catnav::-webkit-scrollbar{display:none}
+.lb-catnav a{flex:none;padding:7px 14px;border:1px solid var(--line);border-radius:30px;font-size:13px;font-weight:800;color:var(--txt2);white-space:nowrap;transition:border-color .2s,color .2s}
+.lb-catnav a:hover{border-color:var(--gold);color:var(--cream)}
+.lb-catnav a.on{border-color:var(--gold);color:var(--gold);background:rgba(200,154,14,.1)}
+.lb-catnav-vault{border-color:rgba(200,154,14,.4)!important;color:var(--gold)!important}
+@media(max-width:520px){.lb-catnav{padding:9px 16px}}
+</style>
+{{ content_for_header }}
+{% render 'lbass-ai-attribution' %}
+<style>
+/* lb-bar — trust announcement strip */
+.lb-bar{position:sticky;top:0;z-index:56;background:rgba(200,154,14,.13);border-bottom:1px solid rgba(200,154,14,.22);backdrop-filter:blur(8px);overflow:hidden;height:36px;display:flex;align-items:center}
+.lb-bar-track{display:flex;align-items:center;gap:0;white-space:nowrap;animation:lbMarquee 50s linear infinite}
+.lb-bar-item{display:inline-flex;align-items:center;gap:7px;padding:0 32px;font-size:12.5px;font-weight:800;color:var(--gold2);letter-spacing:.03em}
+.lb-bar-sep{color:rgba(200,154,14,.5);font-size:10px}
+@keyframes lbMarquee{0%{transform:translateX(0)}100%{transform:translateX(50%)}}
+@media(max-width:480px){.lb-bar-item{padding:0 20px;font-size:11.5px}}
+</style>
+{% render 'lbass-stamp' %}
+{%- comment -%} Must come AFTER lbass-stamp: that sheet sets .chip{...!important}
+     and would otherwise flatten the pièce-unique plate. {%- endcomment -%}
+{% render 'lbass-unique-badge' %}
+{% render 'lbass-meta-pixel' %}
+</head>
+<body>
+{% comment %} Homepage has its own full nav inside index.liquid — skip the chrome there {% endcomment %}
+{% unless template == 'index' %}
+<!-- ═══ TRUST ANNOUNCEMENT BAR ═══ -->
+<div class="lb-bar" role="marquee" aria-label="رسالة البراند">
+  <div class="lb-bar-track">
+    <span class="lb-bar-item">🇩🇪 حوايج مختارة من ألمانيا</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">✓ تشيكت فمراكش</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">📸 صور حقيقية · حالة واضحة</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">💵 دفع عند الاستلام</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="fr">Pièces de marque depuis l’Allemagne</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">🚚 مراكش 20 درهم · خارج مراكش 40 درهم</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="en">Second-hand branded clothing from Germany</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">★ قطع 1/1 · COD أو PayPal</span><span class="lb-bar-sep">·</span>
+    <!-- duplicate for seamless loop -->
+    <span class="lb-bar-item">🇩🇪 حوايج مختارة من ألمانيا</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">✓ تشيكت فمراكش</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">📸 صور حقيقية · حالة واضحة</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">💵 دفع عند الاستلام</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="fr">Pièces de marque depuis l’Allemagne</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">🚚 مراكش 20 درهم · خارج مراكش 40 درهم</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="en">Second-hand branded clothing from Germany</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">★ قطع 1/1 · COD أو PayPal</span><span class="lb-bar-sep">·</span>
+    <!-- duplicate 3 -->
+    <span class="lb-bar-item">🇩🇪 حوايج مختارة من ألمانيا</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">✓ تشيكت فمراكش</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">📸 صور حقيقية · حالة واضحة</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">💵 دفع عند الاستلام</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="fr">Pièces de marque depuis l’Allemagne</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">🚚 مراكش 20 درهم · خارج مراكش 40 درهم</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="en">Second-hand branded clothing from Germany</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">★ قطع 1/1 · COD أو PayPal</span><span class="lb-bar-sep">·</span>
+    <!-- duplicate 4 -->
+    <span class="lb-bar-item">🇩🇪 حوايج مختارة من ألمانيا</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">✓ تشيكت فمراكش</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">📸 صور حقيقية · حالة واضحة</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">💵 دفع عند الاستلام</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="fr">Pièces de marque depuis l’Allemagne</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">🚚 مراكش 20 درهم · خارج مراكش 40 درهم</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item" lang="en">Second-hand branded clothing from Germany</span><span class="lb-bar-sep">·</span>
+    <span class="lb-bar-item">★ قطع 1/1 · COD أو PayPal</span><span class="lb-bar-sep">·</span>
+  </div>
+</div>
+<header class="top">
+  <a class="brand" href="{{ routes.root_url }}" aria-label="Lbass Original — الرئيسية">
+    <img class="brand-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64">
+    <img class="brand-monogram" src="{{ 'lbass-monogram.svg' | asset_url }}" alt="Lbass Original" width="128" height="128">
+  </a>
+  <button class="lb-cartbtn" type="button" data-lbass-cart-open aria-label="السلة">🛍<span class="lb-bub" data-lbass-count hidden>0</span></button>
+</header>
+{% comment %}
+  .lb-catnav is display:none — snippets/lbass-menu.liquid hides it and the side
+  panel is the only real navigation. Hidden links are still crawled, though, so
+  this list was feeding the duplicate collections internal links on EVERY page.
+  Handles name the published Nike and Adidas collections so hidden crawl links
+  never point to nonexistent /brand-* handles.
+{% endcomment %}
+<nav class="lb-catnav" aria-label="تصفح الفئات">
+  <a href="{{ routes.all_products_collection_url }}"{% if collection.handle == 'all' %} class="on"{% endif %}>كل القطع</a>
+  {%- assign catnav_handles = 'nike,adidas-originals,صبابط,جاكيطات-و-معاطف,جينز-مستعمل,تيشرتات-و-بولو,سراويل-و-كارغو,هوديات-و-سويت,إكسسوارات' | split: ',' -%}
+  {%- for h in catnav_handles -%}
+    {%- assign c = collections[h] -%}
+    {%- assign c_products_count = c.products_count | default: 0 | plus: 0 -%}
+    {%- if c != blank and c_products_count > 0 -%}
+      <a href="{{ c.url }}"{% if collection.handle == c.handle %} class="on"{% endif %}>{{ c.title }}</a>
+    {%- endif -%}
+  {%- endfor -%}
+  <a href="/pages/vault" class="lb-catnav-vault">✦ VAULT</a>
+</nav>
+{% endunless %}
+<main>
+{{ content_for_layout }}
+</main>
+{% comment %}
+  The homepage brand-proof block is NOT rendered here. It is rendered from
+  snippets/lbass-cro-tracking.liquid, which is one of the very few snippets
+  that reaches templates/index.liquid ({% layout none %}). Rendering it here
+  as well would double it up the moment index.liquid ever adopts this layout.
+  See snippets/lbass-cro-tracking-hook.liquid.
+{% endcomment %}
+<footer class="foot">
+  <div class="foot-in">
+    <div class="foot-grid">
+      <!-- Col 1: Brand & Bio -->
+      <div class="fcol-brand">
+        <a class="foot-brand" href="{{ routes.root_url }}">
+          <img class="foot-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64">
+        </a>
+        <p class="foot-desc">🇩🇪 قطع براند أصلية مختارة من ألمانيا · فحص وتصوير فمراكش · توصيل لكل المغرب<br><span class="foot-desc-sub">20 درهم مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم</span></p>
+        <div class="foot-soc">
+          <a class="fs-b" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener" aria-label="Instagram">📸</a>
+          <a class="fs-b" href="https://www.facebook.com/lbassoriginal" target="_blank" rel="noopener" aria-label="Facebook">📘</a>
+          <a class="fs-b" href="https://wa.me/491754264425" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
+          <a class="fs-b" href="mailto:contact@lbassoriginal.com" aria-label="Email">✉</a>
+        </div>
+      </div>
+
+      <!-- Col 2: Shop -->
+      <div class="fcol">
+        <p class="fcol-t">الأقسام · Shop</p>
+        <a href="/collections/جاكيطات-و-معاطف">جاكيطات و معاطف</a>
+        <a href="/collections/جينز-مستعمل">جينز و سراويل</a>
+        <a href="/collections/تيشرتات-و-بولو">تيشرتات و بولو</a>
+        {% assign footer_sneakers = collections['صبابط'] %}
+        {% if footer_sneakers != blank %}
+          <a href="{{ footer_sneakers.url }}">صبابط أصلية فالمغرب</a>
+        {% endif %}
+        {% assign footer_track = collections['track-pants'] %}
+        {% if footer_track != blank %}
+          <a href="{{ footer_track.url }}">Track Pants</a>
+        {% endif %}
+        {% assign footer_one = collections['one-of-one'] %}
+        {% if footer_one != blank %}
+          <a href="{{ footer_one.url }}">قطع 1/1 (Pièces uniques)</a>
+        {% endif %}
+        <a href="{{ routes.all_products_collection_url }}">كل المعروضات (New Drop)</a>
+      </div>
+
+      <!-- Col 3: Brands & SEO Pages -->
+      <div class="fcol">
+        <p class="fcol-t">البراندات · Brands</p>
+        <a href="/collections/nike">Nike مستعمل</a>
+        {% assign footer_adidas = collections['adidas-originals'] %}
+        {% if footer_adidas != blank %}
+          <a href="{{ footer_adidas.url }}">Adidas second-hand</a>
+        {% endif %}
+        <a href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc">Friperie en ligne Maroc</a>
+        <a href="/pages/second-hand-clothing-morocco">Second-Hand Morocco</a>
+        <a href="/pages/second-hand-clothing-marrakech">Friperie Marrakech</a>
+        <a href="/pages/sell-your-clothes">بيع حوايجك (Sell / Trade)</a>
+      </div>
+
+      <!-- Col 4: Trust & Guides -->
+      <div class="fcol">
+        <p class="fcol-t">أدلة وثقة · Trust</p>
+        <a href="/pages/authenticity">الأصالة و الفحص</a>
+        <a href="/pages/condition-guide">دليل تقييم الحالة</a>
+        <a href="/pages/size-guide">دليل القياسات</a>
+        <a href="/pages/shipping-and-payment">التوصيل و COD</a>
+        <a href="/pages/refund-policy">الإرجاع والتبديل</a>
+        <a href="/blogs/news">أدلة second-hand</a>
+        <a href="/pages/about">على Lbass Original</a>
+        <a href="/pages/contact">تواصل معنا</a>
+      </div>
+    </div>
+
+    <!-- Entity SEO Block (Compact Accordion) -->
+    
+
+    <!-- Judge.me Trust Proof -->
+    <!-- Start of Judge.me code -->
+    <div class='jdgm-widget jdgm-all-reviews-text' style='text-align:center;margin:18px auto 6px'>
+      <a href='javascript:void(0)'>
+        <span data-score='{{ shop.metafields.judgeme.all_reviews_rating }}' class='jdgm-all-reviews-rating'></span>
+        <span class='jdgm-all-reviews-text__text' data-score='{{ shop.metafields.judgeme.all_reviews_rating }}' data-number-of-reviews='{{ shop.metafields.judgeme.all_reviews_count }}' data-locale='en'>
+          Customers rate us {{ shop.metafields.judgeme.all_reviews_rating | round: 1 }}/5 based on {{ shop.metafields.judgeme.all_reviews_count }} reviews.
+        </span>
+      </a>
+    </div>
+    <div style='clear:both'></div>
+    <div style='text-align:center;margin:6px auto 16px'>
+      <a class='jdgm-verified-count-badget' href='javascript:void(0)'>
+        {{ shop.metafields.judgeme.verified_badge }}
+      </a>
+    </div>
+    <!-- End of Judge.me code -->
+
+    <!-- Bottom Bar -->
+    <div class="foot-bot">
+      <span>© {{ 'now' | date: '%Y' }} Lbass Original · حوايج براند أصلية فالمغرب 🇲🇦</span>
+      <div class="payment-badges foot-pay" aria-label="طرق الأداء">
+        <span class="pay-badge">COD (الدفع عند الاستلام)</span>
+        <span class="pay-badge">PayPal</span>
+      </div>
+    </div>
+  </div>
+</footer>
+{% unless template == 'index' %}
+<style>
+.wa-float{position:fixed;bottom:24px;right:24px;z-index:80;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.45);transition:transform .25s ease,background .25s ease;animation:wa-pulse 2.5s ease-in-out infinite}
+.wa-float:hover{transform:scale(1.12);background:#20c157}
+.wa-float svg{width:27px;height:27px;fill:#fff}
+@keyframes wa-pulse{0%,100%{box-shadow:0 10px 34px rgba(0,0,0,.45)}50%{box-shadow:0 10px 34px rgba(37,211,102,.4)}}
+@media(max-width:640px){.wa-float{bottom:18px;right:16px;width:52px;height:52px}}
+</style>
+<a class="wa-float" href="https://wa.me/491754264425" target="_blank" rel="noopener" aria-label="راسلنا فالواتساب">
+  <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.5.4.1.1.1.7-.1 1.3Z"/></svg>
+</a>
+{% endunless %}
+{% render 'lbass-google-review-badge' %}
+{% render 'lbass-jdgm-image-guard' %}
+{% render 'lbass-cart-drawer' %}
+{% render 'lbass-cro-tracking' %}
+<script>
+/* ── WhatsApp click tracking — GA4 2026-08-22 ──────────────────
+   Fires whatsapp_click on every wa.me link site-wide.
+   GA4 showed 0 events before this fix; WA is primary sales channel.
+─────────────────────────────────────────────────────────────── */
+(function(){
+  function trackWa(e){
+    var el = e.target && e.target.closest ? e.target.closest('a[href*="wa.me"]') : null;
+    if(!el) return;
+    if(typeof gtag === 'function'){
+      gtag('event','whatsapp_click',{
+        event_category:'engagement',
+        event_label: window.location.pathname + ' | ' + (el.getAttribute('aria-label') || el.getAttribute('data-cro-label') || 'wa'),
+        value:1
+      });
+    }
+  }
+  document.addEventListener('click', trackWa, {passive:true});
+})();
+</script>
+</body>
+</html>

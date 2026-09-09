@@ -1,0 +1,83 @@
+{% comment %}
+  Lbass Look Builder card — one complementary product inside كم鱼ل اللوك.
+  Usage: {% render 'lbass-look-card', rp: product_object %}
+  Renders the same rich pcard used across the site + quick-add, plus
+  data-look-vid on the wrapper so the "add the whole look" button can
+  collect variant ids. Only ever rendered for available products.
+
+  BADGE RULE (2026-07-30): 'nwt' and 'new' are NOT the same claim and must not
+  share a badge. Previously both rendered the word "جديد" — on a second-hand
+  store that reads as a statement about the garment, and it fired on items that
+  were merely recently listed.
+    nwt  = new with tags. A real condition claim. Red plate, "🏷 جديد بالتيكي".
+    new  = recently added. A merchandising signal only. Neutral ink plate,
+           "وصل جديد" (= newly arrived), which cannot be misread as condition.
+  Red stays reserved for nwt so the rare signal keeps its meaning.
+{% endcomment %}
+{%- assign rv = rp.selected_or_first_available_variant -%}
+{%- assign rp_display_title = rp.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first -%}
+{%- assign cap = rv.compare_at_price -%}
+{%- assign cur = rv.price -%}
+{%- assign rp_ticket = rp.metafields.lbass.ticket_status.value | default: 'unknown' -%}
+{%- assign rp_status = rp.metafields.lbass.condition_status.value | default: 'unknown' -%}
+{%- assign rp_inspection = rp.metafields.lbass.inspection_status.value -%}
+{%- assign rp_has_ticket = rp.metafields.lbass.has_original_ticket.value -%}
+{%- assign rp_notes = rp.metafields.lbass.condition_notes.value -%}
+{%- assign rp_defects = rp.metafields.lbass.visible_defects.value -%}
+{%- assign rp_cond = '' -%}
+{%- assign rp_confirmed = false -%}
+{%- if rp_inspection == 'inspected_confirmed' -%}
+  {%- if rp_has_ticket == true and rp_status == 'new_with_ticket' -%}
+    {%- if rp_ticket == 'ticket_attached' or rp_ticket == 'ticket_included' -%}{%- assign rp_cond = 'جديد بالتّيكيت' -%}{%- assign rp_confirmed = true -%}{%- endif -%}
+  {%- elsif rp_has_ticket == false and rp_ticket == 'no_ticket' and rp_status == 'new_without_ticket' -%}
+    {%- assign rp_cond = 'جديد بلا تيكيت' -%}{%- assign rp_confirmed = true -%}
+  {%- elsif rp_has_ticket == false and rp_ticket == 'no_ticket' and rp_status == 'excellent_almost_new' -%}
+    {%- assign rp_cond = 'بحالة ممتازة · شبه جديد' -%}{%- assign rp_confirmed = true -%}
+  {%- elsif rp_status == 'very_good' -%}
+    {%- assign rp_cond = 'بحالة مزيانة بزاف' -%}{%- assign rp_confirmed = true -%}
+  {%- elsif rp_status == 'good' -%}
+    {%- assign rp_cond = 'بحالة مزيانة' -%}{%- assign rp_confirmed = true -%}
+  {%- elsif rp_status == 'needs_note' -%}
+    {%- if rp_notes != blank or rp_defects != blank -%}{%- assign rp_cond = 'بحالة مزيانة · شوف الملاحظات' -%}{%- assign rp_confirmed = true -%}{%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+{% capture rp_one_s %}{% render 'lbass-one-of-one', product: rp %}{% endcapture %}{% assign rp_one_s = rp_one_s | strip %}
+{%- assign rp_one = false -%}{%- if rp_one_s == '1' -%}{%- assign rp_one = true -%}{%- endif -%}
+{%- assign rp_promo = false -%}
+{%- if rv.available and rp_confirmed and rp.metafields.lbass.promo_eligible.value == true -%}
+  {%- if rp_status == 'new_with_ticket' or rp_status == 'new_without_ticket' or rp_status == 'excellent_almost_new' -%}{%- assign rp_promo = true -%}{%- endif -%}
+{%- endif -%}
+{%- capture rp_alt -%}{{ rp.vendor }} {{ rp_display_title }} second-hand original in Morocco{% unless rp.has_only_default_variant %}, size {{ rv.title }}{% endunless %}{% if rp_cond != blank %}, {{ rp_cond }}{% endif %}, photographed by Lbass Original{%- endcapture -%}
+<div class="lbqa-wrap" data-look-item{% if rp_confirmed and rp.variants.size == 1 %} data-look-vid="{{ rv.id }}"{% endif %}>
+<a class="pcard" href="{{ rp.url }}" data-look-link data-cro-product-card data-cro-placement="dynamic_product_grid" data-product-id="{{ rp.id }}" data-product-name="{{ rp_display_title | escape }}" data-product-handle="{{ rp.handle | escape }}">
+  <div class="pviz">
+    {% if rp.featured_image %}
+      <img src="{{ rp.featured_image | image_url: width: 600 }}" alt="{{ rp.featured_image.alt | default: rp_alt | strip | escape }}" loading="lazy" decoding="async" width="600" height="750">
+    {% else %}
+      <div class="pviz-bg" style="background:linear-gradient(150deg,#1a1a1e,#0a0a0b)"></div>
+      <span class="pviz-brand">{{ rp.vendor }}</span>
+    {% endif %}
+    <div class="pbadges">
+      {% if rp_promo %}<span class="pb pb-drop">قطعة مختارة</span>{% endif %}
+      {% if rp_confirmed %}<span class="pb pb-grade">{{ rp_cond }}</span>{% endif %}
+    </div>
+  </div>
+  <div class="pinfo">
+    <p class="pinfo-brand">{{ rp.vendor }}</p>
+    <h3 class="pname">{{ rp_display_title }}</h3>
+    <div class="prow">
+      <span>
+        <span class="pprice">{{ cur | money }}</span>
+        {% if cap and cap > cur %}<span class="pold">{{ cap | money_without_currency | strip }}</span>{% endif %}
+      </span>
+      {% if rp_one %}<span class="psave">1/1</span>{% endif %}
+    </div>
+    <div class="psizes">
+      {% if rp.has_only_default_variant %}<span class="psz">One Size</span>{% else %}{% for v in rp.variants limit: 4 %}<span class="psz">{{ v.title }}</span>{% endfor %}{% endif %}
+    </div>
+    <div class="pmeta-row"><span>COD</span><span>{% if rp_one %}قطعة وحدة{% else %}متوفرة دابا{% endif %}</span>{% if rp_confirmed %}<span>{{ rp_cond }}</span>{% endif %}</div>
+    <p class="pdelivery">🚚 توصيل لكل المغرب</p>
+  </div>
+</a>
+{% render 'lbass-quick-add', product: rp %}
+</div>

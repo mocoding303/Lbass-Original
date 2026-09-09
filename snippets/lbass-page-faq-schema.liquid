@@ -1,0 +1,43 @@
+{%- comment -%}
+  LBASS — PAGE FAQ SCHEMA (2026-08-03)
+  Rendered from lbass-entity-schema.liquid, which is in <head> on every
+  template (including the homepage, which uses {% layout none %} and so never
+  sees layout/theme.liquid).
+
+  WHY IT IS GATED SO TIGHTLY
+  templates/page.liquid hardcodes FAQPage markup for a few specific handles.
+  Any NEW page — /pages/faq included — gets none, which is why that page
+  shipped with 12 visible questions and 0 in schema.
+
+  This emits FAQPage ONLY when the page carries a lbass.faq metafield. No
+  metafield, no markup. FAQPage without matching visible Q&A is a
+  structured-data violation, so the gate is the point — it must never fire
+  speculatively.
+
+  DRIFT WARNING
+  The visible Q&A lives in the page BODY; the schema is built from the
+  METAFIELD. Two copies, nothing enforcing agreement. Edit one, edit the other.
+  (templates/article.liquid does not have this problem — there the metafield is
+  the single source for both the visible list and the schema.)
+{%- endcomment -%}
+
+{%- assign pg_faq = page.metafields.lbass.faq.value -%}
+{%- if pg_faq != blank -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "{{ shop.url }}{{ page.url }}#faq",
+  "inLanguage": "ar-MA",
+  "mainEntity": [
+    {%- for item in pg_faq -%}
+    {
+      "@type": "Question",
+      "name": {{ item.q | json }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ item.a | json }} }
+    }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}

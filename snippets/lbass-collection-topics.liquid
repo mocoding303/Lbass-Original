@@ -1,0 +1,224 @@
+{%- comment -%}
+  ═══ LBASS — QUERY-CLUSTER H2 SECTIONS FOR A COLLECTION (2026-08-23) ═══
+
+  WHY THIS EXISTS
+  Page-level Search Console data (the query_page dimension, 219 rows) showed
+  /collections/صبابط ranking for exactly TWO queries in 90 days:
+
+      صبابط    75 impr   pos 6.0   3 clicks
+      توصيل     1 impr   pos 9.0   0 clicks
+
+  Position 6.0 on the head term is strong authority with almost no topical
+  breadth — the page says what it sells and nothing else, so it matches one
+  word and no cluster around it. templates/collection.liquid renders only two
+  real <h2>s ("X — كل القطع" and the discovery heading), neither of which
+  covers a query.
+
+  WHAT THIS ADDS
+  Sections that answer clusters the page is adjacent to but does not cover:
+  brand+sneaker routing, and what to check before buying second-hand shoes.
+  Each section earns its place by being useful, not by containing a keyword.
+
+  THE BRAND ROW IS BUILT FROM STOCK, NOT FROM A LIST
+  Vendors are collected from the products actually in the collection, and a
+  brand only becomes a link if a matching brand collection exists in this
+  store. So it can never advertise a brand that is out of catalogue, and it
+  reshapes itself as stock turns over. Same principle as lbass-colour-nav:
+  a page must never promise something the shop cannot show.
+
+  NOTHING HERE CLAIMS STOCK, CONDITION, REVIEWS OR DELIVERY TIMES. Shipping
+  numbers are the published ones (20 Marrakech / 40 elsewhere / free at 500)
+  and appear once, in lbass-collection-cro — not repeated here.
+
+  PAGE POLARITY — MEASURED, DO NOT GUESS
+  Collection pages render on a WHITE ground even though layout/theme.liquid
+  says --ink:#0A0A0B and body{background:var(--ink)} — a later tokens sheet
+  overrides it. Verified in-browser 2026-08-23: computed body background is
+  rgb(255,255,255). Everything below is dark-on-light. Do not restyle from the
+  token names.
+{%- endcomment -%}
+
+{%- liquid
+  # topic_kind selects which block renders. A collection with no kind renders
+  # nothing at all, which is why this snippet is safe to call from every
+  # collection page.
+  assign topic_kind = ''
+  assign sneaker_handles = 'صبابط,sneakers,shoes' | split: ','
+  assign adidas_handles  = 'adidas-originals,brand-adidas' | split: ','
+  for h in sneaker_handles
+    if collection.handle == h
+      assign topic_kind = 'sneakers'
+    endif
+  endfor
+  for h in adidas_handles
+    if collection.handle == h
+      assign topic_kind = 'adidas'
+    endif
+  endfor
+  assign show_topics = false
+  if topic_kind != ''
+    assign show_topics = true
+  endif
+-%}
+
+{%- if topic_kind == 'sneakers' -%}
+  {%- comment -%}
+    Vendor → brand-collection handle. A pair only renders if BOTH the vendor is
+    present on a product here AND that collection exists with products.
+  {%- endcomment -%}
+  {%- assign brand_map = 'Nike:nike,Adidas:adidas-originals,Vans:brand-vans,Converse:brand-converse,Karl Kani:brand-karl-kani,New Balance:brand-new-balance,Carhartt:brand-carhartt,Tommy Hilfiger:brand-tommy-hilfiger' | split: ',' -%}
+  {%- capture vendors_here -%},{%- for p in collections[collection.handle].products limit: 60 -%}{{ p.vendor | strip }},{%- endfor -%}{%- endcapture -%}
+
+  {%- capture brand_cards -%}
+    {%- for pair in brand_map -%}
+      {%- assign bits = pair | split: ':' -%}
+      {%- assign v_name = bits[0] -%}
+      {%- assign v_handle = bits[1] -%}
+      {%- assign needle = v_name | prepend: ',' | append: ',' -%}
+      {%- assign bc = collections[v_handle] -%}
+      {%- if vendors_here contains needle and bc.products_count > 0 -%}
+        <a class="lbct__brand" href="{{ bc.url }}"
+           data-cro-event="collection_topic_click"
+           data-cro-label="brand:{{ v_handle }}"
+           data-collection-handle="{{ collection.handle }}">
+          <b>{{ v_name }}</b><span>{{ bc.products_count }} قطعة</span>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+<section class="lbct" aria-labelledby="lbctH">
+  <style>
+    /* dark-on-light — see PAGE POLARITY note above */
+    .lbct{max-width:980px;margin:26px 0 22px;padding-top:22px;border-top:1px solid rgba(46,46,49,.14)}
+    .lbct h2{font-size:clamp(17px,2.2vw,22px);font-weight:900;color:#1A1A1C;margin:0 0 8px;line-height:1.35}
+    .lbct h3{font-size:15.5px;font-weight:900;color:#1A1A1C;margin:22px 0 7px}
+    .lbct p{margin:0 0 12px;color:#3A3A3C;font-size:14.5px;font-weight:600;line-height:1.85;max-width:70ch}
+    .lbct strong{color:#1A1A1C;font-weight:900}
+    .lbct__brands{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+    .lbct__brand{display:inline-flex;flex-direction:column;gap:2px;min-height:44px;
+      padding:9px 16px;border:1px solid rgba(46,46,49,.2);border-radius:10px;
+      background:#fff;text-decoration:none;transition:border-color .18s,transform .18s}
+    .lbct__brand b{color:#1A1A1C;font-size:14px;font-weight:900;letter-spacing:.01em}
+    .lbct__brand span{color:#6B5307;font-size:11.5px;font-weight:800}
+    .lbct__brand:hover,.lbct__brand:focus-visible{border-color:#C89A0E;transform:translateY(-1px)}
+    .lbct__brand:focus-visible{outline:3px solid #C89A0E;outline-offset:2px}
+    .lbct__check{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:7px}
+    .lbct__check li{position:relative;padding-inline-start:24px;color:#3A3A3C;
+      font-size:14.5px;font-weight:600;line-height:1.75}
+    .lbct__check li::before{content:"✓";position:absolute;inset-inline-start:0;top:0;
+      color:#6B5307;font-weight:900}
+    .lbct__check b{color:#1A1A1C;font-weight:900}
+    .lbct__links{margin-top:16px;font-size:14px;font-weight:800;color:#3A3A3C}
+    .lbct__links a{color:#6B5307;text-decoration:underline;text-underline-offset:3px}
+    @media(max-width:600px){.lbct__brand{padding:8px 13px}}
+  </style>
+
+  <h2 id="lbctH">صبابط أصلية Second-Hand فالمغرب</h2>
+  <p>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear جاية من ألمانيا، كتتشيك فمراكش، وكتتوصل لكل المغرب. الصبابط اللي كتشوف هنا كل زوج مصور بصور حقيقية ديالو، القياس مكتوب، والحالة مبيّنة قبل الطلب.</p>
+
+  {%- if brand_cards contains 'lbct__brand' -%}
+    <h3>صبابط بماركات مختلفة</h3>
+    <p>هادو هوما الماركات اللي عندنا فيها قطع دابا. الرقم هو عدد القطع المتوفرة فكل ماركة، وكيتبدل ملي تتباع شي قطعة.</p>
+    <div class="lbct__brands">{{ brand_cards }}</div>
+  {%- endif -%}
+
+  <h3>شنو خاصك تشوف قبل ما تشري صبابط second-hand؟</h3>
+  <p>الصباط second-hand ماشي بحال الجديد: خاصك تشوف تفاصيل معيّنة قبل ما تطلب. هادشي اللي كنشوفو حنا فمراكش قبل ما نعرضو أي زوج، وهادشي اللي خاصك تشوف نتا فالصور:</p>
+  <ul class="lbct__check">
+    <li><b>النعل من تحت</b> — واش مازال فيه الرسم ولا تمسح. هادي كتبيّن شحال تلبس الصباط.</li>
+    <li><b>الخياطة والصمغ</b> — خاصة فالجوانب وفين كيتلاقى النعل مع الجلد.</li>
+    <li><b>القياس بالضبط</b> — الأرقام كيختلفو بين الماركات. قيس النعل الداخلي ديال صباط عندك مريح وقارنو مع المكتوب.</li>
+    <li><b>الإتيكيت الداخلي</b> — كود الموديل والقياس، وهادي من الحوايج اللي كنشيكوها فالفحص.</li>
+    <li><b>أي أثر استعمال</b> — إلا كان شي عيب واضح، خاصو يبان فالصور ولا فالملاحظات.</li>
+  </ul>
+
+  <p class="lbct__links">
+    بغيتي تشوف حوايج أخرى؟ <a href="/collections/track-pants">بناطيل تراك</a> ·
+    <a href="{{ routes.all_products_collection_url }}">كل القطع المتوفرة</a> ·
+    <a href="/pages/how-we-check-items">كيفاش كنشيكو القطع</a> ·
+    <a href="/pages/start-here">بدا من هنا</a>
+  </p>
+</section>
+</section>
+{%- endif -%}
+
+{%- comment -%}
+  ═══ ADIDAS — added 2026-08-23, and this is the page that matters most ═══
+
+  Pulling Search Console with a query x COUNTRY dimension changed the priority
+  order of this whole account. «اديداس اورجينال ملابس» is 119 impressions of
+  which **118 are Moroccan** — 99% — sitting at position 8.4. It is far and away
+  the largest piece of genuine Moroccan commercial demand the store has.
+
+  For contrast, the track-pants cluster that looked like the best opportunity on
+  impressions alone is USA 35 / Australia 16 / Canada 10 and ZERO Morocco on its
+  biggest query. Buyer intent without country is not opportunity.
+
+  Everything below is generated from stock. 6 of the 14 Adidas products are sold
+  out, so a hardcoded "we stock jackets and sneakers" would go stale the moment
+  inventory turns.
+{%- endcomment -%}
+{%- if topic_kind == 'adidas' -%}
+  {%- liquid
+    assign ad_types = ''
+    assign ad_instock = 0
+    for p in collections[collection.handle].products limit: 60
+      if p.available
+        assign ad_instock = ad_instock | plus: 1
+        assign t = p.type | default: p.product_type
+        if t != blank
+          assign needle = t | prepend: '|' | append: '|'
+          unless ad_types contains needle
+            assign ad_types = ad_types | append: '|' | append: t | append: '|'
+          endunless
+        endif
+      endif
+    endfor
+    assign ad_type_list = ad_types | split: '||'
+  -%}
+<section class="lbct" aria-labelledby="lbctAdH">
+  <style>
+    .lbct{max-width:980px;margin:26px 0 22px;padding-top:22px;border-top:1px solid rgba(46,46,49,.14)}
+    .lbct h2{font-size:clamp(17px,2.2vw,22px);font-weight:900;color:#1A1A1C;margin:0 0 8px;line-height:1.35}
+    .lbct h3{font-size:15.5px;font-weight:900;color:#1A1A1C;margin:22px 0 7px}
+    .lbct p{margin:0 0 12px;color:#3A3A3C;font-size:14.5px;font-weight:600;line-height:1.85;max-width:70ch}
+    .lbct strong{color:#1A1A1C;font-weight:900}
+    .lbct__types{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+    .lbct__type{display:inline-flex;align-items:center;min-height:38px;padding:8px 15px;
+      border:1px solid rgba(46,46,49,.2);border-radius:999px;background:#fff;
+      color:#1A1A1C;font-size:13.5px;font-weight:800;text-decoration:none;
+      transition:border-color .18s,transform .18s}
+    .lbct__type:hover,.lbct__type:focus-visible{border-color:#C89A0E;transform:translateY(-1px)}
+    .lbct__type:focus-visible{outline:3px solid #C89A0E;outline-offset:2px}
+    .lbct__links{margin-top:16px;font-size:14px;font-weight:800;color:#3A3A3C}
+    .lbct__links a{color:#6B5307;text-decoration:underline;text-underline-offset:3px}
+  </style>
+
+  <h2 id="lbctAdH">Adidas Originals Second-Hand فالمغرب</h2>
+  <p>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear جاية من ألمانيا، كتتشيك فمراكش، وكتتوصل لكل المغرب. قطع Adidas اللي كتشوف هنا كل وحدة مصورة بصور حقيقية ديالها، القياس مكتوب، والحالة مبيّنة قبل الطلب.</p>
+
+  {%- if ad_instock > 0 -%}
+    <h3>شنو كاين دابا من Adidas؟</h3>
+    <p>دابا كاين <strong>{{ ad_instock }}</strong> قطعة Adidas متوفرة. الأنواع اللي عندنا فيها قطع دابا:</p>
+    <div class="lbct__types">
+      {%- for t in ad_type_list -%}
+        {%- assign tt = t | remove: '|' | strip -%}
+        {%- if tt != blank -%}<span class="lbct__type">{{ tt }}</span>{%- endif -%}
+      {%- endfor -%}
+    </div>
+    <p>القطع المتوفرة كيبانو أولاً فاللائحة فوق، والقطع اللي تباعت كتبقى ظاهرة بشارة <strong>SOLD</strong> باش تعرف شنو دوز.</p>
+  {%- endif -%}
+
+  <h3>Adidas Originals ولا Adidas عادي؟</h3>
+  <p><strong>Adidas Originals</strong> هي الخط ديال اللايفستايل والقطع الكلاسيكية — غالباً كيكون فيها شعار <strong>Trefoil</strong> (الوريقات التلاتة). <strong>Adidas</strong> العادي (Performance) هو خط الرياضة، وكيجي بشعار <strong>3-Stripes</strong> ولا Badge of Sport.</p>
+  <p>فهاد الكوليكشن كتلقى الجوج، حيت بزاف ديال الناس كيقلبو على «اديداس اورجينال» وهوما قاصدين القطع الأصلية ماشي الخط بعينو. الشعار ديال كل قطعة كيبان فالصور الحقيقية، وكنشيّكو الإتيكيت والخياطة والتفاصيل فمراكش قبل ما تتعرض أي قطعة.</p>
+
+  <p class="lbct__links">
+    شوف تان: <a href="/collections/track-pants">بناطيل تراك</a> ·
+    <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7">صبابط أصلية فالمغرب</a> ·
+    <a href="/pages/how-we-check-items">كيفاش كنشيكو القطع</a> ·
+    <a href="/pages/start-here">بدا من هنا</a>
+  </p>
+</section>
+{%- endif -%}

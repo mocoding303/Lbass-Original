@@ -1,0 +1,12 @@
+{%- comment -%}
+  TEMPORARY PREVIEW HARNESS — delete after the hero ships.
+  Renders sections/lbass-hero.liquid on its own so the new hero can be reviewed
+  without touching templates/index.liquid (226KB, not round-trippable via the
+  Admin API). Reach it by appending ?view=herotest to ANY page URL, e.g.
+      /pages/shipping-and-payment?view=herotest
+  No Shopify page object is created, so nothing is added to the live store.
+{%- endcomment -%}
+{% section 'lbass-hero' %}
+<div class="wrap" style="padding:40px 24px">
+  <p style="font-family:var(--lb-arabic);font-weight:800">↑ preview harness for sections/lbass-hero.liquid</p>
+</div>

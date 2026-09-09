@@ -1,0 +1,96 @@
+{%- comment -%}
+  ═══ VAULT FORK DISABLED 2026-08-23 — ONE CARD BUTTON FOR EVERY PRODUCT ═══
+
+  This line used to read:
+      {% if product.tags contains 'vault' or product.price >= 70000 %}
+  and replaced the add-to-cart button with a plain «شوف القطعة» link on any
+  product tagged `vault` OR priced at/above 700 MAD — on the homepage, in
+  collections, in search and in look cards. The most expensive stock in the
+  shop was the only stock a customer could not add to the cart from a card.
+
+  This is the SAME fork that templates/product.liquid carried for the PDP, and
+  it is disabled the same way and for the same reason: the owner asked for
+  these products to behave like every other product.
+
+  CHECKED BEFORE SWITCHING — all five products at/above 700 MAD carry
+  inspection_status = inspected_confirmed with a condition that maps in the
+  block below, so every one resolves to a real button rather than the
+  "غير متوفر للطلب دابا" fallback:
+      Nike puffer 749        excellent_almost_new
+      TNF puffer  749        good
+      On Running  900        good           (sold out -> sold link, correct)
+      HOKA        999        new_without_ticket
+      On Running  1199       very_good
+  If a future expensive product has NO confirmed condition it will show the
+  pending state, which is the honest outcome — not a silent add-to-cart.
+
+  TO REVERT: set use_vault_card_link back to true.
+{%- endcomment -%}
+{%- assign use_vault_card_link = false -%}
+{% if use_vault_card_link %}
+  <div style="padding: 0 12px 14px; text-align: center;"><a href="{{ product.url }}" style="display: block; font-size: 13px; font-weight: 800; color: var(--gold); background: transparent; border: 1px solid var(--gold); border-radius: 8px; padding: 10px; text-decoration: none;">شوف القطعة</a></div>
+{% else %}
+{% comment %}
+  Lbass Original — quick-add button for product cards.
+  Usage: {% render 'lbass-quick-add', product: product %}
+  Must be placed OUTSIDE the card's <a> link (sibling inside .lbqa-wrap).
+  Behavior (JS in lbass-cart-drawer.liquid):
+    - single-variant product  → adds directly to cart (qty 1)
+    - multi-variant product   → opens the size quick-pick sheet
+    - sold out                → disabled state, no API call
+  One-of-one: quantity is always 1; duplicate clicks and re-adds are blocked in JS.
+{% endcomment %}
+{%- assign qa_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first -%}
+{%- assign qa_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' -%}
+{%- assign qa_status = product.metafields.lbass.condition_status.value | default: 'unknown' -%}
+{%- assign qa_inspection = product.metafields.lbass.inspection_status.value -%}
+{%- assign qa_has_ticket = product.metafields.lbass.has_original_ticket.value -%}
+{%- assign qa_notes = product.metafields.lbass.condition_notes.value -%}
+{%- assign qa_defects = product.metafields.lbass.visible_defects.value -%}
+{%- assign qa_cond = '' -%}
+{%- assign qa_confirmed = false -%}
+{%- if qa_inspection == 'inspected_confirmed' -%}
+  {%- if qa_has_ticket == true and qa_status == 'new_with_ticket' -%}
+    {%- if qa_ticket == 'ticket_attached' or qa_ticket == 'ticket_included' -%}{%- assign qa_cond = 'جديد بالتّيكيت' -%}{%- assign qa_confirmed = true -%}{%- endif -%}
+  {%- elsif qa_has_ticket == false and qa_ticket == 'no_ticket' and qa_status == 'new_without_ticket' -%}
+    {%- assign qa_cond = 'جديد بلا تيكيت' -%}{%- assign qa_confirmed = true -%}
+  {%- elsif qa_has_ticket == false and qa_ticket == 'no_ticket' and qa_status == 'excellent_almost_new' -%}
+    {%- assign qa_cond = 'بحالة ممتازة · شبه جديد' -%}{%- assign qa_confirmed = true -%}
+  {%- elsif qa_status == 'very_good' -%}
+    {%- assign qa_cond = 'بحالة مزيانة بزاف' -%}{%- assign qa_confirmed = true -%}
+  {%- elsif qa_status == 'good' -%}
+    {%- assign qa_cond = 'بحالة مزيانة' -%}{%- assign qa_confirmed = true -%}
+  {%- elsif qa_status == 'needs_note' -%}
+    {%- if qa_notes != blank or qa_defects != blank -%}{%- assign qa_cond = 'بحالة مزيانة · شوف الملاحظات' -%}{%- assign qa_confirmed = true -%}{%- endif -%}
+  {%- endif -%}
+{%- endif -%}
+{%- capture qa_data -%}{"n":{{ qa_title | json }},"u":{{ product.url | json }},"c":{{ qa_cond | default: '' | json }},"v":[{%- for v in product.variants -%}[{{ v.id }},{% if v.title == 'Default Title' %}"One Size"{% else %}{{ v.title | json }}{% endif %},{% if v.available %}1{% else %}0{% endif %}]{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}{%- endcapture -%}
+{%- if product.available and qa_confirmed -%}
+  <button type="button" class="lbqa-btn" data-lbqa="{{ qa_data | escape }}" aria-label="زيدها للسلة — {{ qa_title | escape }}">
+    <span class="lbqa-txt">🛍 زيدها للسلة</span>
+    <span class="lbqa-en" aria-hidden="true">ADD TO CART</span>
+  </button>
+{%- elsif product.available -%}
+  <a class="lbqa-btn lbqa-pending" href="{{ product.url }}">غير متوفر للطلب دابا</a>
+{%- else -%}
+  {%- comment -%}
+    A full-width disabled button was the single largest element on every sold
+    card and offered the customer nothing — the brief is explicit that an
+    inactive control should not be the main action. Replaced with a compact
+    link to the piece, where the related products and WhatsApp route live.
+    Sold status is still unmistakable: the SOLD stamp stays on the image and
+    the card carries the "تباعت" line.
+  {%- endcomment -%}
+  {%- comment -%}
+    Same element footprint as the available-product button (.lbqa-btn) so sold
+    and available cards line up on a grid — only the treatment differs, via the
+    existing .lbqa-sold modifier (transparent, muted, neutral border).
+
+    It is an <a>, not a disabled <button>: the brief is explicit that an inactive
+    control should not be the main action. This one still does something useful —
+    it opens the product, where the related pieces and WhatsApp route live.
+  {%- endcomment -%}
+  <a class="lbqa-btn lbqa-sold" href="{{ product.url }}">تباعت · شوف قطع مشابهة</a>
+{%- endif -%}
+
+{% endif %}

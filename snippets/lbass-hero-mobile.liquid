@@ -1,0 +1,42 @@
+{%- comment -%}
+  LBASS HERO — MOBILE CORRECTIONS (2026-08-01)
+  Rendered from snippets/lbass-hero-fx.liquid, which the section renders AFTER
+  its own <style> block. Load order matters here: these rules deliberately sit
+  last so they win ties without needing !important.
+
+  TWO DEFECTS FOUND BY MEASURING A REAL 375px VIEWPORT, not by eye:
+
+  1. TRUST BAR STAIRCASE. The mobile rule set overflow-x:auto to make the chips
+     scroll in one row, but never reset flex-wrap. The desktop `flex-wrap:wrap`
+     survived, so instead of scrolling the chips WRAPPED into three staggered
+     rows (measured: chipRows 3, scrollWidth == clientWidth, so it never
+     scrolled at all). overflow-x:auto does nothing while a flex row is still
+     allowed to wrap — the two must be set together.
+
+  2. SCARCITY LINE UNREADABLE. "ملي كتباع القطعة..." rendered #6B6B6E over the
+     busiest part of the photograph, below the protected centre of the scrim.
+     It is the one line carrying real scarcity, so it cannot be the least
+     legible thing on the screen. Given the same plate treatment as the chips.
+{%- endcomment -%}
+<style>
+@media (max-width:767px){
+  /* overflow-x:auto is inert while wrapping is allowed — set both */
+  .lbh .lbh-trust{ flex-wrap:nowrap !important; }
+
+  .lbh .lbh-scarce{
+    display:inline-block;
+    margin-top:18px;
+    padding:8px 12px;
+    color:var(--fg);
+    background:rgba(255,255,255,.86);
+    border:1px solid var(--rule);
+    backdrop-filter:blur(6px);
+    line-height:1.5;
+  }
+  .lbh--ink .lbh-scarce{
+    color:#F2F0EB;
+    background:rgba(0,0,0,.52);
+    border-color:rgba(242,240,235,.18);
+  }
+}
+</style>

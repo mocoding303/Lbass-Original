@@ -1,0 +1,123 @@
+{%- comment -%}
+  ═══ LBASS — SHOP-BY-COLOUR NAV FOR A COLLECTION (2026-08-23) ═══
+
+  WHY IT EXISTS
+  90 days of Search Console showed the track-pants cluster is the store's best
+  commercial opportunity — 244 impressions of buyer intent, 3 clicks, and the
+  collection itself ranking at position 21.6, BELOW its own product pages.
+  The queries are colour-specific and Arabic:
+
+      بنطال تراك أسود   79 impr  pos 15.8
+      بنطال تراك أحمر   64 impr  pos 13.1   0 clicks
+      بنطال تراك رمادي  12 impr  pos 37.0
+
+  The collection had ZERO tag links, so a shopper who wanted a red one had to
+  scan the grid themselves and Google had no colour-specific URL to rank.
+
+  WHY IT IS DRIVEN FROM collection.products AND NOT A HARDCODED LIST
+  A chip must never link to an empty page. The first version used
+  `collection.all_tags`, which reads like the right API and is NOT: measured on
+  the live storefront 2026-08-23, this collection returned
+      all_tags=[]  count=0  handle=track-pants  products=5
+  — empty despite five tagged products. Do not go back to it. Colours are
+  instead collected from the products themselves, so a chip exists only if a
+  product carrying that tag was actually seen. That matters here specifically: the same GSC pull
+  showed real demand for بوليستر (polyester), مستقيم (straight), شتوي (winter)
+  and كرة القدم (football) track pants — 57 impressions — and Lbass holds NO
+  such stock. Hardcoding those chips would ship four dead ends, and
+  layout/theme.liquid noindexes empty collections anyway, so they could never
+  rank. Unstocked demand is a SOURCING signal, not a page to build.
+
+  When stock arrives and gets tagged, its chip appears here on its own.
+
+  PAGE POLARITY — MEASURED, DO NOT GUESS
+  Collection pages render on a WHITE ground. layout/theme.liquid defines
+  --ink:#0A0A0B and body{background:var(--ink)}, which reads as a dark page and
+  is WRONG — a later tokens sheet overrides it. Verified in-browser 2026-08-23:
+  computed body background is rgb(255,255,255) and .lb-cf-ship measures 12.63:1.
+  All colours below are dark-on-light and measured against #FFF. Never restyle
+  this file from the token names alone.
+{%- endcomment -%}
+
+{%- liquid
+  assign colour_map = 'black:كحل,red:حمر,grey:رمادي,gray:رمادي,white:بيض,blue:زرق,green:خضر,beige:بيج,navy:كحل غامق'
+  assign colour_pairs = colour_map | split: ','
+-%}
+
+{%- comment -%}
+  Build a ,comma,delimited, index of every tag on the products in view.
+  Leading and trailing commas make `contains ',black,'` an EXACT match, so
+  "black" can never be matched inside an unrelated tag like "black-friday".
+  On a paginated collection this sees the current page — that fails SAFE:
+  it can omit a colour, never invent one.
+{%- endcomment -%}
+{%- comment -%}
+  collections[collection.handle] rather than plain `collection`: on a
+  tag-filtered URL like /collections/track-pants/red, `collection.products` is
+  ALREADY filtered to that tag, so building the nav from it left the red page
+  offering only red — you could not get from red to grey. Measured 2026-08-23:
+      /collections/track-pants/red
+        collection.products            -> 1
+        collections[handle].products   -> 5   <- unfiltered, what we want
+  Look the collection up by handle so every colour stays reachable from every
+  filtered view.
+{%- endcomment -%}
+{%- capture seen_tags -%},{%- for p in collections[collection.handle].products limit: 60 -%}{%- for t in p.tags -%}{{ t | downcase | strip }},{%- endfor -%}{%- endfor -%}{%- endcapture -%}
+
+{%- capture colour_chips -%}
+  {%- for pair in colour_pairs -%}
+    {%- assign bits = pair | split: ':' -%}
+    {%- assign tag_name = bits[0] -%}
+    {%- assign tag_label = bits[1] -%}
+    {%- assign needle = tag_name | prepend: ',' | append: ',' -%}
+    {%- if seen_tags contains needle -%}
+      {%- assign is_active = false -%}
+      {%- if current_tags contains tag_name -%}{%- assign is_active = true -%}{%- endif -%}
+      <a class="lbcn__chip{% if is_active %} is-active{% endif %}"
+         {% if is_active %}aria-current="true"{% endif %}
+         href="{{ collection.url }}/{{ tag_name }}"
+         data-cro-event="track_pants_collection_click"
+         data-cro-label="colour:{{ tag_name }}"
+         data-collection-handle="{{ collection.handle }}">{{ tag_label }}</a>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- comment -%} one lone colour chip is noise, not navigation {%- endcomment -%}
+{%- assign chip_count = colour_chips | split: 'lbcn__chip' | size | minus: 1 -%}
+{%- if chip_count > 1 -%}
+{%- assign colour_nav_ok = true -%}
+{%- endif -%}
+
+{%- if colour_nav_ok -%}
+<nav class="lbcn" aria-label="تصفية حسب اللون">
+  <style>
+    /* dark-on-light — see PAGE POLARITY note above */
+    .lbcn{max-width:980px;margin:0 0 18px;padding:12px 16px;
+      border:1px solid rgba(200,154,14,.45);border-radius:12px;
+      background:rgba(200,154,14,.08);color:#2E2E31}
+    .lbcn__label{display:block;margin:0 0 9px;font-size:12.5px;font-weight:800;
+      color:#6B5307;letter-spacing:.01em}
+    .lbcn__row{display:flex;flex-wrap:wrap;gap:8px}
+    .lbcn__chip{display:inline-flex;align-items:center;min-height:38px;
+      padding:8px 16px;border:1px solid rgba(46,46,49,.22);border-radius:999px;
+      background:#fff;color:#2E2E31;font-size:13.5px;font-weight:800;
+      text-decoration:none;transition:background-color .18s,border-color .18s,transform .18s}
+    .lbcn__chip:hover,.lbcn__chip:focus-visible{background:#2E2E31;color:#F4EFE6;
+      border-color:#2E2E31;transform:translateY(-1px)}
+    .lbcn__chip:focus-visible{outline:3px solid #C89A0E;outline-offset:2px}
+    .lbcn__all{background:transparent;border-style:dashed}
+    .lbcn__chip.is-active{background:#2E2E31;color:#F4EFE6;border-color:#2E2E31}
+    @media(max-width:600px){.lbcn{padding:11px 13px}.lbcn__chip{font-size:13px;padding:8px 14px}}
+  </style>
+  <span class="lbcn__label">شوف حسب اللون</span>
+  <div class="lbcn__row">
+    {{ colour_chips }}
+    {%- if current_tags != blank -%}
+      <a class="lbcn__chip lbcn__all" href="{{ collection.url }}"
+         data-cro-event="track_pants_collection_click"
+         data-cro-label="colour:all">كلشي</a>
+    {%- endif -%}
+  </div>
+</nav>
+{%- endif -%}

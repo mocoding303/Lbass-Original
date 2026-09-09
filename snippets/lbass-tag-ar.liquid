@@ -1,0 +1,62 @@
+{%- comment -%}
+  ═══ LBASS — ARABIC LABEL FOR AN ACTIVE COLOUR TAG (2026-08-29) ═══
+
+  WHY IT EXISTS
+  The colour tag URLs are indexable, self-canonical and stocked, but they were
+  titled with the ENGLISH tag word while every ranking query is Arabic. Measured
+  on the live storefront 2026-08-29:
+
+      /collections/track-pants/black   <title>… — black    9 products
+      /collections/track-pants/red     <title>… — red      5 products
+      /collections/track-pants/grey    <title>… — grey     5 products
+
+  The 90-day Search Console pull recorded in snippets/lbass-colour-nav.liquid
+  shows what those pages are actually being served for:
+
+      بنطال تراك أسود   79 impr  pos 15.8
+      بنطال تراك أحمر   64 impr  pos 13.1   0 clicks
+      بنطال تراك رمادي  12 impr  pos 37.0
+
+  64 impressions at position 13.1 with ZERO clicks is a title problem, not a
+  ranking problem — the word the shopper typed (أحمر) appeared nowhere in the
+  snippet they were shown. This snippet puts it there.
+
+  WHY THE MSA FORM AND NOT THE CHIP LABEL
+  The visible chips read كحل / حمر — correct Darija, and they stay that way.
+  Search Console records the queries in MSA (أسود / أحمر / رمادي). Titles and H1s
+  follow the query; the on-page chips follow the shopper. Do not "harmonise"
+  these two — they are answering different questions.
+
+  GENDER TAGS (added 2026-09-04)
+  The النوع filter puts `gender:men` / `gender:women` / `gender:unisex` in the
+  path, and those are INTERNAL tags — unmapped they leaked verbatim into the
+  <title> ("Lbass Original — gender:men"), which is both an English label in
+  front of an Arabic-speaking shopper and a bad SERP snippet. They now map to
+  رجال / نساء / للجنسين. Any new namespaced tag must be added here too.
+
+  FALLBACK
+  An unmapped tag echoes unchanged, so a new tag can never blank a <title>.
+
+  USAGE
+    {%- capture t_ar -%}{%- render 'lbass-tag-ar', tags: current_tags -%}{%- endcapture -%}
+{%- endcomment -%}
+
+{%- liquid
+  assign lb_tag_raw = ''
+  if tags != blank
+    assign lb_tag_raw = tags | first | downcase | strip
+  endif
+
+  assign lb_map_keys = 'black,red,grey,gray,navy,blue,green,white,beige,brown,burgundy,purple,sage,silver,multicolor,neon-green,khaki,pink,orange,yellow,gender:men,gender:women,gender:unisex' | split: ','
+  assign lb_map_vals = 'أسود,أحمر,رمادي,رمادي,كحلي,أزرق,أخضر,أبيض,بيج,بني,عنابي,بنفسجي,زيتي,فضي,متعدد الألوان,أخضر نيون,كاكي,وردي,برتقالي,أصفر,رجال,نساء,للجنسين' | split: ','
+
+  assign lb_out = lb_tag_raw
+  for k in lb_map_keys
+    if k == lb_tag_raw
+      assign lb_out = lb_map_vals[forloop.index0]
+      break
+    endif
+  endfor
+
+  echo lb_out
+-%}

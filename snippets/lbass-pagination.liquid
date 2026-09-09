@@ -1,0 +1,90 @@
+{%- comment -%}
+  LBASS — PAGINATION (2026-07-31)
+
+  Replaces `{{ paginate | default_pagination }}`, which rendered raw, unstyled,
+  untranslated markup:
+
+      <span class="page current">1</span>
+      <span class="page"><a href="…?page=2">2</a></span>
+      <span class="next"><a href="…?page=2">Next »</a></span>
+
+  Three faults, all visible in the storefront as « Next 2 1 :
+    1. "Next" is English on an Arabic-first store.
+    2. The » guillemet points the wrong way. Under RTL the bidi algorithm
+       mirrors it, so the "forward" control appeared to point backwards.
+       In RTL, forward is ← and back is →. Arrows are written that way below.
+    3. `.page` / `.next` have no CSS anywhere in the theme, so the controls
+       rendered as bare blue-ish inline text with no hit area.
+
+  Order is NOT set manually. The row is a flex container and the document is
+  dir="rtl", so DOM order (prev → numbers → next) is painted right-to-left on
+  its own: prev lands on the right, next on the left. Do not "fix" this with
+  row-reverse — that would double-flip it.
+
+  Usage:  {% render 'lbass-pagination', paginate: paginate %}
+{%- endcomment -%}
+{%- if paginate.pages > 1 -%}
+<nav class="lbpag" role="navigation" aria-label="تصفح الصفحات">
+  {%- if paginate.previous -%}
+    <a class="lbpag-a lbpag-nav" href="{{ paginate.previous.url }}" rel="prev">→ السابق</a>
+  {%- else -%}
+    <span class="lbpag-a lbpag-nav is-off" aria-disabled="true">→ السابق</span>
+  {%- endif -%}
+
+  {%- for part in paginate.parts -%}
+    {%- if part.is_link -%}
+      <a class="lbpag-a lbpag-n" href="{{ part.url }}" aria-label="الصفحة {{ part.title }}">{{ part.title }}</a>
+    {%- elsif part.title == '&hellip;' -%}
+      <span class="lbpag-gap" aria-hidden="true">…</span>
+    {%- else -%}
+      <span class="lbpag-a lbpag-n is-cur" aria-current="page">{{ part.title }}</span>
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if paginate.next -%}
+    <a class="lbpag-a lbpag-nav" href="{{ paginate.next.url }}" rel="next">التالي ←</a>
+  {%- else -%}
+    <span class="lbpag-a lbpag-nav is-off" aria-disabled="true">التالي ←</span>
+  {%- endif -%}
+</nav>
+<p class="lbpag-note">صفحة <b>{{ paginate.current_page }}</b> من <b>{{ paginate.pages }}</b> · {{ paginate.items }} قطعة</p>
+{%- endif -%}
+
+<style>
+.lbpag{
+  display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+  gap:8px; margin:36px 0 12px; padding:0;
+}
+.lbpag-a{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:44px; height:44px; padding:0 15px;
+  border:1px solid var(--lb-ink,#0B0B0C); border-radius:0;   /* 0 radius = house style */
+  background:#FFFFFF; color:var(--lb-ink,#0B0B0C);
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif);
+  font-size:14px; font-weight:800; line-height:1; letter-spacing:normal;
+  text-decoration:none; white-space:nowrap;
+  transition:background .18s ease,color .18s ease,border-color .18s ease;
+}
+/* numerals read left-to-right even inside the RTL row */
+.lbpag-n{ direction:ltr; font-variant-numeric:tabular-nums; }
+.lbpag-a:hover{ background:var(--lb-ink,#0B0B0C); color:#F2F0EB; }
+.lbpag-a.is-cur{ background:var(--lb-ink,#0B0B0C); color:#F2F0EB; cursor:default; }
+.lbpag-a.is-off{
+  border-color:rgba(11,11,12,.18); color:rgba(11,11,12,.30);
+  background:#FFFFFF; cursor:default; pointer-events:none;
+}
+.lbpag-nav{ font-weight:900; }
+.lbpag-nav:not(.is-off):hover{ border-color:var(--lb-red,#BF2E15); background:var(--lb-red,#BF2E15); color:#FFFFFF; }
+.lbpag-gap{ color:rgba(11,11,12,.38); font-weight:800; padding:0 2px; user-select:none; }
+.lbpag-note{
+  text-align:center; margin:0 0 32px;
+  color:var(--lb-ink-2,#3A3A3C); font-size:12.5px; font-weight:700;
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif);
+}
+.lbpag-note b{ color:var(--lb-ink,#0B0B0C); }
+@media (max-width:520px){
+  .lbpag{ gap:6px; margin-top:28px; }
+  .lbpag-a{ min-width:40px; height:40px; padding:0 11px; font-size:13px; }
+}
+@media (prefers-reduced-motion:reduce){ .lbpag-a{ transition:none; } }
+</style>

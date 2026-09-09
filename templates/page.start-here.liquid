@@ -1,0 +1,142 @@
+{%- comment -%}
+  LBASS — "بدا من هنا" STARTER PAGE (2026-08-10)
+  Assign this template to the page with handle `start-here`.
+
+  ═══ WHY THIS TEMPLATE EXISTS ═══
+  This content lived on the homepage (snippets/lbass-home-answer.liquid) and made
+  it feel crowded. Moved here so the homepage can stay hero → products → trust →
+  categories, and this becomes a destination reachable from the menu.
+
+  ═══ TWO TRAPS THIS FILE DELIBERATELY AVOIDS ═══
+  1. templates/page.pseo.liquid does NOT render {{ page.content }} — page-body
+     edits in Admin are silently inert on those 9 pSEO pages. This template DOES
+     render it, so the copy stays editable in Admin without a developer.
+  2. snippets/lbass-stamp.liquid sets a global h1 rule with !important. A plain
+     `.sh-hero h1` loses that cascade, so the H1 below is styled at (0,2,1)
+     specificity + !important. Same reason documented in the collection hero.
+
+  ═══ COLOURS ═══
+  Literal hex, DARK text on the LIGHT bone page (#F2F0EB). The tokens are
+  inverted site-wide by lbass-stamp (--cream resolves to #0B0B0C), so writing
+  against token names here renders light-on-light. Do not "restore" them.
+
+  ═══ ORDERING ═══
+  In-stock products are emitted BEFORE sold-out ones in the markup itself, not
+  reordered with CSS. Source order is what crawlers and screen readers follow,
+  and this page exists to sell the available pieces first.
+{%- endcomment -%}
+
+{%- assign acc = collections['إكسسوارات'] -%}
+{%- assign wa_number = '491754264425' -%}
+
+<nav class="sh-bc" aria-label="مسار التنقل">
+  <a href="{{ routes.root_url }}">الرئيسية</a><span aria-hidden="true">›</span>
+  <span aria-current="page">{{ page.title }}</span>
+</nav>
+
+<main class="sh-wrap" id="main-content">
+  <header class="sh-hero">
+    <h1 class="sh-h1">{{ page.title }}</h1>
+    <div class="sh-copy">{{ page.content }}</div>
+  </header>
+
+  {%- if acc != blank and acc.products_count > 0 -%}
+    {%- assign avail = acc.products | where: 'available', true -%}
+    {%- assign sold  = acc.products | where: 'available', false -%}
+
+    <section class="sh-grid-sec" aria-labelledby="sh-grid-h">
+      <h2 class="sh-h2" id="sh-grid-h">القطع المتوفرة دابا</h2>
+      <div class="sh-grid">
+        {%- for p in avail -%}
+          {%- render 'lbass-start-card', p: p, sold: false -%}
+        {%- endfor -%}
+        {%- for p in sold -%}
+          {%- render 'lbass-start-card', p: p, sold: true -%}
+        {%- endfor -%}
+      </div>
+
+      <a class="sh-all" href="{{ acc.url }}" data-cro-event="start_here_all_accessories" data-cro-label="all_accessories">
+        شوف كل الإكسسوارات →
+      </a>
+    </section>
+  {%- endif -%}
+
+  <section class="sh-help" aria-labelledby="sh-help-h">
+    <h2 class="sh-h2" id="sh-help-h">مازال عندك شي سؤال؟</h2>
+    <p>إلا بغيتي صور إضافية ولا عندك سؤال على الحالة ولا القياس، صيفط لينا فالواتساب قبل ما تطلب.</p>
+    <div class="sh-links">
+      <a class="sh-btn" href="https://wa.me/{{ wa_number }}" target="_blank" rel="noopener" data-cro-event="start_here_whatsapp" data-cro-label="whatsapp">واتساب</a>
+      <a class="sh-lnk" href="/pages/shipping-and-payment">التوصيل والخلاص</a>
+      <a class="sh-lnk" href="/pages/authenticity">الأصالة والفحص</a>
+      <a class="sh-lnk" href="/pages/faq">أسئلة متكررة</a>
+    </div>
+  </section>
+</main>
+
+<style>
+.sh-bc{max-width:1180px;margin:0 auto;padding:14px 20px 0;color:#5A5A5E;font-size:12px;font-weight:700;letter-spacing:normal}
+.sh-bc a{color:#5A5A5E;text-decoration:none}
+.sh-bc a:hover{color:#0B0B0C}
+.sh-bc span[aria-hidden]{margin:0 6px;opacity:.6}
+.sh-wrap{max-width:1180px;margin:0 auto;padding:0 20px 56px}
+
+.sh-hero{padding:18px 0 6px}
+/* (0,2,1) + !important — lbass-stamp.liquid sets a global h1 with !important. */
+.sh-hero h1.sh-h1{
+  margin:0 0 10px!important;color:#0B0B0C!important;
+  font-size:clamp(28px,4.4vw,42px)!important;font-weight:900!important;
+  line-height:1.2!important;letter-spacing:normal!important;
+}
+.sh-copy p{margin:0 0 9px;color:#3A3A3C;font-size:14px;font-weight:600;line-height:1.9;letter-spacing:normal;max-width:70ch}
+.sh-copy .sh-sub{color:#1A1A1C;font-size:15.5px;font-weight:800}
+.sh-copy .sh-trust,.sh-copy .sh-ship{
+  display:inline-block;margin:4px 6px 4px 0;padding:7px 14px;border-radius:999px;
+  background:rgba(200,154,14,.10);border:1px solid rgba(200,154,14,.45);
+  color:#6B5307;font-size:12.5px;font-weight:800;
+}
+
+.sh-h2{margin:26px 0 12px;color:#0B0B0C;font-size:19px;font-weight:900;letter-spacing:normal}
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.sh-card{display:flex;flex-direction:column;gap:8px;text-decoration:none;border:1px solid rgba(0,0,0,.12);border-radius:14px;padding:11px;background:rgba(0,0,0,.02);transition:border-color .18s}
+.sh-card:hover{border-color:rgba(200,154,14,.75)}
+.sh-card__img{position:relative;display:block;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#E5E2DB}
+.sh-card__img img{width:100%;height:100%;object-fit:cover;display:block}
+.sh-card__stamp{position:absolute;inset-inline-start:8px;inset-block-start:8px;background:#0B0B0C;color:#F2F0EB;font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.04em}
+.sh-card__brand{color:#BF2E15;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;direction:ltr;text-align:start}
+.sh-card__title{color:#1A1A1C;font-size:13px;font-weight:700;line-height:1.5;letter-spacing:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em}
+.sh-card__meta{display:flex;flex-wrap:wrap;gap:5px}
+.sh-card__chip{border:1px solid rgba(0,0,0,.16);border-radius:6px;padding:3px 7px;color:#3A3A3C;font-size:10.5px;font-weight:700;letter-spacing:normal}
+.sh-card__price{color:#0B0B0C;font-size:15px;font-weight:900;direction:ltr;text-align:start;font-variant-numeric:tabular-nums}
+.sh-card--sold{opacity:.62}
+
+.sh-all{display:inline-block;margin-top:18px;color:#0B0B0C;font-size:13px;font-weight:800;text-decoration:none;border-bottom:2px solid rgba(200,154,14,.85);padding-bottom:2px}
+
+.sh-help{margin-top:34px;padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:14px;background:rgba(0,0,0,.02)}
+.sh-help p{margin:0 0 12px;color:#3A3A3C;font-size:13.5px;font-weight:600;line-height:1.85;letter-spacing:normal}
+.sh-links{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.sh-btn{background:#0B0B0C;color:#F2F0EB;border-radius:999px;padding:10px 20px;font-size:13px;font-weight:800;text-decoration:none}
+.sh-btn:hover{background:#25252A}
+.sh-lnk{color:#3A3A3C;font-size:12.5px;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(0,0,0,.22);padding-bottom:2px}
+.sh-lnk:hover{color:#0B0B0C;border-color:rgba(200,154,14,.8)}
+
+@media(max-width:767px){
+  .sh-wrap{padding:0 14px 44px}
+  .sh-bc{padding:12px 14px 0}
+  .sh-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .sh-card{padding:9px;border-radius:12px}
+  .sh-card__title{font-size:12.5px}
+  .sh-copy p{font-size:13.5px}
+  .sh-btn{flex:1 1 100%;text-align:center}
+}
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"الرئيسية","item":{{ shop.url | json }}},
+    {"@type":"ListItem","position":2,"name":{{ page.title | json }},"item":"{{ shop.url }}{{ page.url }}"}
+  ]
+}
+</script>

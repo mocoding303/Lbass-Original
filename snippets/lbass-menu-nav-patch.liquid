@@ -1,0 +1,25 @@
+{%- comment -%}
+  LBASS — MENU NAV PATCH (2026-08-03)
+  Rendered from snippets/lbass-menu.liquid at the end of its <style> block.
+
+  Two jobs:
+
+  1. STAGGER DELAYS FOR THE NEW ITEMS. lbass-menu.liquid hand-writes
+     .lbm-item:nth-child(1..8) animation delays. Adding the أدلة branch pushes
+     the list to 9–10 items, and an item with no delay rule animates at 0s —
+     it would visibly jump ahead of the ones above it. These continue the
+     0.04s cadence.
+
+  2. A GUIDES LINK IN THE SUPPORT LIST TOO. The أدلة branch is collapsed by
+     default, so its links are in the DOM (crawlable) but need a click to see.
+     The support list is always visible, so the blog index also gets a
+     permanent, uncollapsed entry point.
+{%- endcomment -%}
+<style>
+.lbm.is-open .lbm-item:nth-child(9){animation-delay:.48s}
+.lbm.is-open .lbm-item:nth-child(10){animation-delay:.52s}
+.lbm.is-open .lbm-item:nth-child(11){animation-delay:.56s}
+.lbm.is-open .lbm-foot{animation-delay:.58s}
+.lbm-sub .lbm-all em{font-style:normal;font-family:var(--lb-latin,'Epilogue',sans-serif);
+  font-size:10.5px;color:#BF2E15;opacity:.75;direction:ltr}
+</style>

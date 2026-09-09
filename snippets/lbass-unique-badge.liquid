@@ -1,0 +1,96 @@
+{%- comment -%}
+  LBASS — "PIÈCE UNIQUE" BADGE (2026-08-29)
+
+  WHY THIS SNIPPET EXISTS. The one-of-one signal already existed in markup on
+  every surface, but the chip that carries it was rendering as a plain neutral
+  outline — visually identical to «متوفرة دابا» (in stock). Two separate places
+  had styled it green and BOTH lost the cascade:
+
+      templates/collection.liquid:154   .chip-uniq{background/border-color/color}   (no !important)
+      templates/search.liquid:76        style="background:…;color:#37c97a"          (inline, no !important)
+
+  Both lose to snippets/lbass-stamp.liquid:108, which sets
+
+      .chip{ border:…!important; color:…!important; background:transparent!important }
+
+  An !important declaration in a stylesheet beats a normal one at ANY
+  specificity — and beats a normal INLINE style too. So the green never
+  painted, on either surface. The uniqueness signal was present in the DOM and
+  invisible on the page.
+
+  THE FIX follows the house pattern already set by lbass-badge-fix.liquid: win
+  on SPECIFICITY, not on load order. Every rule is anchored through a parent
+  (.card .lb-uniq = (0,2,0), .pdp-badges .lb-uniq = (0,2,0)) so it outranks the
+  token sheet's bare .chip (0,1,0) regardless of what loads when. This snippet
+  is ALSO rendered after lbass-stamp in layout/theme.liquid, so it wins on
+  order too — belt and braces, because this badge is load-bearing for
+  conversion and must not silently die again.
+
+  DESIGN. Red is already spoken for: it is the .lb-stamp die-cut "1/1" on the
+  image, the brand signature. This badge is the plain-language explanation of
+  that stamp and sits in the spec row, so it takes the SOLID INK plate + bone
+  type — the same treatment lbass-badge-fix chose for .pb-grade, and for the
+  same reason: a solid plate is the only thing that stays legible against
+  unpredictable garment photography. It is the one filled chip in a row of
+  outlines, which is exactly the weight the signal should carry.
+
+  COPY. "1/1" is resale jargon. It reads to a reseller and to nobody else, and
+  the shop's traffic is general Moroccan retail, not Grailed. The badge says
+  «Pièce unique» first — French, plain, the market's second reading language —
+  then the Darija. dir="auto" is required: this chip mixes Latin and Arabic on
+  an RTL page, the same bidi case the product titles already handle.
+{%- endcomment -%}
+<style>
+/* ── the pièce-unique chip ────────────────────────────────────────────
+   Anchored selectors (0,2,0) so the bare .chip (0,1,0) in the token
+   sheet cannot take these back. Do not flatten to `.lb-uniq` — that is
+   the bug this snippet exists to fix. */
+.card .lb-uniq,
+.pdp-badges .lb-uniq,
+.lbqa-wrap .lb-uniq{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  background:var(--lb-ink,#0B0B0C)!important;
+  border:1px solid var(--lb-ink,#0B0B0C)!important;
+  border-radius:0!important;
+  color:var(--lb-bone,#FFFFFF)!important;
+  font-family:'Alexandria','Tajawal',system-ui,sans-serif!important;
+  font-weight:800!important;
+  letter-spacing:normal!important;   /* Arabic: tracking breaks joining */
+  line-height:1.3!important;
+  white-space:nowrap!important;
+  opacity:1!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+
+/* the leading rule mark — a hairline, not an emoji. Emoji render
+   differently across Android/iOS and were already inconsistent in search. */
+.card .lb-uniq::before,
+.pdp-badges .lb-uniq::before,
+.lbqa-wrap .lb-uniq::before{
+  content:"";
+  width:11px; height:2px;
+  background:var(--lb-red,#BF2E15);
+  flex:none;
+}
+
+/* card + search: sits in the spec row under the title */
+.card .lb-uniq,
+.lbqa-wrap .lb-uniq{ font-size:11px!important; padding:3px 8px!important; }
+
+/* PDP: the badges row runs larger than the card chips */
+.pdp-badges .lb-uniq{ font-size:11.5px!important; padding:6px 10px!important; }
+
+/* The French half is the load-bearing word; the Darija supports it.
+   Nested span rather than a second chip so it wraps as one unit. */
+.lb-uniq i{ font-style:normal!important; opacity:.72!important; font-weight:700!important; }
+
+@media(max-width:420px){
+  /* On the narrowest cards the spec row is already tight — drop the Darija
+     rather than let the chip wrap and break the row onto three lines. */
+  .card .lb-uniq i,
+  .lbqa-wrap .lb-uniq i{ display:none!important; }
+}
+</style>

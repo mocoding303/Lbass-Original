@@ -1,0 +1,119 @@
+{%- comment -%}
+  LBASS — GUIDES BRANCH FOR THE MAIN MENU (2026-08-03)
+  Rendered from snippets/lbass-menu.liquid, inside .lbm-list.
+
+  WHY IT EXISTS
+  Audited 2026-08-03 on the live site: the store had TEN published Darija
+  guides and exactly ONE link to any of them anywhere in the site chrome (the
+  footer entity block). `.lb-catnav` and `header.top` are both display:none —
+  hidden by lbass-menu.liquid — so the side panel IS the navigation, and it
+  had no path to the blog at all.
+
+  Ten pages of crawlable Darija content that nothing links to are, for ranking
+  purposes, close to invisible: no internal PageRank flows to them and a
+  crawler reaches them only via the sitemap. This puts every article one click
+  from every page on the site.
+
+  DYNAMIC ON PURPOSE
+  Reads blogs['news'].articles, so publishing article 11 adds it here with no
+  code change, and an empty blog prints nothing rather than a dead branch.
+
+  Kept in its own file because lbass-menu.liquid is already ~19KB; folding this
+  in would make that file harder to reason about, and the guides list is the
+  part most likely to change.
+{%- endcomment -%}
+
+{%- assign lb_blog = blogs['news'] -%}
+{%- comment -%}
+  MERGED 2026-09-01 (owner request). This snippet used to emit TWO top-level menu
+  items — "أدلة" (blog) and "أدلة الشراء" (pSEO pages). The top level is now capped
+  at five entries: رجال · نساء · جديد · البراندات · أدلة. Everything secondary —
+  buying guides, blog, بدا من هنا, قطع 1/1, Vault — lives inside this ONE أدلة item.
+  NOTE: {% render %} is an isolated scope, so collections are looked up here again;
+  variables assigned in lbass-menu.liquid are NOT visible inside this snippet.
+{%- endcomment -%}
+
+{%- comment -%}
+  ═══ SECOND BRANCH: THE pSEO / QUERY-FIRST PAGES (added 2026-08-23) ═══
+
+  The branch above covers blog ARTICLES. It never covered the query-first
+  PAGES, and a link-graph crawl of all 120 indexable URLs on 2026-08-23 found
+  these receiving ZERO inbound internal links from anywhere on the site:
+
+      /pages/adidas-second-hand-maroc          0 inbound
+      /pages/jordan-second-hand-maroc          0
+      /pages/cargo-pants-second-hand-maroc     0
+      /pages/jackets-second-hand-maroc         0
+      /pages/streetwear-original-maroc         0
+      /pages/comment-acheter-second-hand-…     0
+      /pages/ma3na-thrift-second-hand-…        0
+
+  plus two money pages that were close to it:
+      /pages/vetements-second-hand-maroc       3 inbound
+      /pages/sneakers-second-hand-maroc       11 inbound
+  against 114–115 for comparable pages that sit in the site chrome.
+
+  They were written, indexed and left unreachable — no internal PageRank, and
+  a crawler finds them only through the sitemap. This puts each one click from
+  every page, which is what the other query-first pages already get.
+
+  /collections/frontpage is deliberately NOT here: it serves noindex.
+
+  LOOKED UP THROUGH `pages[handle]`, NOT HARDCODED <a href>. If a page is ever
+  unpublished or renamed, the guard drops the row instead of shipping a dead
+  internal link — the failure mode this file exists to prevent.
+{%- endcomment -%}
+
+{%- comment -%}
+  how-we-check-items leads deliberately. It was BUILT (a complete 14KB template,
+  templates/page.how-we-check.liquid, with FAQPage + AboutPage schema) and then
+  never shipped — the page record sat unpublished, with an empty body, pointing
+  at the wrong template suffix. Published 2026-08-23. It is the only page that
+  answers "how do clothes get from Germany to Morocco" end to end, which was
+  logged as a MISSING asset in the implementation audit.
+{%- endcomment -%}
+{%- assign lb_guide_handles = 'how-we-check-items,ma3na-thrift-second-hand-vintage-one-of-one,sneakers-second-hand-maroc,vetements-second-hand-maroc,adidas-second-hand-maroc,nike-second-hand-maroc,jordan-second-hand-maroc,jackets-second-hand-maroc,cargo-pants-second-hand-maroc,streetwear-original-maroc,comment-acheter-second-hand-original-maroc' | split: ',' -%}
+{%- capture lb_guide_rows -%}
+  {%- for gh in lb_guide_handles -%}
+    {%- assign gp = pages[gh] -%}
+    {%- if gp.handle != blank -%}
+      <li><a href="{{ gp.url }}">{{ gp.title }}</a></li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- assign lb_oneofone = collections['one-of-one'] -%}
+{%- assign lb_oo_count = lb_oneofone.products_count | default: 0 | plus: 0 -%}
+<li class="lbm-item">
+  <button type="button" class="lbm-a lbm-util lbm-toggle" aria-expanded="false" aria-controls="lbmSubGuides">أدلة<span class="lbm-chev" aria-hidden="true"></span></button>
+  <ul class="lbm-sub" id="lbmSubGuides" hidden>
+    {%- if pages['start-here'] != blank -%}
+      <li><a href="{{ pages['start-here'].url }}">أول طلب؟ بدا من هنا</a></li>
+    {%- endif -%}
+    {%- if lb_oo_count > 0 -%}
+      <li><a href="{{ lb_oneofone.url }}">قطع 1/1 <em>{{ lb_oo_count }}</em></a></li>
+    {%- endif -%}
+    <li><a href="/pages/vault">Vault</a></li>
+    {{ lb_guide_rows }}
+    {%- if lb_blog.articles_count > 0 -%}
+      {%- for a in lb_blog.articles limit: 6 -%}
+        <li><a href="{{ a.url }}">{{ a.title }}</a></li>
+      {%- endfor -%}
+      <li><a class="lbm-all" href="{{ lb_blog.url }}">شوف كل الأدلة <em>{{ lb_blog.articles_count }}</em></a></li>
+    {%- endif -%}
+    {%- comment -%}
+      Support links moved in here 2026-09-01 (owner request). They used to sit in
+      .lbm-foot as a separate always-visible list; the top level is capped at five
+      entries, so everything secondary lives under أدلة.
+    {%- endcomment -%}
+    <li class="lbm-sep"><a href="{{ routes.account_url }}">حسابي</a></li>
+    <li><a href="/pages/about">على Lbass Original</a></li>
+    <li><a href="/pages/faq">أسئلة متكررة</a></li>
+    <li><a href="/pages/authenticity">كيفاش كنشيّكو القطع؟</a></li>
+    <li><a href="/pages/size-guide">دليل القياسات</a></li>
+    <li><a href="/pages/shipping-and-payment">التوصيل و الخلاص</a></li>
+    <li><a href="/pages/refund-policy">سياسة الإرجاع</a></li>
+    <li><a href="/pages/sell-your-clothes">بيع حوايجك</a></li>
+    <li><a href="https://wa.me/491754264425" target="_blank" rel="noopener">WhatsApp</a></li>
+    <li><a href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener">Instagram</a></li>
+  </ul>
+</li>

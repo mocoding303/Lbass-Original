@@ -1,0 +1,333 @@
+{%- comment -%}
+  LBASS ORIGINAL — HERO rev8 (2026-08-01)
+  NUR's hero STRUCTURE, Lbass's identity, on a garment photograph.
+
+  Install: in templates/index.liquid replace <header class="hero">...</header>
+  with  {% section 'lbass-hero' %}
+
+  Support files:
+    snippets/lbass-hero-bg.liquid    background photo + legibility scrim
+    snippets/lbass-hero-fx.liquid    particles + word-level reveal
+    snippets/lbass-hero-type.liquid  headline size/leading (beats a global h1)
+    snippets/lbass-hero-cta.liquid   CTA colour defaults
+
+  IDENTITY: ink #0B0B0C, bone #FFFFFF/#F4F2ED, red #BF2E15. Alexandria/Tajawal
+  + Anton, not Georgia. Zero radius. No gold.
+
+  ARABIC: word-level reveal only, never per character. Tracking and uppercase
+  on Latin runs only (eyebrow, cue) — never on Darija.
+
+  rev8: default background image is hero-lifestyle-1 (sneakers + denim +
+  accessories on zellige). 3b was one pair of jeans among roses and a lantern —
+  in a wide hero crop it read as a vintage still-life rather than a clothing
+  shop, which defeated the purpose of adding a photo at all.
+{%- endcomment -%}
+
+{%- liquid
+  assign is_ink = false
+  if section.settings.theme == 'ink'
+    assign is_ink = true
+  endif
+-%}
+
+{%- capture hero_vars -%}
+{%- if section.settings.cta_bg != blank %}--cta-bg:{{ section.settings.cta_bg }};{% endif -%}
+{%- if section.settings.cta_fg != blank %}--cta-fg:{{ section.settings.cta_fg }};{% endif -%}
+{%- if section.settings.cta_bg_hover != blank %}--cta-bg-hover:{{ section.settings.cta_bg_hover }};{% endif -%}
+{%- endcapture -%}
+
+{% render 'lbass-hero-cta' %}
+
+<header class="lbh{% if is_ink %} lbh--ink{% endif %}" role="banner"
+  {%- if hero_vars != blank %} style="{{ hero_vars }}"{% endif %}>
+
+  {% render 'lbass-hero-bg' %}
+
+  <canvas id="lbhParticles" class="lbh-fx" aria-hidden="true"
+          data-tint="{% if is_ink %}242,240,235{% else %}11,11,12{% endif %}"></canvas>
+
+  <div class="lbh-wrap">
+    {%- if section.settings.badge != blank -%}
+      <p class="lbh-eyebrow">{{ section.settings.badge }}</p>
+    {%- endif -%}
+
+    <h1 class="lbh-h">
+      <span class="lbh-ln" data-lbh-reveal="{{ section.settings.headline_1 | escape }}">{{ section.settings.headline_1 }}</span>
+      <span class="lbh-ln lbh-ln--accent" data-lbh-reveal="{{ section.settings.headline_2 | escape }}">{{ section.settings.headline_2 }}</span>
+    </h1>
+
+    {%- if section.settings.subheadline != blank -%}
+      <p class="lbh-sub">{{ section.settings.subheadline }}</p>
+    {%- endif -%}
+
+    <div class="lbh-divider" aria-hidden="true"></div>
+
+    <div class="lbh-ctas">
+      <a class="lbh-btn lbh-btn-primary"
+         href="{{ section.settings.cta1_url | default: routes.all_products_collection_url }}"
+         data-lbh-cta="primary">
+        <span class="lbh-d">{{ section.settings.cta1_label }} ←</span>
+        <span class="lbh-m">{{ section.settings.cta1_label_mobile | default: section.settings.cta1_label }}</span>
+      </a>
+      {%- if section.settings.cta2_label != blank -%}
+        <a class="lbh-btn lbh-btn-ghost"
+           href="{{ section.settings.cta2_url | default: '/pages/condition-guide' }}"
+           data-lbh-cta="secondary">
+          <span class="lbh-d">{{ section.settings.cta2_label }}</span>
+          <span class="lbh-m">{{ section.settings.cta2_label_mobile | default: section.settings.cta2_label }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.chips != blank -%}
+      <div class="lbh-trust">
+        {%- assign chip_list = section.settings.chips | split: ',' -%}
+        {%- for c in chip_list -%}
+          {%- assign ct = c | strip -%}
+          {%- if ct != blank -%}
+            {%- assign parts = ct | split: '|' -%}
+            <div class="lbh-ht"><b>{{ parts[0] | strip }}</b>{% if parts.size > 1 %} · {{ parts[1] | strip }}{% endif %}</div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.scarcity != blank -%}
+      <p class="lbh-scarce">{{ section.settings.scarcity }}</p>
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.show_cue -%}
+    <a class="lbh-cue" href="#{{ section.settings.cue_anchor | default: 'drop' }}" data-lbh-cue>
+      <span class="lbh-cue-line" aria-hidden="true"></span>
+      <span>{{ section.settings.cue_label }}</span>
+    </a>
+  {%- endif -%}
+</header>
+
+{%- if section.settings.show_ticker and section.settings.ticker != blank -%}
+  <div class="lbh-tick" aria-hidden="true">
+    <div class="lbh-tick-track">
+      {%- assign tick = section.settings.ticker | split: ',' -%}
+      {%- for i in (1..2) -%}{%- for t in tick -%}{%- assign tt = t | strip -%}
+        {%- if tt != blank -%}<span>{{ tt }}<i>✦</i></span>{%- endif -%}
+      {%- endfor -%}{%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+<style>
+.lbh{
+  --i:#0B0B0C; --i2:#3A3A3C; --i3:#6B6B6E;
+  --bone:#FFFFFF; --bone2:#F4F2ED; --red:#BF2E15; --rule:rgba(11,11,12,.14);
+  --ar:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif);
+  --lt:var(--lb-latin,'Epilogue',system-ui,sans-serif);
+  --dp:var(--lb-display,'Anton',Impact,sans-serif);
+  --fg:var(--i); --fg2:var(--i2); --fg3:var(--i3); --plate:var(--bone);
+  position:relative; width:100%; overflow:hidden;
+  min-height:100svh; display:flex; align-items:center; justify-content:center;
+  padding-top:clamp(36px,5vh,72px);
+  /* fallback ground — paints under the photo, and stands alone if it fails */
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 92%, rgba(191,46,21,.075) 0%, rgba(191,46,21,.022) 45%, transparent 72%),
+    radial-gradient(125% 95% at 50% 0%, #FFFFFF 0%, #FCFBF8 50%, #F1EEE7 100%);
+  border-bottom:1px solid var(--rule);
+}
+@supports not (min-height:100svh){ .lbh{min-height:100vh} }
+
+.lbh--ink{
+  --fg:#F2F0EB; --fg2:rgba(242,240,235,.74); --fg3:rgba(242,240,235,.5);
+  --plate:#121214; --rule:rgba(242,240,235,.16);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 88%, rgba(191,46,21,.22) 0%, rgba(120,28,12,.09) 45%, #08070A 100%);
+  border-bottom:1px solid rgba(242,240,235,.14);
+}
+
+.lbh-fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+/* 1400, not 1180 — the headline's longest line needs the room */
+.lbh-wrap{position:relative;display:flex;flex-direction:column;
+  align-items:center;text-align:center;gap:0;
+  width:100%;max-width:1400px;margin:0 auto;
+  padding:clamp(18px,2.6vw,34px) 32px clamp(48px,5.5vw,72px)}
+
+.lbh-eyebrow{display:flex;align-items:center;gap:1.2rem;margin:0 0 20px;
+  font-family:var(--lt);font-size:11px;font-weight:700;letter-spacing:.42em;
+  text-transform:uppercase;color:var(--red);line-height:1.5}
+.lbh-eyebrow::before,.lbh-eyebrow::after{content:'';width:34px;height:1px;background:currentColor;opacity:.42;flex:0 0 auto}
+
+/* size/leading live in snippets/lbass-hero-type.liquid — they must beat a
+   global h1{...!important} in lbass-stamp, which this block cannot do */
+.lbh-h{margin:0;font-family:var(--ar);font-weight:900;color:var(--fg);
+  word-spacing:.01em;max-width:none;width:100%}
+.lbh-ln{display:block}
+.lbh-ln--accent{color:var(--red)}
+.lbh-w{display:inline-block;opacity:0;transform:translateY(.5em);
+  animation:lbhUp .8s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes lbhUp{to{opacity:1;transform:none}}
+
+.lbh-sub{margin:26px 0 0;max-width:56ch;font-family:var(--ar);
+  font-size:clamp(14px,1.25vw,17px);line-height:1.95;font-weight:500;color:var(--fg2)}
+.lbh-divider{width:52px;height:1px;margin:26px 0 0;
+  background:linear-gradient(90deg,transparent,var(--red),transparent)}
+
+.lbh-ctas{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;margin:28px 0 0}
+.lbh-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:60px;padding:0 38px;border-radius:0;font-family:var(--ar);
+  font-size:16px;font-weight:900;text-decoration:none;
+  transition:background .2s,color .2s,border-color .2s,transform .2s,box-shadow .2s}
+.lbh-btn-primary{background:var(--cta-bg);color:var(--cta-fg);border:1px solid var(--cta-bg)}
+.lbh-btn-primary:hover{background:var(--cta-bg-hover);border-color:var(--cta-bg-hover);
+  transform:translateY(-2px);box-shadow:0 10px 26px rgba(11,11,12,.22)}
+.lbh-btn-ghost{background:rgba(255,255,255,.78);color:var(--fg);border:1px solid var(--fg);
+  backdrop-filter:blur(6px)}
+.lbh--ink .lbh-btn-ghost{background:rgba(0,0,0,.38)}
+.lbh-btn-ghost:hover{border-color:var(--cta-bg);color:var(--cta-bg)}
+.lbh-m{display:none}
+
+.lbh-trust{display:flex;flex-wrap:wrap;justify-content:center;margin:30px 0 0;
+  border:1px solid var(--rule);background:rgba(255,255,255,.78);backdrop-filter:blur(8px)}
+.lbh--ink .lbh-trust{background:rgba(0,0,0,.38)}
+.lbh-ht{font-family:var(--ar);font-size:12px;color:var(--fg2);
+  padding:12px 20px;border-inline-end:1px solid var(--rule);white-space:nowrap;line-height:1.4}
+.lbh-ht:last-child{border-inline-end:none}
+.lbh-ht b{color:var(--fg);font-weight:900}
+.lbh-scarce{margin:20px 0 0;font-family:var(--ar);font-size:12.5px;font-weight:700;color:var(--fg3)}
+
+.lbh-cue{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;
+  font-family:var(--lt);font-size:10px;font-weight:700;letter-spacing:.35em;
+  text-transform:uppercase;color:var(--fg3)}
+.lbh-cue-line{width:1px;height:32px;background:linear-gradient(to bottom,var(--red),transparent);
+  animation:lbhPulse 2.2s ease-in-out infinite}
+@keyframes lbhPulse{0%,100%{opacity:.35;transform:scaleY(1)}50%{opacity:.95;transform:scaleY(1.12)}}
+@media(max-width:900px){.lbh-cue{display:none}}
+
+.lbh-tick{background:#0B0B0C;overflow:hidden;padding:13px 0}
+.lbh-tick-track{display:inline-flex;align-items:center;white-space:nowrap;direction:ltr;
+  animation:lbhTick 46s linear infinite;will-change:transform}
+.lbh-tick-track span{display:inline-flex;align-items:center;gap:16px;padding:0 20px;
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif);font-size:12.5px;
+  font-weight:700;color:#F2F0EB;letter-spacing:normal}
+.lbh-tick-track i{font-style:normal;color:#BF2E15}
+@keyframes lbhTick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.lbh-tick:hover .lbh-tick-track{animation-play-state:paused}
+
+@media(max-width:767px){
+  .lbh{min-height:0;height:auto;align-items:flex-start;padding-top:0}
+  .lbh-wrap{align-items:flex-start;text-align:start;max-width:100%;
+    padding:clamp(24px,7vw,38px) 20px clamp(32px,8vw,46px)}
+  .lbh-eyebrow{font-size:9.5px;letter-spacing:.22em;gap:.7rem;margin-bottom:16px}
+  .lbh-eyebrow::before,.lbh-eyebrow::after{width:18px}
+  .lbh-sub{font-size:14px;line-height:1.8;margin-top:18px;max-width:100%}
+  .lbh-divider{display:none}
+  .lbh-ctas{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:24px}
+  .lbh-btn{width:100%;padding:0 12px;font-size:13.5px;min-height:52px;line-height:1.25;text-align:center}
+  .lbh-d{display:none}
+  .lbh-m{display:inline}
+  .lbh-trust{width:100%;justify-content:flex-start;gap:8px;overflow-x:auto;
+    border:0;background:transparent;backdrop-filter:none;padding-bottom:4px;
+    margin-top:20px;scrollbar-width:none}
+  .lbh-trust::-webkit-scrollbar{display:none}
+  .lbh-ht{flex:0 0 auto;border:1px solid var(--rule);background:rgba(255,255,255,.85);padding:9px 13px}
+  .lbh--ink .lbh-ht{background:rgba(0,0,0,.45)}
+  .lbh-scarce{margin-top:18px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .lbh-w{opacity:1;transform:none;animation:none}
+  .lbh-cue-line,.lbh-tick-track{animation:none}
+  .lbh-btn{transition:none}
+}
+</style>
+
+{% render 'lbass-hero-fx' %}
+
+<script>
+(function(){
+  var sent={};
+  function track(n,p){
+    try{if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish(n,p||{})}catch(e){}
+  }
+  document.addEventListener('click',function(e){
+    var c=e.target.closest('[data-lbh-cta]');
+    if(c){track('lbass_hero_cta_click',{cta:c.getAttribute('data-lbh-cta'),label:(c.textContent||'').trim().slice(0,60),url:c.getAttribute('href')||''});return}
+    if(e.target.closest('[data-lbh-cue]'))track('lbass_hero_cue_click',{});
+  });
+  var h=document.querySelector('.lbh');
+  if(h&&'IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(en){
+      if(!en.isIntersecting&&en.boundingClientRect.top<0&&!sent.s){sent.s=1;track('lbass_hero_scroll_past',{});io.disconnect()}
+    })},{threshold:0});
+    io.observe(h);
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Lbass Hero",
+  "tag": "section",
+  "settings": [
+    { "type": "select", "id": "theme", "label": "Hero theme", "default": "light",
+      "options": [
+        { "value": "light", "label": "Light (site identity)" },
+        { "value": "ink", "label": "Ink / dark" }
+      ] },
+
+    { "type": "header", "content": "Background photo" },
+    { "type": "paragraph", "content": "Says 'clothing' before anything is read. The scrim behind the headline is locked, so raising visibility is safe — but judge any new photo in the WIDE crop, not as a thumbnail." },
+    { "type": "image_picker", "id": "bg_image", "label": "Custom image (overrides the preset below)" },
+    { "type": "select", "id": "bg_asset", "label": "Preset image", "default": "hero-lifestyle-1.webp",
+      "options": [
+        { "value": "hero-lifestyle-1.webp", "label": "Sneakers + denim + accessories" },
+        { "value": "hero-lifestyle-2.webp", "label": "Hoodie stack" },
+        { "value": "hero-lifestyle-3b.webp", "label": "Folded denim (still-life)" }
+      ] },
+    { "type": "range", "id": "bg_visibility", "label": "Image visibility", "min": 0, "max": 70, "step": 2, "unit": "%", "default": 42 },
+    { "type": "range", "id": "bg_grayscale", "label": "Desaturate", "min": 0, "max": 100, "step": 4, "unit": "%", "default": 12 },
+    { "type": "select", "id": "bg_position", "label": "Focal point", "default": "center",
+      "options": [
+        { "value": "center", "label": "Centre" },
+        { "value": "center 25%", "label": "Upper" },
+        { "value": "center 75%", "label": "Lower" }
+      ] },
+
+    { "type": "header", "content": "Primary button colour" },
+    { "type": "paragraph", "content": "Leave blank for brand red. Try: ink #0B0B0C · brass #C8A24A · sand #E8DCC4. Keep the text contrasting." },
+    { "type": "color", "id": "cta_bg", "label": "Background", "default": "#BF2E15" },
+    { "type": "color", "id": "cta_fg", "label": "Text", "default": "#FFFFFF" },
+    { "type": "color", "id": "cta_bg_hover", "label": "Background on hover", "default": "#8F1F0D" },
+
+    { "type": "header", "content": "Eyebrow" },
+    { "type": "text", "id": "badge", "label": "Eyebrow (Latin — gets tracking)", "default": "NEW DROP · ORIGINAL ONLY" },
+
+    { "type": "header", "content": "Headline" },
+    { "type": "text", "id": "headline_1", "label": "Line 1", "default": "قطع أصلية." },
+    { "type": "text", "id": "headline_2", "label": "Line 2 (red)", "default": "لوك ما كيتعاودش." },
+    { "type": "textarea", "id": "subheadline", "label": "Subheadline", "default": "Lbass Original: قطع branded second-hand مختارة فالمغرب — صور حقيقية، حالة واضحة، وقطع 1/1 كتوصلك حتى لدارك." },
+
+    { "type": "header", "content": "Buttons" },
+    { "type": "text", "id": "cta1_label", "label": "Primary", "default": "شوف الدروب دابا" },
+    { "type": "text", "id": "cta1_label_mobile", "label": "Primary (mobile)", "default": "شوف الدروب" },
+    { "type": "url", "id": "cta1_url", "label": "Primary link" },
+    { "type": "text", "id": "cta2_label", "label": "Secondary", "default": "كيفاش كنشيّكو القطع؟" },
+    { "type": "text", "id": "cta2_label_mobile", "label": "Secondary (mobile)", "default": "كيفاش كنشيّكو؟" },
+    { "type": "url", "id": "cta2_url", "label": "Secondary link" },
+
+    { "type": "header", "content": "Trust bar" },
+    { "type": "textarea", "id": "chips", "label": "Items — comma separated, | bolds the first part", "default": "1/1 | قطعة وحدة فقط, صور حقيقية | لنفس القطعة, COD | تخلص ملي توصلك, توصيل | لكل المغرب" },
+    { "type": "text", "id": "scarcity", "label": "Scarcity line", "default": "ملي كتباع القطعة، كتخرج من الكوليكسيون." },
+
+    { "type": "header", "content": "Scroll cue" },
+    { "type": "checkbox", "id": "show_cue", "label": "Show scroll cue", "default": true },
+    { "type": "text", "id": "cue_label", "label": "Cue label", "default": "SCROLL" },
+    { "type": "text", "id": "cue_anchor", "label": "Anchor id", "default": "drop" },
+
+    { "type": "header", "content": "Ticker" },
+    { "type": "checkbox", "id": "show_ticker", "label": "Show ticker", "default": true },
+    { "type": "text", "id": "ticker", "label": "Ticker items", "default": "صور حقيقية لنفس القطعة, قطع 1/1, كتخلّص ملي توصلك, توصيل لكل المغرب, Branded second-hand, حالة واضحة قبل الطلب" }
+  ],
+  "presets": [{ "name": "Lbass Hero" }]
+}
+{% endschema %}

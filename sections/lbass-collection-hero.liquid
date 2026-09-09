@@ -1,0 +1,521 @@
+{% liquid
+  assign hero_handle = collection.handle
+  assign hero_product_count = collection.products_count | default: 0 | plus: 0
+  if hero_handle == 'audited-drop-p001-p012'
+    assign hero_product_count = collections.all.products_count | default: 0 | plus: 0
+  endif
+  assign hero_is_empty = false
+  if hero_product_count == 0
+    assign hero_is_empty = true
+  endif
+
+  assign hero_is_brand = false
+  assign hero_asset = blank
+  case hero_handle
+    when 'brand-nike', 'nike'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-nike.svg'
+    when 'brand-adidas', 'adidas-originals'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-adidas.svg'
+    when 'brand-jordan'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-jordan.svg'
+    when 'brand-new-balance'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-newbalance.svg'
+    when 'brand-karl-kani'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-karlkani.svg'
+    when 'brand-tommy-hilfiger'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-tommyhilfiger.svg'
+    when 'brand-converse'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-converse.svg'
+    when 'brand-vans'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-vans.svg'
+    when 'brand-carhartt'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-carhartt.svg'
+    when 'brand-the-north-face', 'brand-north-face'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-thenorthface.svg'
+    when 'brand-levis', 'brand-levi-s'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-levis.svg'
+    when 'brand-puma'
+      assign hero_is_brand = true
+      assign hero_asset = 'brand-puma.svg'
+  endcase
+
+  assign hero_brand_name_length = collection.title | size
+
+  assign hero_image = blank
+  unless hero_is_brand
+    assign hero_image = collection.metafields.lbass.hero_image.value
+    if hero_image == blank and collection.image != blank
+      assign hero_image = collection.image
+    endif
+  endunless
+
+  if hero_image == blank and hero_asset == blank
+    case hero_handle
+      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+        assign hero_asset = 'cat-shoes-ed.webp'
+      when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
+        assign hero_asset = 'cat-jackets-ed.webp'
+      when 'سراويل-و-كارغو', 'cargo-pants', 'pants'
+        assign hero_asset = 'cat-pants-ed.webp'
+      when 'جينز-مستعمل', 'denim', 'jeans'
+        assign hero_asset = 'cat-jeans-ed.webp'
+      when 'هوديات-و-سويت', 'hoodies', 'sweatshirts'
+        assign hero_asset = 'cat-hoodies-ed.webp'
+      when 'تيشرتات-و-بولو', 't-shirts', 'polos'
+        assign hero_asset = 'cat-tshirts-ed.webp'
+      when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories'
+        assign hero_asset = 'cat-acc-ed.webp'
+      when 'men', 'women', 'kids', 'unisex', 'one-of-one', 'audited-drop-p001-p012', 'all'
+        assign hero_asset = 'editorial-campaign.webp'
+    endcase
+  endif
+
+  if hero_image == blank and hero_asset == blank
+    for hero_product in collection.products
+      if hero_product.available and hero_product.featured_image != blank
+        assign hero_image = hero_product.featured_image
+        break
+      endif
+    endfor
+  endif
+  if hero_image == blank and hero_asset == blank and collection.products.first.featured_image != blank
+    assign hero_image = collection.products.first.featured_image
+  endif
+  if hero_image == blank and hero_asset == blank and section.settings.fallback_image != blank
+    assign hero_image = section.settings.fallback_image
+  endif
+  if hero_image == blank and hero_asset == blank
+    assign hero_asset = 'editorial-campaign.webp'
+  endif
+
+  assign hero_asset_width = 1448
+  assign hero_asset_height = 1086
+  if hero_handle == 'audited-drop-p001-p012'
+    comment
+      Audited Drop is a wide desktop merchandising surface. The old shared
+      896x1200 portrait was enlarged into a 16:9 hero and cropped the model.
+      Force the existing wide product-edit image for this handle only.
+    endcomment
+    assign hero_image = blank
+    assign hero_asset = 'hero-lifestyle-1.webp'
+    assign hero_asset_width = 1376
+    assign hero_asset_height = 768
+  endif
+
+  assign mobile_hero_image = blank
+  assign mobile_hero_asset = blank
+  unless hero_is_brand
+    assign mobile_hero_image = collection.metafields.lbass.mobile_hero_image.value
+    if mobile_hero_image == blank and section.settings.mobile_fallback_image != blank
+      assign mobile_hero_image = section.settings.mobile_fallback_image
+    endif
+  endunless
+  if hero_handle == 'audited-drop-p001-p012' and mobile_hero_image == blank
+    assign mobile_hero_asset = 'editorial-campaign.webp'
+  endif
+
+  capture default_label
+    echo 'LBASS ORIGINAL · '
+    echo collection.title | upcase
+  endcapture
+  assign hero_label = collection.metafields.lbass.hero_label.value | default: default_label
+  assign hero_title = collection.metafields.lbass.hero_title.value
+  assign hero_description = collection.metafields.lbass.hero_description.value
+  assign hero_cta_text = collection.metafields.lbass.hero_cta_text.value
+  assign hero_cta_url = collection.metafields.lbass.hero_cta_url.value | default: '#lbassCollectionProducts'
+
+  if hero_handle == 'audited-drop-p001-p012'
+    assign hero_label = 'LBASS ORIGINAL · AUDITED DROP'
+    assign hero_title = 'Audited Drop — كل القطع المختارة.'
+    capture hero_description
+      echo hero_product_count
+      echo ' قطعة فبلاصة وحدة، بصورها الحقيقية وحالة وتوفر واضحين. القطع المتوفرة كيبانو أولاً.'
+    endcapture
+  endif
+
+  if hero_title == blank
+    case hero_handle
+      when 'men'
+        assign hero_title = 'حوايج رجال أصلية فالمغرب.'
+      when 'women'
+        assign hero_title = 'قطع نساء أصلية بستايل مختلف.'
+      when 'kids'
+        assign hero_title = 'قطع صغار أصلية وبحالة واضحة.'
+      when 'unisex'
+        assign hero_title = 'قطع كتخدم مع أي ستايل.'
+      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+        assign hero_title = 'صبابط أصلية، لوك ما كيتعاودش.'
+      when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
+        assign hero_title = 'جاكيتات كتبدل اللوك كامل.'
+      when 'سراويل-و-كارغو', 'cargo-pants', 'pants'
+        assign hero_title = 'كارغو وسراويل للوك واضح.'
+      when 'جينز-مستعمل', 'denim', 'jeans'
+        assign hero_title = 'Denim كيبقى فاللوك.'
+      when 'هوديات-و-سويت', 'hoodies', 'sweatshirts'
+        assign hero_title = 'هوديات كتخدم كل نهار.'
+      when 'تيشرتات-و-بولو', 't-shirts', 'polos'
+        assign hero_title = 'تيشرتات أصلية، ستايل ساهل.'
+      when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories'
+        assign hero_title = 'شنط وإكسسوارات كتكمّل اللوك.'
+      when 'one-of-one'
+        assign hero_title = 'لقطات مختارة قبل ما تمشي.'
+      when 'track-pants'
+        assign hero_title = 'Track Pants أصلية فالمغرب.'
+      when 'audited-drop-p001-p012'
+        assign hero_title = 'Drop جديد، كل قطعة بوحدها.'
+      when 'all'
+        assign hero_title = 'كل القطع المتوفرة دابا.'
+      else
+        capture hero_title
+          echo collection.title
+          echo ' أصلية، بصورها الحقيقية.'
+        endcapture
+    endcase
+  endif
+
+  if hero_description == blank
+    case hero_handle
+      when 'men'
+        assign hero_description = 'Streetwear، sneakers، jackets وcargo pants second-hand بحالة واضحة وصور حقيقية.'
+      when 'women'
+        assign hero_description = 'Branded second-hand وstreetwear مختار بعناية، متوفر دابا وموضح بالصور الحقيقية.'
+      when 'kids'
+        assign hero_description = 'قطع branded second-hand للصغار، بصور حقيقية وحالة وقياس واضحين قبل الطلب.'
+      when 'unisex'
+        assign hero_description = 'Hoodies، sneakers، jackets وaccessories unisex، قطع محدودة ولوك ما كيتعاودش.'
+      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+        assign hero_description = 'سنيكرز branded second-hand فالمغرب، مصورة بنفسها وبحالة واضحة قبل الطلب. كل قطعة غالباً وحدة فقط فالمخزون.'
+      when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
+        assign hero_description = 'قطع مختارة للناس اللي بغاو streetwear أصلي وحالة واضحة. صور حقيقية، قياس واضح، وتوصيل لكل المغرب.'
+      when 'سراويل-و-كارغو', 'cargo-pants', 'pants'
+        assign hero_description = 'Cargo pants وسراويل branded second-hand، كل قطعة بصورها الحقيقية وقياسها الموضح قبل الطلب.'
+      when 'جينز-مستعمل', 'denim', 'jeans'
+        assign hero_description = 'Denim second-hand مختار للبس اليومي، بحالة واضحة وصور حقيقية ديال نفس القطعة.'
+      when 'هوديات-و-سويت', 'hoodies', 'sweatshirts'
+        assign hero_description = 'هوديات وسويتات branded second-hand بستايل ساهل، صور حقيقية وقطع غالباً 1/1.'
+      when 'تيشرتات-و-بولو', 't-shirts', 'polos'
+        assign hero_description = 'تيشرتات وبولو أصلية second-hand، مختارة باش تزيد للوك بلا ما تعقدو.'
+      when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories'
+        assign hero_description = 'Bags وaccessories أصلية second-hand، مختارة باش تزيد قيمة للستايل ديالك بلا ما يكون مكرر.'
+      when 'one-of-one'
+        assign hero_description = 'قطع نادرة، براندات أصلية، وحالة واضحة. ملي كتباع القطعة، كتخرج من الكوليكسيون.'
+      when 'audited-drop-p001-p012'
+        assign hero_description = 'وصلات قطع جديدة مختارة ومصورة بنفسها. شوف الحالة والقياس قبل ما تختار، والدفع عند الاستلام متاح.'
+      else
+        capture hero_description
+          echo 'كوليكشن '
+          echo collection.title
+          echo ' من Lbass Original: قطع branded second-hand بصور حقيقية، حالة واضحة، وتوصيل لكل المغرب مع الدفع عند الاستلام.'
+        endcapture
+    endcase
+  endif
+
+  comment
+    Approved query-first overrides. These are deliberately handle-scoped so
+    Admin metafields cannot move the target query out of the H1/first answer.
+  endcomment
+  case hero_handle
+    when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+      assign hero_title = 'صبابط أصلية فالمغرب'
+      assign hero_description = 'صبابط أصلية فالمغرب متوفرة فـ Lbass Original بصور حقيقية، قياس وحالة واضحين، والمنتجات المتوفرة كيبانو أولاً.'
+    comment
+      ADIDAS SPLIT 2026-08-23. These two handles shared this clause, so both
+      collections rendered a byte-identical H1 — the same self-cannibalising
+      pattern already fixed for their <title> in layout/theme.liquid.
+      adidas-originals keeps the exact query (106 impr, pos 8.4, 0.75% CTR);
+      brand-adidas is the broader set (35 impr, pos 9.5, 14.29% CTR).
+    endcomment
+    when 'adidas-originals'
+      assign hero_title = 'اديداس اورجينال ملابس فالمغرب'
+      assign hero_description = 'اديداس اورجينال ملابس متوفرة فـ Lbass Original بصور حقيقية ديال نفس القطعة، حالة واضحة، قياس مبيّن، وتوصيل من مراكش لكل المغرب.'
+    when 'brand-adidas'
+      assign hero_title = 'حوايج Adidas Second-Hand فالمغرب'
+      assign hero_description = 'كل قطع Adidas second-hand فالمغرب فبلاصة وحدة: بناطيل تراك، صبابط، شورط وجاكيطات، بصور حقيقية ديال نفس القطعة وحالة وقياس واضحين.'
+    when 'brand-nike', 'nike'
+      assign hero_title = 'Nike Second-Hand Maroc'
+      assign hero_description = 'Nike second-hand Maroc متوفرة فـ Lbass Original: صبابط، حوايج وإكسسوارات بصور حقيقية، قياس وحالة حسب المعلومات المؤكدة.'
+    when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories', 'men-accessories'
+      assign hero_title = 'إكسسوارات وشنط Second-Hand فالمغرب'
+      assign hero_description = 'إكسسوارات، شنط وكاسكيطات branded second-hand متوفرة دابا، بصور حقيقية، حالة واضحة، COD أو PayPal.'
+    comment
+      TRACK PANTS — rewritten 2026-08-23 from Search Console. The H1 led with
+      the ENGLISH "Track Pants" while every query this collection surfaces for
+      is Arabic (بنطال تراك / بناطيل التراك, 244 impressions, positions 13-39).
+      The collection ranked 21.6 — below its own product pages. The matching
+      lbass.hero_title / hero_description metafields were set to the same text
+      so the two never disagree, but THIS BLOCK is what renders: the override
+      above is deliberate and ignores metafields.
+    endcomment
+    when 'track-pants'
+      assign hero_title = 'بناطيل تراك Second-Hand فالمغرب'
+      assign hero_description = 'فهاد الكوليكشن كتلقى بناطيل تراك second-hand أصلية فالمغرب من Adidas وNike وJordan — كحل، حمر ورمادي، قياس L. كل قطعة مصورة بصور حقيقية ديالها، الحالة والقياس واضحين قبل الطلب، وكتتشيك فمراكش.'
+    when 'سراويل-و-كارغو', 'cargo-pants', 'pants', 'men-pants'
+      assign hero_title = 'سراويل كارغو Second-Hand فالمغرب'
+      assign hero_description = 'سراويل cargo وtrack pants branded second-hand بصور حقيقية، قياس وحالة موضحين قبل الطلب.'
+  endcase
+
+  comment
+    2026-08-29 — COLOUR-TAG H1. /track-pants/black, /red and /grey are indexable,
+    self-canonical and stocked (9 / 5 / 5 products measured live), but all three
+    rendered the SAME H1 as the parent collection. Three URLs competing on one
+    heading, none of them naming the colour the shopper searched for.
+
+    The singular form is deliberate for track-pants: Search Console records
+    «بنطال تراك أسود» (79 impr) and «بنطال تراك أحمر» (64 impr, 0 clicks), not the
+    plural «بناطيل». The parent collection keeps the plural. Other collections get
+    a suffix rather than a rebuild, because their colour demand is unmeasured and
+    inventing a phrasing for it would be guessing.
+
+    GATED ON A MAPPED COLOUR. lbass-tag-ar echoes an unmapped tag unchanged, so
+    the inequality below is what stops a non-colour tag (a sale or size tag)
+    appending itself to the H1.
+  endcomment
+  assign lb_tag_now = current_tags | first | downcase | strip
+  capture lb_colour_ar
+    render 'lbass-tag-ar', tags: current_tags
+  endcapture
+  assign lb_colour_ar = lb_colour_ar | strip
+
+  if current_tags != blank and lb_colour_ar != blank and lb_colour_ar != lb_tag_now
+    if hero_handle == 'track-pants'
+      assign hero_title = 'بنطال تراك ' | append: lb_colour_ar | append: ' Second-Hand فالمغرب'
+    else
+      assign hero_title = hero_title | append: ' — ' | append: lb_colour_ar
+    endif
+  endif
+
+  if hero_cta_text == blank
+    case hero_handle
+      when 'women'
+        assign hero_cta_text = 'شوفي الكوليكشن'
+      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+        assign hero_cta_text = 'شوف السنيكرز'
+      when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
+        assign hero_cta_text = 'شوف الجاكيتات'
+      when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories'
+        assign hero_cta_text = 'شوف الشنط والإكسسوارات'
+      when 'one-of-one'
+        assign hero_cta_text = 'دخل للـ Vault'
+      when 'audited-drop-p001-p012'
+        assign hero_cta_text = 'شوف الدروب الجديد'
+      else
+        assign hero_cta_text = 'شوف القطع المتوفرة'
+    endcase
+  endif
+
+  assign hero_alt = collection.metafields.lbass.hero_alt.value
+  if hero_is_brand
+    capture hero_alt
+      echo collection.title
+      echo ' — شعار البراند'
+    endcapture
+  elsif hero_alt == blank
+    capture hero_alt
+      echo collection.title
+      echo ' second-hand أصلية من Lbass Original فالمغرب'
+    endcapture
+  endif
+  if hero_handle == 'audited-drop-p001-p012'
+    assign hero_alt = 'Audited Drop من Lbass Original — قطع second-hand مختارة فالمغرب'
+  endif
+  assign overlay_opacity = section.settings.overlay_strength | divided_by: 100.0
+%}
+
+<section
+  class="lbeh{% if hero_is_brand %} lbeh--brand{% if hero_brand_name_length > 10 %} lbeh--brand-long{% endif %}{% endif %}{% if hero_is_empty %} lbeh--empty{% endif %}{% if hero_handle == 'audited-drop-p001-p012' %} lbeh--audited-drop{% endif %} lbeh--{{ section.settings.text_alignment }}"
+  aria-labelledby="lbehTitle-{{ section.id }}"
+  style="--lbeh-height:{{ section.settings.desktop_height }}vh;--lbeh-mobile-height:{{ section.settings.mobile_height }}svh;--lbeh-overlay:{{ overlay_opacity }};--lbeh-color:{{ section.settings.text_color }};--lbeh-focus:{{ section.settings.image_position }};"
+>
+  {% unless hero_is_brand %}
+    <div class="lbeh__media">
+      <picture>
+        {% if mobile_hero_image != blank %}
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ mobile_hero_image | image_url: width: 750 }} 750w, {{ mobile_hero_image | image_url: width: 1100 }} 1100w"
+            sizes="100vw"
+          >
+        {% elsif mobile_hero_asset != blank %}
+          <source media="(max-width: 749px)" srcset="{{ mobile_hero_asset | asset_url }}">
+        {% endif %}
+        {% if hero_image != blank %}
+          <img
+            src="{{ hero_image | image_url: width: 1800 }}"
+            srcset="{{ hero_image | image_url: width: 900 }} 900w, {{ hero_image | image_url: width: 1600 }} 1600w, {{ hero_image | image_url: width: 2400 }} 2400w"
+            sizes="100vw"
+            alt="{{ hero_alt | strip | escape }}"
+            width="{{ hero_image.width | default: 1800 }}"
+            height="{{ hero_image.height | default: 1200 }}"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          >
+        {% else %}
+          <img
+            src="{{ hero_asset | asset_url }}"
+            alt="{{ hero_alt | strip | escape }}"
+            width="{{ hero_asset_width }}"
+            height="{{ hero_asset_height }}"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          >
+        {% endif %}
+      </picture>
+    </div>
+  {% endunless %}
+  <div class="lbeh__overlay" aria-hidden="true"></div>
+
+  <div class="lbeh__inner">
+    {% if hero_is_brand %}
+      <div class="lbeh__brand-visual" aria-hidden="true">
+        <img
+          src="{{ hero_asset | asset_url }}"
+          alt=""
+          width="600"
+          height="320"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        >
+      </div>
+    {% endif %}
+
+    <div class="lbeh__copy">
+      <p class="lbeh__label" dir="ltr">{{ hero_label | strip | escape }}</p>
+      {% if hero_is_brand %}
+        <h1 id="lbehTitle-{{ section.id }}" class="lbeh__brand-title">
+          <span class="lbeh__brand-name">{{ hero_title | strip | escape }}</span>
+        </h1>
+        <p class="lbeh__description" id="lbehDesc-{{ section.id }}">{{ hero_description | strip | escape }}</p>
+      {% else %}
+        <h1 id="lbehTitle-{{ section.id }}">{{ hero_title | strip | escape }}</h1>
+        <p class="lbeh__description" id="lbehDesc-{{ section.id }}">{{ hero_description | strip | escape }}</p>
+      {% endif %}
+
+      {% if section.settings.show_cta and hero_is_empty == false %}
+        <a
+          class="lbeh__cta"
+          href="{{ hero_cta_url }}"
+          data-cro-event="collection_hero_cta_click"
+          data-cro-label="{{ collection.handle | escape }}"
+        >{{ hero_cta_text | escape }} <span aria-hidden="true">←</span></a>
+      {% endif %}
+
+      {% if section.settings.show_trust_chips and hero_is_empty == false %}
+        <ul class="lbeh__trust" aria-label="ضمانات Lbass Original">
+          <li>صور نفس القطعة</li>
+          <li>حالة وقياس واضحين</li>
+          <li>COD وPayPal</li>
+          <li>20DH مراكش · 40DH باقي المغرب</li>
+        </ul>
+      {% endif %}
+
+      {% if hero_is_brand and section.settings.show_product_count and hero_is_empty == false %}
+        <p class="lbeh__count">{{ hero_product_count }} قطعة فهاد الكوليكشن</p>
+      {% endif %}
+    </div>
+
+    {% if hero_is_brand == false and section.settings.show_product_count and hero_is_empty == false %}
+      <p class="lbeh__count">{{ hero_product_count }} قطعة فهاد الكوليكشن</p>
+    {% endif %}
+  </div>
+</section>
+
+{% style %}
+  .lbeh{position:relative;isolation:isolate;display:flex;align-items:flex-end;min-height:clamp(560px,var(--lbeh-height),900px);overflow:hidden;background:#0a0a0b;color:var(--lbeh-color)}
+  .lbeh__media,.lbeh__media picture,.lbeh__media img,.lbeh__overlay{position:absolute;inset:0;width:100%;height:100%}
+  .lbeh__media{z-index:-2;background:#111}
+  .lbeh__media picture{display:block}
+  .lbeh__media img{display:block;object-fit:cover;object-position:var(--lbeh-focus);transform:scale(1.015)}
+  .lbeh__overlay{z-index:-1;background:linear-gradient(180deg,rgba(5,5,6,.08) 16%,rgba(5,5,6,.32) 52%,rgba(5,5,6,.96) 100%);opacity:var(--lbeh-overlay)}
+  .lbeh--audited-drop .lbeh__media img{object-position:center center;transform:none}
+  .lbeh--audited-drop .lbeh__overlay{background:linear-gradient(90deg,rgba(5,5,6,.12) 0%,rgba(5,5,6,.42) 48%,rgba(5,5,6,.94) 100%),linear-gradient(180deg,rgba(5,5,6,.06) 25%,rgba(5,5,6,.74) 100%);opacity:1}
+  .lbeh--brand{align-items:stretch;min-height:clamp(600px,var(--lbeh-height),820px);background:#111113;box-shadow:inset 0 1px 0 rgba(200,154,14,.42),inset 0 -1px 0 rgba(244,239,230,.08)}
+  .lbeh--brand .lbeh__overlay{background:linear-gradient(120deg,rgba(10,10,11,.08),rgba(10,10,11,.34) 52%,rgba(10,10,11,.74));opacity:1}
+  .lbeh__inner{width:min(1440px,100%);margin-inline:auto;padding:clamp(32px,5vw,74px);display:flex;align-items:flex-end;justify-content:space-between;gap:28px}
+  .lbeh__copy{max-width:min(720px,72vw);text-align:right;direction:rtl}
+  .lbeh--brand .lbeh__inner{position:relative;z-index:1;display:grid;grid-template-columns:minmax(240px,.9fr) minmax(0,1.1fr);align-items:center;gap:clamp(48px,7vw,118px);padding-block:clamp(86px,10vh,128px) clamp(64px,8vh,102px);direction:ltr}
+  .lbeh__brand-visual{grid-column:1;display:flex;align-items:center;justify-content:center;min-width:0;max-width:520px;justify-self:center}
+  .lbeh__brand-visual img{display:block;width:min(100%,460px);height:auto;max-height:300px;object-fit:contain;filter:grayscale(1) brightness(0) invert(1);opacity:.86}
+  .lbeh--brand .lbeh__copy{grid-column:2;width:100%;max-width:660px;min-width:0;justify-self:end;text-align:right;direction:rtl}
+  .lbeh--left .lbeh__inner{direction:ltr}
+  .lbeh--left .lbeh__copy{text-align:left;direction:rtl}
+  .lbeh--center .lbeh__inner{justify-content:center;text-align:center}
+  .lbeh--center .lbeh__copy{text-align:center}
+  .lbeh__label{margin:0 0 12px;color:var(--lbeh-color);font-family:var(--lt);font-size:11px;font-weight:800;letter-spacing:.18em;opacity:.82}
+  /* The legacy Lbass stamp styles headings with !important, so this scoped rule
+     explicitly restores the editorial hero contrast and responsive type scale. */
+  .lbeh h1[id^="lbehTitle-"]{max-width:900px;margin:0;color:var(--lbeh-color)!important;font-size:clamp(38px,5.2vw,82px)!important;font-weight:900!important;line-height:1.08!important;letter-spacing:0!important;text-wrap:balance}
+  .lbeh--brand h1[id^="lbehTitle-"]{max-width:15ch;font-size:clamp(44px,5vw,76px)!important;line-height:1.03!important;overflow-wrap:anywhere}
+  .lbeh--brand-long h1[id^="lbehTitle-"]{font-size:clamp(39px,4.25vw,64px)!important}
+  .lbeh__brand-name,.lbeh__brand-qualifier{display:block}
+  .lbeh__brand-name{direction:ltr;unicode-bidi:isolate;line-height:1.04}
+  .lbeh__brand-qualifier{margin-top:.2em;font-size:.62em;line-height:1.3}
+  .lbeh__brand-prefix{margin-top:0;margin-bottom:.2em}
+  .lbeh__description{max-width:680px;margin:18px 0 0;color:var(--lbeh-color);font-size:clamp(15px,1.35vw,19px);font-weight:650;line-height:1.85;opacity:.9;text-wrap:pretty}
+  .lbeh__cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;margin-top:24px;padding:11px 21px;border:1px solid #c89a0e;border-radius:6px;background:#c89a0e;color:#0a0a0b;font-weight:900;text-decoration:none;transition:background-color .2s,border-color .2s,color .2s,transform .2s}
+  .lbeh__cta:hover{background:#f2d060;border-color:#f2d060;transform:translateY(-2px)}
+  .lbeh__cta:focus-visible{outline:3px solid #f4efe6;outline-offset:4px}
+  .lbeh__trust{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 0;padding:0;list-style:none}
+  .lbeh__trust li{padding:5px 10px;border:1px solid rgba(244,239,230,.28);border-radius:999px;background:rgba(10,10,11,.58);color:var(--lbeh-color);font-size:11px;font-weight:800;line-height:1.35}
+  .lbeh__count{flex:none;margin:0;color:var(--lbeh-color);font-family:var(--lt);font-size:11px;font-weight:800;letter-spacing:.08em;direction:rtl;opacity:.75}
+  .lbeh--brand .lbeh__count{margin-top:16px}
+  .lbeh--empty{min-height:clamp(300px,38svh,430px)}
+  .lbeh--empty h1[id^="lbehTitle-"]{font-size:clamp(34px,4.5vw,62px)!important}
+  .lbeh--empty .lbeh__description{max-width:620px}
+  @media(max-width:749px){
+    .lbeh{min-height:clamp(520px,var(--lbeh-mobile-height),760px)}
+    .lbeh__media img{object-position:var(--lbeh-focus);transform:none}
+    .lbeh__inner{display:block;padding:28px 20px 30px}
+    .lbeh__copy{max-width:100%;text-align:right}
+    .lbeh h1[id^="lbehTitle-"]{font-size:clamp(34px,10vw,52px)!important;line-height:1.12!important}
+    .lbeh__description{font-size:15px;line-height:1.72;margin-top:13px}
+    .lbeh__cta{width:100%;margin-top:19px;min-height:50px}
+    .lbeh__trust{gap:5px;margin-top:14px}
+    .lbeh__trust li{font-size:10px;padding:4px 8px}
+    .lbeh__count{margin-top:14px}
+    .lbeh--empty{min-height:clamp(280px,36svh,380px)}
+    .lbeh--brand{min-height:clamp(620px,var(--lbeh-mobile-height),760px)}
+    .lbeh--brand .lbeh__inner{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-end;gap:24px;padding:76px 20px 30px;direction:ltr}
+    .lbeh__brand-visual{width:100%;max-width:none;min-height:92px;max-height:132px}
+    .lbeh__brand-visual img{width:min(62vw,230px);max-height:126px;opacity:.72}
+    .lbeh--brand .lbeh__copy{width:100%;max-width:100%;text-align:right;direction:rtl}
+    .lbeh--brand h1[id^="lbehTitle-"]{max-width:100%;font-size:clamp(35px,10vw,48px)!important;line-height:1.06!important;overflow-wrap:normal}
+    .lbeh--brand-long h1[id^="lbehTitle-"]{font-size:clamp(32px,8.8vw,43px)!important}
+    .lbeh__brand-qualifier{font-size:.68em;line-height:1.35}
+    .lbeh--audited-drop .lbeh__overlay{background:linear-gradient(180deg,rgba(5,5,6,.1) 12%,rgba(5,5,6,.88) 100%)}
+  }
+  @media(prefers-reduced-motion:reduce){.lbeh__media img,.lbeh__cta{transition:none;transform:none}.lbeh__cta:hover{transform:none}}
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Lbass collection hero",
+  "settings": [
+    {"type":"image_picker","id":"fallback_image","label":"Default hero image"},
+    {"type":"image_picker","id":"mobile_fallback_image","label":"Default mobile hero image"},
+    {"type":"range","id":"desktop_height","min":60,"max":90,"step":2,"unit":"vh","label":"Desktop height","default":80},
+    {"type":"range","id":"mobile_height","min":60,"max":88,"step":2,"unit":"vh","label":"Mobile height","default":74},
+    {"type":"range","id":"overlay_strength","min":35,"max":95,"step":5,"unit":"%","label":"Overlay strength","default":75},
+    {"type":"select","id":"text_alignment","label":"Text alignment","default":"right","options":[{"value":"right","label":"Right"},{"value":"left","label":"Left"},{"value":"center","label":"Center"}]},
+    {"type":"select","id":"image_position","label":"Image focal point","default":"center center","options":[{"value":"center center","label":"Center"},{"value":"center top","label":"Top"},{"value":"center bottom","label":"Bottom"},{"value":"left center","label":"Left"},{"value":"right center","label":"Right"}]},
+    {"type":"color","id":"text_color","label":"Text color","default":"#f4efe6"},
+    {"type":"checkbox","id":"show_cta","label":"Show CTA","default":true},
+    {"type":"checkbox","id":"show_trust_chips","label":"Show trust chips","default":true},
+    {"type":"checkbox","id":"show_product_count","label":"Show product count","default":true}
+  ],
+  "presets": [{"name":"Lbass collection hero"}]
+}
+{% endschema %}

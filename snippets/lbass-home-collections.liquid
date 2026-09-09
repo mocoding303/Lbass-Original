@@ -1,0 +1,119 @@
+{%- comment -%}
+  ═══ LBASS — HOMEPAGE OFFER STATEMENT + COLLECTION LINKS (2026-08-26) ═══
+
+  WHY IT EXISTS
+  AI assistants send real traffic to the homepage and it converts badly. The
+  homepage's main "shop by category" grid is `<div id="catsGrid"></div>` —
+  EMPTY in the HTML, filled by JavaScript at runtime. Most LLM crawlers do not
+  execute JS, so the store's primary internal links to its own categories were
+  invisible to exactly the referrers we are trying to convert. This block is
+  plain server-rendered Liquid: it is in the HTML for every crawler and every
+  visitor, with no JS at all.
+
+  There was already an AI block on this page (`#lb-ai-block`) but it is
+  `display:none` and only un-hides when `document.referrer` matches a known AI
+  host. Referrers are frequently stripped — in-app browsers, privacy modes,
+  and most crawlers send none — so it cannot be the only route. This block is
+  unconditional and serves every visitor.
+
+  EVERY LINK IS PROVEN NON-EMPTY BEFORE IT RENDERS
+  Each entry is skipped unless the collection actually holds products. That is
+  not defensive padding — measured 2026-08-26, the homepage was linking to
+  /collections/هوديات-و-سويت, which holds 0 products and returns a hard 404.
+  A count check means a link can never rot into a 404 when stock sells out.
+
+  WHAT IS DELIBERATELY NOT LINKED HERE
+  - Football shirts: the shop has none. It has two pairs of football BOOTS.
+    Linking a category with no stock sends people to an empty page.
+  - "Vintage" and "New arrivals" as tag URLs: `/collections/all/<tag>` is INERT
+    on this store — measured, it returns all 64 products whatever the tag. So
+    is `?sort_by=`. Those URLs look filtered and are not. The audited drop is
+    linked instead as the real new-arrivals equivalent.
+  - brand-adidas / brand-nike: both 301 to adidas-originals / nike. Link the
+    destination, not the redirect.
+
+  PAGE POLARITY — MEASURED, DO NOT GUESS
+  This page's tokens are INVERTED at runtime. The source says --ink:#0A0A0B and
+  --cream:#F4EFE6, which reads as a dark page and is WRONG. Measured in-browser
+  2026-08-26 on the live homepage:
+      --ink   -> #FFFFFF        body background -> rgb(255,255,255)
+      --cream -> #0B0B0C        body colour     -> rgb(11,11,12)
+      --gold  -> #BF2E15        (a dark red, not gold)
+  So this block owns its colours literally instead of inheriting tokens that
+  mean the opposite of their names. All values below are dark-on-light and
+  measured against #FAF7F2 / #FFF. Never restyle this file from token names.
+{%- endcomment -%}
+
+{%- liquid
+  assign hc_rows = 'صبابط@@صبابط · Sneakers||adidas-originals@@Adidas||nike@@Nike||جاكيطات-و-معاطف@@جاكيطات · Jackets||تيشرتات-و-بولو@@تيشرتات · T-shirts||سراويل-و-كارغو@@سراويل · Pants||track-pants@@Track Pants||إكسسوارات@@إكسسوارات · Accessories||one-of-one@@قطع 1/1||audited-drop-p001-p012@@الدروب الكامل'
+  assign hc_pairs = hc_rows | split: '||'
+-%}
+
+{%- capture hc_links -%}
+  {%- for pair in hc_pairs -%}
+    {%- assign bits = pair | split: '@@' -%}
+    {%- assign h = bits[0] -%}
+    {%- assign label = bits[1] -%}
+    {%- assign col = collections[h] -%}
+    {%- assign available_products = col.products | where: 'available', true -%}
+    {%- assign n = available_products.size -%}
+    {%- comment -%} never render a link to an empty collection — see 404 note above {%- endcomment -%}
+    {%- if n > 0 -%}
+      <a class="lbhc__chip" href="{{ col.url }}"
+         data-cro-event="home_collection_click"
+         data-cro-label="{{ h }}">{{ label }}<span class="lbhc__n">{{ n }}</span></a>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- assign hc_count = hc_links | split: 'lbhc__chip' | size | minus: 1 -%}
+
+{%- if hc_count > 2 -%}
+<section class="lbhc" aria-labelledby="lbhc-h">
+  <style>
+    /* dark-on-light — see PAGE POLARITY note above. Tokens on this page are inverted. */
+    .lbhc{padding:clamp(26px,4vw,44px) var(--pad,20px)}
+    .lbhc__in{max-width:var(--max,1100px);margin:0 auto;padding:clamp(20px,3vw,30px);
+      border:1px solid rgba(11,11,12,.14);border-radius:16px;background:#FAF7F2}
+    .lbhc__kick{margin:0 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.16em;
+      color:#BF2E15;direction:ltr}
+    .lbhc h2{margin:0 0 10px;font-size:clamp(19px,2.4vw,26px);line-height:1.35;color:#0B0B0C}
+    .lbhc__lede{margin:0 0 6px;font-size:15px;line-height:1.85;color:#2E2E31;max-width:70ch}
+    .lbhc__lede-en{margin:0 0 18px;font-size:13.5px;line-height:1.7;color:#3A3A3C;
+      max-width:70ch;direction:ltr}
+    .lbhc__row{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 18px}
+    .lbhc__chip{display:inline-flex;align-items:center;gap:8px;min-height:40px;
+      padding:9px 15px;border:1px solid rgba(11,11,12,.20);border-radius:999px;
+      background:#fff;color:#0B0B0C;font-size:13.5px;font-weight:800;text-decoration:none;
+      transition:background-color .18s,color .18s,border-color .18s,transform .18s}
+    .lbhc__chip:hover,.lbhc__chip:focus-visible{background:#0B0B0C;color:#F4EFE6;
+      border-color:#0B0B0C;transform:translateY(-1px)}
+    .lbhc__chip:focus-visible{outline:3px solid #BF2E15;outline-offset:2px}
+    .lbhc__n{font-size:11.5px;font-weight:900;opacity:.62;direction:ltr}
+    .lbhc__facts{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0;padding:14px 0 0;
+      border-top:1px solid rgba(11,11,12,.12);list-style:none}
+    .lbhc__facts li{font-size:13px;color:#2E2E31}
+    .lbhc__facts b{color:#0B0B0C}
+    .lbhc__facts a{color:#BF2E15;font-weight:800}
+    @media(max-width:600px){
+      .lbhc__chip{font-size:13px;padding:9px 13px}
+      .lbhc__facts{gap:6px 14px}
+    }
+  </style>
+  <div class="lbhc__in">
+    <p class="lbhc__kick">WHAT WE SELL</p>
+    <h2 id="lbhc-h">حوايج براند second-hand و vintage أصلية، مختارة وحدة بوحدة</h2>
+    <p class="lbhc__lede">Lbass Original كيبيع حوايج براند مستعملة أصلية فالمغرب — صبابط، جاكيطات، تراك، تيشرتات وإكسسوارات. كل قطعة مصورة بصورها هي، الحالة والقياس مكتوبين قبل ما تطلب.</p>
+    <p class="lbhc__lede-en">Curated second-hand and vintage branded clothing in Morocco — Nike, Adidas, jackets, sneakers, track pants and accessories. Every piece is photographed exactly as it is, with its condition and measured size stated before you order.</p>
+
+    <div class="lbhc__row">{{ hc_links }}</div>
+
+    <ul class="lbhc__facts">
+      <li>🚚 التوصيل: <b>20 درهم مراكش</b> · <b>40 درهم باقي المغرب</b> · مجاني من 500</li>
+      <li>💳 <b>COD</b> — خلّص ملي توصلك · أو <b>PayPal</b></li>
+      <li>↩ <a href="/pages/refund-policy">الإرجاع 14 يوم مع PayPal</a></li>
+      <li>💬 <a href="https://wa.me/491754264425" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="home_collections_block">سولنا فالواتساب</a></li>
+    </ul>
+  </div>
+</section>
+{%- endif -%}

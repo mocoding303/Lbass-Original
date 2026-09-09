@@ -1,0 +1,23 @@
+{%- comment -%}
+  LBASS HERO — CTA COLOUR DEFAULTS (2026-07-31)
+  Rendered from snippets/lbass-hero-fx.liquid.
+
+  THE BUG THIS FIXES. The section wrote its CTA colours as inline custom
+  properties on <header>:
+      style="--cta-bg:{{ section.settings.cta_bg }}; ..."
+  When a colour setting is UNSET, Liquid renders nothing, so the browser
+  receives:
+      --cta-bg:;
+  That is not "undefined" — it is DEFINED AND EMPTY. `var(--cta-bg,#BF2E15)`
+  only uses its fallback when the property is undefined, so the empty value won
+  and the primary button rendered fully TRANSPARENT (measured
+  rgba(0,0,0,0)) on a hero whose whole job is that one click.
+
+  Two-part fix: the section now emits each property ONLY when the setting has a
+  value, and the defaults below sit on `.lbh` so the button is always painted
+  even if every setting is blank. Belt and braces — a hero CTA must never be
+  able to disappear.
+{%- endcomment -%}
+<style>
+.lbh{ --cta-bg:#BF2E15; --cta-fg:#FFFFFF; --cta-bg-hover:#8F1F0D; }
+</style>

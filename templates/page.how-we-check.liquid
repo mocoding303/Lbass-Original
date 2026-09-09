@@ -1,0 +1,161 @@
+{% layout 'theme' %}
+<style>
+.how-wrap{max-width:860px;margin:0 auto;padding:32px 24px 80px}
+.how-hero{padding:48px 0 40px;border-bottom:1px solid var(--line)}
+.how-hero .kick{margin-bottom:12px}
+.how-h1{font-size:clamp(26px,4vw,42px);font-weight:900;color:var(--cream);line-height:1.2;margin:0 0 16px}
+.how-sub{font-size:16px;color:var(--txt2);font-weight:700;line-height:1.8;max-width:680px;margin:0}
+.how-direct{margin:32px 0;padding:20px 24px;border:1px solid rgba(200,154,14,.3);border-radius:16px;background:rgba(200,154,14,.06)}
+.how-direct p{color:var(--cream);font-size:15px;font-weight:700;line-height:1.8;margin:0}
+.how-steps{display:flex;flex-direction:column;gap:10px;margin:40px 0}
+.how-step{display:flex;gap:18px;padding:18px 20px;border:1px solid var(--line);border-radius:14px;background:var(--ink2)}
+.how-step-num{width:36px;height:36px;flex:none;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+.how-step-body b{display:block;color:var(--cream);font-size:15px;font-weight:900;margin-bottom:4px}
+.how-step-body span{color:var(--txt2);font-size:13.5px;font-weight:700;line-height:1.7}
+.how-section{margin:48px 0 0;padding-top:32px;border-top:1px solid var(--line)}
+.how-section h2{font-size:clamp(18px,2.5vw,24px);font-weight:900;color:var(--cream);margin:0 0 12px}
+.how-section p{color:var(--txt2);font-size:14.5px;font-weight:700;line-height:1.85;margin:0 0 12px}
+.how-section strong{color:var(--cream)}
+.how-grade-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:16px 0}
+.how-grade{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--ink2)}
+.how-grade b{display:block;color:var(--cream);font-size:14px;font-weight:900;margin-bottom:5px}
+.how-grade span{color:var(--txt2);font-size:13px;font-weight:700;line-height:1.65}
+.how-faq{display:flex;flex-direction:column;gap:8px;margin:20px 0}
+.how-faq details{border:1px solid var(--line);border-radius:12px;background:var(--ink2);overflow:hidden}
+.how-faq summary{list-style:none;cursor:pointer;padding:14px 18px;color:var(--cream);font-weight:900;font-size:14.5px}
+.how-faq summary::-webkit-details-marker{display:none}
+.how-faq p{padding:0 18px 14px;margin:0;color:var(--txt2);font-size:13.5px;font-weight:700;line-height:1.8}
+.how-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:40px;padding-top:32px;border-top:1px solid var(--line)}
+.how-ctas a{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:12px;font-weight:900;font-size:14.5px;text-decoration:none;transition:background .25s}
+.how-ctas .cta-p{background:var(--green);color:#fff}
+.how-ctas .cta-s{background:transparent;border:1px solid var(--line);color:var(--txt2)}
+.how-ctas .cta-s:hover{border-color:var(--gold);color:var(--cream)}
+@media(max-width:640px){.how-step{flex-direction:column;gap:10px}.how-step-num{width:30px;height:30px;font-size:12px}}
+</style>
+
+<div class="how-wrap">
+  <nav class="crumb" aria-label="مسار التصفح">
+    <a href="/">الرئيسية</a> ›
+    <span aria-current="page">كيفاش كنشيكو القطع؟</span>
+  </nav>
+
+  <div class="how-hero">
+    <p class="kick">SOURCING & PROCESS · ألمانيا إلى المغرب</p>
+    <h1 class="how-h1">كيفاش كتدوز القطعة قبل ما توصل للموقع؟</h1>
+    <p class="how-sub">كل قطعة فـ Lbass Original كتمر على مسار واضح: كنختاروها من ألمانيا، كنجيبوها للمغرب، كنشيكو الحالة والقياس فمراكش، وكنصورو نفس القطعة قبل ما تتحط فالموقع.</p>
+  </div>
+
+  <div class="how-direct" lang="ar">
+    <p>قطع Lbass Original كتجي من ألمانيا، كتتشيك فمراكش، وكتتصور بنفسها قبل ما تتحط فالموقع. كل صفحة منتج كتوضح الحالة، القياس، الثمن، والتوصيل باش الزبون يشري بلا مفاجآت.</p>
+  </div>
+
+  <div class="how-section">
+    <h2>🇩🇪 منين كتجي القطع؟</h2>
+    <p>كنختارو قطع branded second-hand من دروب ومصادر ألمانية مختارة. <strong>كنشريو قطع بصور حقيقية وحالة واضحة قبل ما كنجيبوها للمغرب.</strong></p>
+    <p>الهدف مو نجيبو أكبر كمية — الهدف نجيبو قطع لها قيمة: براند أصلي، حالة معقولة، وستايل مختلف.</p>
+  </div>
+
+  <div class="how-section">
+    <h2>🇲🇦 كيفاش كنشيكو الحالة فمراكش؟</h2>
+    <p>ملي توصل القطعة لمراكش، كنمرو على كل واحدة قطعة بقطعة:</p>
+    <div class="how-steps">
+      <div class="how-step"><div class="how-step-num">1</div><div class="how-step-body"><b>كنختارو القطع من ألمانيا</b><span>دروب مختارة — مو كلشي ديال Second-Hand كيكون بنفس الجودة.</span></div></div>
+      <div class="how-step"><div class="how-step-num">2</div><div class="how-step-body"><b>كنجيبوها للمغرب</b><span>القطع كتوصل لمراكش قبل ما تتعرض فالموقع.</span></div></div>
+      <div class="how-step"><div class="how-step-num">3</div><div class="how-step-body"><b>كنشيكو الحالة والقياس</b><span>كنراجعو الإيتيكيت الأصلي، الخياطة، اللون، القياس المدوّن، وأي عيب ظاهر — وكنكتبو كلشي.</span></div></div>
+      <div class="how-step"><div class="how-step-num">4</div><div class="how-step-body"><b>كنصورو نفس القطعة</b><span>الصور اللي كتشوف فصفحة المنتج هي ديال نفس القطعة بالضبط اللي غادي توصلك. ما كاين حتى stock photo.</span></div></div>
+      <div class="how-step"><div class="how-step-num">5</div><div class="how-step-body"><b>كنوضحو التفاصيل فصفحة المنتج</b><span>الحالة، القياس، الثمن، التوفر، وأي ملاحظة مهمة — كلشي بيّن قبل ما تطلب.</span></div></div>
+      <div class="how-step"><div class="how-step-num">6</div><div class="how-step-body"><b>كنوصّلو من مراكش لكل المغرب</b><span>20 درهم داخل مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم.</span></div></div>
+    </div>
+  </div>
+
+  <div class="how-section">
+    <h2>📸 كيفاش كنصورو المنتجات؟</h2>
+    <p>كنصورو نفس القطعة اللي كنبيعو. الصور كتخص نفس الإيتيم اللي غادي توصلك — مو نسخة ثانية مشابهة، مو صورة كاتالوج. إلا طلبتي صور إضافية أو فيديو، سولنا فالواتساب قبل الطلب.</p>
+  </div>
+
+  <div class="how-section">
+    <h2>📋 شنو معنى درجات الحالة؟</h2>
+    <div class="how-grade-grid">
+      <div class="how-grade"><b>✨ جديد بالتّيكيت</b><span>القطعة جديدة وباقي فيها التّيكيت الأصلي. مو لبسات. جاية من ألمانيا وكنبيّنو التّيكيت فالصور.</span></div>
+      <div class="how-grade"><b>🌟 بحالة ممتازة · شبه جديد</b><span>ما فيهاش تيكيت، ولكن الحالة ممتازة وشبه جديدة. لبسات قليل بلا عيوب ظاهرة.</span></div>
+      <div class="how-grade"><b>👌 بحالة مزيانة بزاف</b><span>حالة مزيانة، أي أثر صغير مذكور. اللون والشكل محافظين.</span></div>
+      <div class="how-grade"><b>🔍 بحالة مزيانة · شوف الملاحظات</b><span>حالة مزيانة ولكن عندها ملاحظة مهمة مكتوبة — بقعة، خياطة، سحاب، إلخ.</span></div>
+    </div>
+  </div>
+
+  <div class="how-section">
+    <h2>🚚 التوصيل والدفع</h2>
+    <p><strong>التوصيل من مراكش:</strong> 20 درهم داخل مراكش · 40 درهم لباقي المدن المغربية · مجاني من 500 درهم.<br>
+    <strong>طرق الدفع:</strong> COD (الدفع عند الاستلام) أو PayPal أونلاين. كنأكدو طريقة التوصيل والمدة قبل الإرسال.</p>
+  </div>
+
+  <div class="how-section">
+    <h2>❓ أسئلة شائعة</h2>
+    <div class="how-faq">
+      <details open>
+        <summary>منين كتجي قطع Lbass Original؟</summary>
+        <p>قطع Lbass Original كنختاروها من ألمانيا، ومن بعد كتجي للمغرب وكتتشيك فمراكش قبل ما تتحط فالموقع.</p>
+      </details>
+      <details>
+        <summary>واش الصور هي نفس القطعة اللي غادي توصلني؟</summary>
+        <p>نعم. الصور اللي كتشوف فصفحة المنتج هي ديال نفس القطعة اللي غادي توصلك. ما كاين حتى صور stock أو صور عامة فـ Lbass Original.</p>
+      </details>
+      <details>
+        <summary>واش القطع جديدة ولا second-hand؟</summary>
+        <p>بعض القطع كتكون جديدة بالتّيكيت الأصلي، وبعضها second-hand بحالة ممتازة أو مزيانة. الحالة كتكون موضحة بوضوح فصفحة كل منتج.</p>
+      </details>
+      <details>
+        <summary>شنو معنى "جديد بالتّيكيت"؟</summary>
+        <p>يعني القطعة جديدة وباقي فيها التّيكيت الأصلي. كنبيّنو هاد الشي فصفحة المنتج مع الصور.</p>
+      </details>
+      <details>
+        <summary>شنو معنى "شبه جديد"؟</summary>
+        <p>يعني القطعة ما فيهاش تيكيت، ولكن الحالة ديالها ممتازة وما فيهاش عيوب ظاهرة إلا إلا كانت موضحة فالملاحظات.</p>
+      </details>
+      <details>
+        <summary>شحال ثمن التوصيل؟</summary>
+        <p>التوصيل داخل مراكش هو 20 درهم، وخارج مراكش ولباقي مدن المغرب هو 40 درهم. مجاني من 500 درهم.</p>
+      </details>
+      <details>
+        <summary>واش نقدر نسول قبل ما نطلب؟</summary>
+        <p>نعم. تقدر تسولنا فـ WhatsApp على القياس، الحالة، أو أي تفاصيل قبل ما تطلب، وكنأكدو ليك المعلومات المتوفرة قبل الطلب.</p>
+      </details>
+    </div>
+  </div>
+
+  <div class="how-ctas">
+    <a class="cta-p" href="https://wa.me/491754264425?text={{ 'سلام Lbass Original، بغيت نسول على هاد القطعة. واش ممكن تأكدو ليا الحالة والقياس؟ وعرفت أنها جاية من ألمانيا وتشيكات فمراكش.' | url_encode }}">💬 سولنا فالواتساب</a>
+    <a class="cta-s" href="/collections/all">شوف الكوليكشن الحالي</a>
+    <a class="cta-s" href="/pages/condition-guide">دليل الحالة</a>
+  </div>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "{{ shop.url }}/pages/how-we-check-items#faq",
+  "inLanguage": "ar-MA",
+  "mainEntity": [
+    {"@type": "Question", "name": "منين كتجي قطع Lbass Original؟", "acceptedAnswer": {"@type": "Answer", "text": "قطع Lbass Original كنختاروها من ألمانيا، ومن بعد كتجي للمغرب وكتتشيك فمراكش قبل ما تتحط فالموقع."}},
+    {"@type": "Question", "name": "واش الصور هي نفس القطعة اللي غادي توصلني؟", "acceptedAnswer": {"@type": "Answer", "text": "نعم. الصور اللي كتشوف فصفحة المنتج هي ديال نفس القطعة اللي غادي توصلك. ما كاين حتى صور stock فـ Lbass Original."}},
+    {"@type": "Question", "name": "واش القطع جديدة ولا second-hand؟", "acceptedAnswer": {"@type": "Answer", "text": "بعض القطع كتكون جديدة بالتّيكيت الأصلي، وبعضها second-hand بحالة ممتازة أو مزيانة. الحالة كتكون موضحة فصفحة كل منتج."}},
+    {"@type": "Question", "name": "شنو معنى جديد بالتّيكيت؟", "acceptedAnswer": {"@type": "Answer", "text": "يعني القطعة جديدة وباقي فيها التّيكيت الأصلي. كنبيّنو هاد الشي فصفحة المنتج مع الصور."}},
+    {"@type": "Question", "name": "شحال ثمن التوصيل من مراكش؟", "acceptedAnswer": {"@type": "Answer", "text": "التوصيل داخل مراكش هو 20 درهم، وخارج مراكش ولباقي مدن المغرب هو 40 درهم. مجاني من 500 درهم. Lbass Original livre depuis Marrakech: 20 MAD dans Marrakech, 40 MAD partout au Maroc."}},
+    {"@type": "Question", "name": "Où acheter des vêtements second hand importés d'Allemagne au Maroc?", "acceptedAnswer": {"@type": "Answer", "text": "Lbass Original est une friperie en ligne basée à Marrakech, Maroc. Les pièces sont sélectionnées en Allemagne, vérifiées à Marrakech, et photographiées individuellement. Livraison dans tout le Maroc avec paiement à la livraison (COD). Lbass Original sources selected second-hand branded pieces from Germany, checks each item in Marrakech, and delivers across Morocco."}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": "{{ shop.url }}/pages/how-we-check-items",
+  "name": "كيفاش كتدوز القطعة قبل ما توصل للموقع؟ | Lbass Original Germany to Morocco",
+  "description": "تعرف كيفاش Lbass Original كيختار قطع second-hand من ألمانيا، كيشيكها فمراكش، وكيعرضها بصور حقيقية وحالة واضحة قبل الطلب.",
+  "url": "{{ shop.url }}/pages/how-we-check-items",
+  "inLanguage": "ar-MA",
+  "isPartOf": {"@id": "{{ shop.url }}/#website"},
+  "mainEntity": {"@id": "{{ shop.url }}/#organization"}
+}
+</script>

@@ -1,0 +1,231 @@
+{%- comment -%}
+  HEADER + FULL-SCREEN MENU — see snippets/lbass-menu.liquid.
+
+  Rendered from HERE and not from lbass-entity-schema for a hard reason:
+  entity-schema is rendered inside <head>. A <button> or <div> there makes the
+  parser implicitly close <head> and open <body>, so everything after it —
+  including content_for_header and the main stylesheet — would be reparsed as
+  body content. This snippet is one of the few that renders at BODY level on
+  BOTH templates/index.liquid ({% layout none %}) and layout/theme.liquid,
+  which is exactly what server-rendered menu markup needs.
+
+  Server-rendered on purpose: the menu needs crawlable category links, and
+  JS-built navigation is not crawlable.
+{%- endcomment -%}
+{% render 'lbass-menu' %}
+
+{%- comment -%} Category card legibility — see snippets/lbass-cards-fix.liquid. {%- endcomment -%}
+{% render 'lbass-cards-fix' %}
+
+{%- comment -%}
+  pSEO guide → shop / article bridge — see snippets/lbass-pseo-links.liquid.
+  Self-gates on template.suffix == 'pseo', so it is inert everywhere else.
+  It lives here because templates/page.pseo.liquid is 46KB of hardcoded
+  per-handle content and does NOT render {{ page.content }}, so there was no
+  cheap in-template hook.
+{%- endcomment -%}
+{% render 'lbass-pseo-links' %}
+
+{%- comment -%}
+  HOMEPAGE BRAND PROOF BLOCK (2026-08-05) — the multilingual "شنو هو" section.
+  Rendered from here for the same structural reason as the menu above: this is
+  one of the only snippets that reaches templates/index.liquid, which declares
+  {% layout none %} and so never runs layout/theme.liquid. Without this hook
+  the homepage would be the only page on the site with no entity statement.
+  Full rationale in snippets/lbass-cro-tracking-hook.liquid.
+
+  Gated to the homepage: every other template already gets the four-language
+  lbass-entity-block in the footer via theme.liquid, and two "what is Lbass
+  Original" blocks on one page is padding, not SEO.
+{%- endcomment -%}
+
+
+{%- comment -%}
+  Above-the-fold density: hero height + visual reorder so products appear
+  sooner. CSS only, no markup moved. See snippets/lbass-home-density.liquid.
+{%- endcomment -%}
+{% if template == 'index' %}{% render 'lbass-home-density' %}{% endif %}
+
+{%- comment -%}
+  HOMEPAGE DIRECT-ANSWER + ACCESSORIES ENTRY ROW (2026-08-10).
+  See snippets/lbass-home-answer.liquid.
+
+  MUST stay AFTER lbass-home-density: it re-declares the `main > *` flex order
+  to make room for two new sections, and those overrides win on equal
+  specificity only by loading later. Moving this line above the density render
+  silently reverts the homepage order.
+{%- endcomment -%}
+{% if template == 'index' %}{% render 'lbass-home-answer' %}{% endif %}
+
+{%- comment -%}
+  AI-REFERRAL LANDING STRIP + CATEGORY DISCOVERY (2026-08-19).
+  See snippets/lbass-ai-landing.liquid.
+
+  MUST stay AFTER lbass-home-answer: it re-declares the `main > *` order to
+  insert itself at position 2 and push #drop to 3. Moving this line above the
+  other two silently reverts the homepage order.
+{%- endcomment -%}
+
+
+{%- comment -%}
+  COLLECTION CRO (2026-08-10): shipping line above the grid, in-stock-first
+  ordering, and a size filter. See snippets/lbass-collection-cro.liquid.
+
+  Rendered unconditionally — it self-gates on `template == 'collection'`, the
+  same pattern as lbass-pseo-links above. Keeping the guard inside the snippet
+  means the size-filter logic and its gate stay in one file.
+{%- endcomment -%}
+
+
+
+<script>
+(function(){
+  'use strict';
+  if(window.__lbassCroTracking) return;
+  window.__lbassCroTracking = true;
+
+  function publish(name, params){
+    params = params || {};
+    params.page_type = {{ request.page_type | json }};
+    if(window.LbassAiAttribution && typeof window.LbassAiAttribution.enrich === 'function'){
+      params = window.LbassAiAttribution.enrich(params);
+    }
+    try {
+      if(window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function'){
+        Shopify.analytics.publish('lbass_' + name, params);
+      }
+    } catch(e){}
+  }
+
+  document.addEventListener('click', function(event){
+    var explicit = event.target.closest('[data-cro-event]');
+    if(explicit){
+      publish(explicit.getAttribute('data-cro-event'), {
+        label: explicit.getAttribute('data-cro-label') || '',
+        destination: explicit.getAttribute('href') || ''
+      });
+    }
+
+    var product = event.target.closest('[data-cro-product-card]');
+    if(product){
+      publish('product_card_click', {
+        placement: product.getAttribute('data-cro-placement') || 'unknown',
+        product_id: product.getAttribute('data-product-id') || '',
+        product_name: product.getAttribute('data-product-name') || '',
+        destination: product.getAttribute('href') || ''
+      });
+    }
+
+    var whatsapp = event.target.closest('a[href*="wa.me/"]');
+    if(whatsapp && !explicit){
+      publish('whatsapp_click', {
+        label: whatsapp.getAttribute('aria-label') || whatsapp.textContent.trim().slice(0, 80),
+        destination: whatsapp.getAttribute('href') || ''
+      });
+    }
+
+    var review = event.target.closest('.lbass-reviews [data-testid="write-review-button"], .jdgm-write-rev-link');
+    if(review) publish('review_button_click', { product_id: {{ product.id | default: 0 | json }} });
+
+    var look = event.target.closest('#lookGrid [data-look-link], #lookAddAll');
+    if(look) publish('complete_look_click', { action: look.id === 'lookAddAll' ? 'add_all' : 'view_product' });
+
+    var menuOpen = event.target.closest('#lbmOpen');
+    if(menuOpen) publish('menu_open', {});
+    var menuLink = event.target.closest('.lbm a[href]');
+    if(menuLink) publish('menu_link_click', {
+      label: menuLink.textContent.replace(/\s+/g,' ').trim().slice(0,60),
+      destination: menuLink.getAttribute('href') || ''
+    });
+
+    {%- comment -%} guide → shop handoff, so the bridge's value is measurable {%- endcomment -%}
+    var bridge = event.target.closest('.lbpb a[href]');
+    if(bridge) publish('pseo_bridge_click', {
+      label: bridge.textContent.replace(/\s+/g,' ').trim().slice(0,60),
+      destination: bridge.getAttribute('href') || '',
+      kind: bridge.classList.contains('lbpb-cta') ? 'shop' : 'guide'
+    });
+
+    {%- comment -%} homepage brand block — measures whether the FR/EN layer earns clicks {%- endcomment -%}
+    var proof = event.target.closest('.lbbp a[href]');
+    if(proof) publish('brand_proof_click', {
+      label: proof.textContent.replace(/\s+/g,' ').trim().slice(0,60),
+      destination: proof.getAttribute('href') || '',
+      kind: proof.closest('.lbbp-proof') ? 'proof_card' : 'keyword_link'
+    });
+  }, {passive:true});
+})();
+</script>
+
+{%- comment -%}
+  LBASS — MARQUEE + ARABIC TYPOGRAPHY PASS (2026-07-29)
+  Lives here on purpose: this snippet renders at the very END of the
+  homepage body, AFTER templates/index.liquid's own <style> block.
+  index.liquid declares its CSS in the BODY, so equal-specificity rules
+  there beat the head-loaded lbass-stamp.liquid — that cascade-order
+  quirk is why .kick{letter-spacing:.06em} kept overriding the Arabic
+  letter-spacing reset. Loading last (plus !important) settles it.
+
+  NOTE 2026-08-02: the .hero-* rules below target the ORIGINAL homepage hero,
+  which snippets/lbass-hero-swap.liquid now replaces with .lbh. They are left
+  in place because they still apply on any page rendering the old markup, and
+  removing them is a separate cleanup once index.liquid is edited at source.
+{%- endcomment -%}
+<style>
+/* 1. MARQUEE — hard ink band.
+   The band was --ink2 (#E8E5DE) on a bone page (#F2F0EB): 1.12:1.
+   Text contrast was fine (10.14:1); the BAND had no edge, so the whole
+   strip read as a smudge. Inverting the band = 19.67:1 vs the page. */
+.mq{ background:var(--lb-ink,#0B0B0C)!important; border-block:0!important; padding:17px 0!important; }
+.mq span{
+  color:var(--lb-bone,#F2F0EB)!important;
+  font-family:var(--lb-display,'Anton',Impact,sans-serif)!important;
+  font-weight:400!important; font-size:15px!important;
+  letter-spacing:.2em!important; opacity:1!important;
+}
+.mq span .s,.mq i.s{ color:var(--lb-red,#BF2E15)!important; opacity:1!important; }
+.mq-track{ animation-duration:52s!important; }
+/* marquee hover-pause removed — brands rotate non-stop */
+@media (prefers-reduced-motion:reduce){ .mq-track{ animation:none!important; } }
+
+/* 2. ARABIC LETTER-SPACING — letter-spacing breaks Arabic letter-joining,
+   so every Arabic-bearing element must be `normal`. */
+h1,h2,h3,h4,h5,p,li,summary,blockquote,figcaption,
+.kick,.h2,.sec-sub,.hero-kicker,.hero-sub,.hero-scarce,
+.pb,.pb-grade,.chip,.hero-chips li,.pmeta-row,.hp-note,
+.pcard .ptitle,.card-title{ letter-spacing:normal!important; }
+/* Pure-Latin microcopy keeps its tracking (no Arabic glyphs present) */
+.hero-lt,.cat-idx,.lbqa-en,.hp-num,.pinfo-brand,.card-vendor,.lt{ letter-spacing:.16em!important; }
+
+/* 3. LEGACY HERO TYPE — the swapped-in .lbh hero is styled in
+   snippets/lbass-hero-type.liquid. */
+.hero-h{
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif)!important;
+  font-weight:900!important;
+  font-size:clamp(40px,5.4vw,72px)!important;
+  line-height:1.08!important; letter-spacing:normal!important;
+  margin:0 0 20px!important;
+}
+.hero-h .ln{ display:block!important; white-space:nowrap; }
+.hero-h em{ font-style:normal!important; color:var(--lb-red,#BF2E15)!important; }
+.hero-kicker{
+  display:inline-flex!important; align-items:center!important;
+  background:var(--lb-ink,#0B0B0C)!important; color:var(--lb-bone,#F2F0EB)!important;
+  padding:7px 14px!important; font-size:12px!important; font-weight:700!important;
+  border-radius:0!important; margin:0 0 20px!important; line-height:1!important;
+}
+.hero-lt{ font-size:11.5px!important; color:var(--lb-ink-3,#6B6B6E)!important; margin:0 0 6px!important; line-height:1.6!important; }
+.hero-sub{
+  font-size:clamp(15px,1.5vw,17px)!important; line-height:1.8!important;
+  color:var(--lb-ink-2,#3A3A3C)!important; max-width:46ch!important; margin:14px 0 26px!important;
+}
+.hero-scarce{
+  font-size:13px!important; color:var(--lb-ink-3,#6B6B6E)!important;
+  border-inline-start:2px solid var(--lb-red,#BF2E15)!important;
+  padding-inline-start:10px!important; margin-top:20px!important;
+}
+
+/* 4. BODY COPY RHYTHM */
+p,li,.sec-sub{ line-height:1.85; word-spacing:.03em; }
+.sec-sub{ max-width:56ch; color:var(--lb-ink-2,#3A3A3C)!important; }
+</style>

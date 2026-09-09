@@ -1,0 +1,118 @@
+{%- comment -%}
+  LBASS — MARQUEE REPAIR + BRAND LIST (2026-07-29, brand list revised 2026-07-30)
+
+  ROOT CAUSE of the "invisible brand names": .mq-track computed to
+  opacity:0.06. The names were always the right colour — every colour was
+  simply multiplied by 0.06, so the strip looked empty on ANY background.
+  Do not re-chase this as a contrast problem.
+
+  SECONDARY: #mqTrack held ONE copy of the list while @keyframes annMarquee
+  translated it +50% of its own width. A seamless marquee needs at least TWO
+  copies travelling -50%; one copy going the wrong way slid off and left the
+  band empty for most of the cycle.
+
+  BRAND LIST: this strip sits under the hero and reads as "brands we carry",
+  so listing something not in stock is a claim we cannot support. Every entry
+  below was checked against ACTIVE products with inventory on 2026-07-30.
+
+  REVISED 2026-07-30:
+    - NIKE ACG REMOVED. Its only product (Nike ACG Storm-Fit Jacket Navy) is
+      ARCHIVED, so the strip was advertising a brand with no sellable stock.
+      This is the same rule that already keeps THE NORTH FACE out.
+    - CARHARTT, SALOMON and ON RUNNING ADDED — all three have active stock and
+      were missing. The list is curated, NOT generated from product.vendor, so
+      it does not update itself when the catalogue changes. Re-check it after
+      any drop, and add to LB_BRANDS only when active stock exists.
+
+  LOGOS: each entry supports an optional `logo` = a filename uploaded to
+  Shopify (Content > Files, or theme assets). When present it renders as an
+  <img> before the wordmark; when absent the wordmark shows alone. Nothing
+  is drawn or approximated — an invented mark would misrepresent the brand.
+{%- endcomment -%}
+<script>
+(function(){
+  /* Brand order is shuffle-free and deliberate: strongest recognition first. */
+  var LB_BRANDS = [
+    { name:'NIKE' },            { name:'ADIDAS' },       { name:'JORDAN' },
+    { name:'NEW BALANCE' },     { name:'CARHARTT' },     { name:'VANS' },
+    { name:'CONVERSE' },        { name:'SALOMON' },      { name:'ON RUNNING' },
+    { name:'KARL KANI' },       { name:'ELLESSE' },      { name:'TOMMY HILFIGER' },
+    { name:'UNIQLO' },          { name:'ZARA' },         { name:'H&M' },
+    { name:'LEVI\'S' },         { name:'RALPH LAUREN' }, { name:'LACOSTE' },
+    { name:'PUMA' },            { name:'REEBOK' },       { name:'THE NORTH FACE' },
+    { name:'CHAMPION' },        { name:'DICKIES' },      { name:'FILA' },
+    { name:'CALVIN KLEIN' },    { name:'RAY-BAN' },      { name:'ASICS' }
+  ];
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function itemHTML(b){
+    var logo = b.logo
+      ? '<img class="mq-logo" src="' + esc(b.logo) + '" alt="" loading="lazy" decoding="async">'
+      : '';
+    return '<span>' + logo + esc(b.name) + ' <i class="s">✦</i></span>';
+  }
+
+  function build(){
+    var t = document.getElementById('mqTrack');
+    if(!t || t.getAttribute('data-lb-brands')) return;
+    t.setAttribute('data-lb-brands','1');
+    var one = LB_BRANDS.map(itemHTML).join('');
+    /* Two copies = seamless at -50%. A third pair is appended when the list is
+       short, so half the track always overflows the viewport and the band is
+       never caught empty on wide screens. */
+    t.innerHTML = one + one;
+    if(t.scrollWidth / 2 < window.innerWidth){ t.innerHTML = one + one + one + one; }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', build);
+  } else { build(); }
+})();
+</script>
+<style>
+/* 1. THE FIX THAT MATTERS — the track was at 6% opacity. */
+.mq,.mq-track,.mq .mq-track,.mq-track span,.mq span{ opacity:1!important; }
+.mq-track{ transition:none!important; }
+
+/* 2. Colour stated literally so it cannot depend on a token resolving. */
+.mq{ background:#0B0B0C!important; border-block:0!important; padding:15px 0!important; direction:ltr!important; }
+.mq span{
+  color:#F2F0EB!important;
+  -webkit-text-fill-color:#F2F0EB!important;
+  font-family:var(--lb-display,'Anton',Impact,sans-serif)!important;
+  font-weight:400!important;
+  font-size:15px!important;
+  letter-spacing:.2em!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:0 26px!important;
+}
+.mq span .s,.mq i.s{ color:#BF2E15!important; -webkit-text-fill-color:#BF2E15!important; }
+
+/* 3. Logo slot — only renders when a real file is supplied in LB_BRANDS.
+   Inverted to bone so single-colour marks read on the ink band. */
+.mq .mq-logo{
+  height:18px!important; width:auto!important;
+  display:block!important; flex:0 0 auto!important;
+  filter:brightness(0) invert(1)!important;
+  opacity:.92!important;
+}
+
+/* 4. Seamless loop — pairs with the builder above. */
+.mq-track{
+  animation-name:lbMqScroll!important;
+  animation-duration:70s!important;
+  animation-timing-function:linear!important;
+  animation-iteration-count:infinite!important;
+  direction:ltr!important;
+  will-change:transform;
+}
+@keyframes lbMqScroll{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+/* hover-pause removed — brands rotate non-stop */
+@media (prefers-reduced-motion:reduce){
+  .mq-track{ animation:none!important; transform:none!important; }
+}
+</style>

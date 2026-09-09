@@ -1,0 +1,98 @@
+{%- comment -%}
+  ═══ LBASS — GOOGLE STORE WIDGET (Google Customer Reviews badge) 2026-08-26 ═══
+
+  WHAT THIS IS
+  Google's official "store widget" — the current replacement for the Google
+  Customer Reviews badge. It surfaces the store's Google rating, review count
+  and Store Quality standing. The script URL and the start() call are verbatim
+  from Google's own documentation:
+      https://support.google.com/merchants/answer/14632921
+  Do not retype either from memory.
+
+  WHAT THIS IS **NOT** — read before adding anything else here
+  This is NOT the survey opt-in module. The opt-in is the half that actually
+  COLLECTS reviews, it is REQUIRED to take part in Google Customer Reviews, and
+  Google requires it on the ORDER CONFIRMATION page carrying real order data:
+  order id, customer email, delivery country, estimated delivery date.
+
+  On Shopify that page is the Thank You page, and as of **26 August 2026**
+  non-Plus stores can no longer put scripts on it — checkout.liquid, the
+  Additional Scripts box and ScriptTags were all removed for Thank You and
+  Order Status pages on that date. This theme contains no file that renders
+  there (there is no checkout.liquid and no thank-you template — verified).
+  The opt-in is therefore enabled in the **Google & YouTube app**, not here.
+
+  Do NOT paste the opt-in snippet into this theme to "make it work". On a
+  storefront page there is no order to report, so it would hand Google an
+  order_id and delivery date for an order that does not exist.
+
+  NO merchant_id IS PASSED, AND THAT IS CORRECT
+  The current widget identifies the store by the domain it runs on, which must
+  be claimed in Merchant Center. The retired badge took merchant_id; this one
+  does not accept it. Adding one is not a harmless extra — it is not part of
+  the documented API.
+
+  PLACEMENT — MEASURED, NOT GUESSED
+  LEFT_BOTTOM rather than Google's RIGHT_BOTTOM default, because the right
+  corner is already occupied on every template:
+      .wa-float   position:fixed bottom:24px right:24px   layout/theme.liquid:852
+      .waf        position:fixed bottom:24px right:24px   templates/index.liquid:575
+  WhatsApp contact is a GA4 key event for this store. A Google badge parked on
+  top of that button would cost real conversations. CSS `right` is physical, so
+  this holds even though the site is dir="rtl".
+
+  On a PRODUCT page the whole bottom edge is spoken for by the sticky
+  add-to-cart bar — .pdp-sticky, position:fixed bottom:0 inset-inline:0,
+  z-index:98, switched on at max-width:900px
+  (templates/product.liquid:485 and :533). It spans the FULL width, so neither
+  corner is safe there. Google picks its own "mobile" breakpoint, which we do
+  not control and which need not agree with 900px, so its margin options cannot
+  be trusted to clear the bar. The widget is simply not started on a product
+  page below 900px. Above 900px .pdp-sticky is display:none and the corner is
+  free.
+
+  DUPLICATION GUARD
+  Enabling "Store widgets" inside the Google & YouTube app may later make the
+  app inject this same script. Two live copies would mean two badges, so the
+  script is injected only when no other copy is present. Whichever arrives
+  first wins. (Measured 2026-08-26: the storefront carried no merchantwidget.js,
+  so there is nothing to collide with today.)
+
+  IF THE STORE IS NOT ELIGIBLE, NOTHING RENDERS
+  The widget only paints once Merchant Center holds a Store Quality rating for
+  the domain. Until then this is a silent no-op — it does not draw an empty,
+  broken or placeholder badge. No layout shift either way: the widget is
+  position:fixed and never occupies document flow.
+
+  TO TURN IT OFF: set the flag below to false.
+{%- endcomment -%}
+
+{%- assign show_google_store_widget = true -%}
+
+{%- if show_google_store_widget -%}
+<script>
+(function () {
+  var SRC = 'https://www.gstatic.com/shopping/merchant/merchantwidget.js';
+
+  /* never run a second copy alongside one the Google & YouTube app injected */
+  if (window.merchantwidget || document.querySelector('script[src*="merchantwidget.js"]')) return;
+
+  {%- if template.name == 'product' %}
+  /* the sticky add-to-cart bar owns the bottom edge below 900px — see comment above */
+  if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+  {%- endif %}
+
+  var s = document.createElement('script');
+  s.id = 'merchantWidgetScript';
+  s.src = SRC;
+  s.defer = true;
+  s.addEventListener('load', function () {
+    if (typeof merchantwidget === 'undefined') return;
+    merchantwidget.start({
+      position: 'LEFT_BOTTOM'
+    });
+  });
+  document.head.appendChild(s);
+})();
+</script>
+{%- endif -%}

@@ -1,0 +1,677 @@
+{%- comment -%}
+  ═══ VAULT PDP — repaired 2026-08-23 ═══
+
+  This snippet renders EVERY product matching templates/product.liquid line 1:
+      {% if product.tags contains 'vault' or product.price >= 70000 %}
+  i.e. anything tagged `vault` OR priced at/above 700 MAD. That is the most
+  valuable stock in the catalogue, and until today this file shipped four bugs:
+
+  1. NO structured data at all. templates/product.liquid emits Product + Offer +
+     BreadcrumbList in its {% else %} branch only, so vault items were invisible
+     to Google merchant listings and rich results. Verified 2026-08-23:
+     /products/hoka-red-running-shoes → 1 JSON-LD block (Organization only)
+     /products/vans-old-skool-black   → 3 blocks incl. Product + BreadcrumbList
+     Schema is now emitted at the bottom of this file.
+
+  2. NO image lightbox. A 1199 MAD second-hand shoe with no way to zoom the
+     photos, when inspecting the photos IS the purchase decision.
+
+  3. WRONG METAFIELD NAMESPACE. It read `product.metafields.custom.*`, but this
+     store writes condition data to `lbass.*`. Every custom.* lookup returned
+     nil on all six vault products (verified via Admin API), so every page fell
+     through to the defaults below. Now reads lbass.* first, custom.* second.
+
+  4. UNVERIFIED CONDITION CLAIMS — the serious one. Because of bug 3, the
+     defaults were what shoppers actually saw:
+       • notes defaulted to "ما بان حتى عيب واضح أثناء الفحص" — asserting a
+         clean inspection result on items with NO inspection data recorded.
+       • condition_label defaulted to 'بحالة مزيانة', so HOKA (really
+         new_without_ticket) was understated and others were guesses.
+       • the "علاش دخلات للـ Vault؟" block asserted "بحالة ممتازة" by TAG.
+     A store whose whole promise is honest condition disclosure must not
+     generate condition claims. Nothing below asserts a grade that is not
+     recorded on the product. When it is missing, we say so and point to
+     WhatsApp — never "no defects found".
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign is_one_of_one = false
+  if product.total_inventory == 1
+    assign is_one_of_one = true
+  endif
+
+  # Condition: lbass.* is authoritative, custom.* kept as a fallback so any
+
+  # product genuinely using the old namespace keeps working.
+  assign cond_val = product.metafields.lbass.condition_status.value
+  if cond_val == blank
+    assign cond_val = product.metafields.custom.condition.value
+  endif
+
+  assign condition_confirmed = false
+  assign is_new_condition = false
+  assign condition_label = ''
+
+  if cond_val == 'new_with_ticket' or cond_val == 'جديد بالتّيكيت'
+    assign condition_label = 'جديد بالتّيكيت'
+    assign condition_confirmed = true
+    assign is_new_condition = true
+  elsif cond_val == 'new_without_ticket' or cond_val == 'جديد بلا تيكيت'
+    assign condition_label = 'جديد بلا تيكيت'
+    assign condition_confirmed = true
+    assign is_new_condition = true
+  elsif cond_val == 'excellent_almost_new' or cond_val == 'شبه جديد'
+    assign condition_label = 'بحالة ممتازة · شبه جديد'
+    assign condition_confirmed = true
+  elsif cond_val == 'very_good' or cond_val == 'بحالة مزيانة بزاف'
+    assign condition_label = 'بحالة مزيانة بزاف'
+    assign condition_confirmed = true
+  elsif cond_val == 'good' or cond_val == 'بحالة مزيانة'
+    assign condition_label = 'بحالة مزيانة'
+    assign condition_confirmed = true
+  elsif cond_val == 'needs_note'
+    assign condition_label = 'بحالة مزيانة · شوف الملاحظات'
+    assign condition_confirmed = true
+  endif
+
+  # An owner-written condition label always wins over the mapping above.
+  if product.metafields.lbass.condition_label.value != blank
+    assign condition_label = product.metafields.lbass.condition_label.value
+    assign condition_confirmed = true
+  endif
+  if condition_label == blank
+    assign condition_label = 'الحالة موضحة فالصور — سولنا فالواتساب'
+  endif
+
+  # Inspection notes: real data only. No "no defects found" default.
+  assign notes = product.metafields.lbass.inspection_notes.value
+  if notes == blank
+    assign notes = product.metafields.lbass.condition_notes.value
+  endif
+  if notes == blank
+    assign notes = product.metafields.lbass.flaws.value
+  endif
+  if notes == blank
+    assign notes = product.metafields.custom.condition_notes.value
+  endif
+  assign notes_confirmed = true
+  if notes == blank
+    assign notes_confirmed = false
+    assign notes = 'ملاحظات الفحص المفصّلة مازال ما تزادوش لهاد القطعة. سولنا فالواتساب قبل ما تطلب ونعطيوك التفاصيل.'
+  endif
+
+  assign measurements = product.metafields.lbass.measurements.value
+  if measurements == blank
+    assign measurements = product.metafields.custom.measurements.value
+  endif
+  if measurements == blank
+    assign measurements = 'القياسات بالسنتيمتر مازال ما تزادوش — سولنا فالواتساب ونعطيوهملك.'
+  endif
+
+  assign vault_sku = current_variant.sku
+  if vault_sku == blank
+    assign vault_sku = product.metafields.lbass.product_code.value
+  endif
+-%}
+
+<style>
+.vault-pdp {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  color: #121214;
+  font-family: var(--lt, sans-serif);
+}
+@media(min-width: 900px) {
+  .vault-pdp {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: start;
+  }
+}
+.vault-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+.vault-gallery-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #121214;
+  color: #F4EFE6;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  z-index: 2;
+}
+.vault-img {
+  width: 100%;
+  height: auto; /* with the new width/height attrs, keeps the real ratio */
+  border-radius: 8px;
+  background: #f8f8f8;
+  cursor: zoom-in;
+}
+.vault-img:focus-visible { outline: 2px solid #c89a0e; outline-offset: 3px; }
+
+/* ── vault lightbox (added 2026-08-23) ─────────────────────────────────────
+   Mirrors the main PDP lightbox. object-fit:contain + per-image data-w/data-h
+   is deliberate: hardcoding one ratio is exactly what distorted every
+   non-4:5 photo before. z-index must beat the menu (200) and index (300). */
+.vlb{position:fixed;inset:0;z-index:99999;background:rgba(5,5,6,.96);display:none;align-items:center;justify-content:center;overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
+.vlb.show{display:flex}
+.vlb__stage{margin:0;padding:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.vlb__img{width:auto;height:auto;max-width:100vw;max-height:90vh;object-fit:contain;display:block;-webkit-user-select:none;user-select:none}
+.vlb .x{position:absolute;top:14px;right:14px;z-index:2;width:48px;height:48px;border-radius:50%;border:1px solid rgba(244,239,230,.34);color:#F4EFE6;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;background:rgba(10,10,11,.72);cursor:pointer;touch-action:manipulation}
+.vlb .x:hover,.vlb .x:focus-visible{background:rgba(10,10,11,.95);border-color:rgba(244,239,230,.7)}
+.vlb__nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:52px;height:52px;border-radius:50%;border:1px solid rgba(244,239,230,.3);background:rgba(10,10,11,.68);color:#F4EFE6;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;direction:ltr;unicode-bidi:isolate;padding-bottom:3px}
+.vlb__nav:hover,.vlb__nav:focus-visible{background:rgba(10,10,11,.95);border-color:rgba(244,239,230,.7)}
+.vlb__nav[hidden]{display:none}
+.vlb__nav--prev{left:14px}
+.vlb__nav--next{right:14px}
+.vlb__count{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:2;margin:0;padding:6px 14px;border-radius:999px;background:rgba(10,10,11,.72);border:1px solid rgba(244,239,230,.22);color:#F4EFE6;font-size:13px;font-weight:700;direction:ltr}
+.vlb__count[hidden]{display:none}
+@media(max-width:767px){
+  .vlb__img{max-height:86vh}
+  .vlb__nav{width:44px;height:44px;font-size:22px}
+  .vlb__nav--prev{left:6px}
+  .vlb__nav--next{right:6px}
+  .vlb .x{top:10px;right:10px;width:44px;height:44px}
+  .vlb__count{bottom:12px}
+}
+.vault-info {
+  position: sticky;
+  top: 20px;
+}
+.vault-brand {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #97928A;
+  margin-bottom: 8px;
+}
+.vault-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 16px;
+  line-height: 1.3;
+}
+.vault-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.vault-fact {
+  background: #f8f8f8;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a4a4a;
+}
+.vault-fact b {
+  color: #121214;
+  margin-inline-end: 4px;
+}
+.vault-price {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.vault-shipping {
+  font-size: 12px;
+  color: #97928A;
+  margin-bottom: 24px;
+}
+.vault-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.vault-btn-primary {
+  background: #c89a0e;
+  color: #000;
+  margin-bottom: 12px;
+}
+.vault-btn-outline {
+  background: transparent;
+  border: 1px solid #25D366;
+  color: #25D366;
+  margin-bottom: 24px;
+}
+.vault-trust-line {
+  font-size: 12px;
+  color: #97928A;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+.vault-passport {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+}
+.vault-passport h3 {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  margin: 0 0 20px;
+  text-transform: uppercase;
+}
+.vault-passport-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+.vault-passport-row:last-child {
+  border-bottom: none;
+}
+.vault-passport-label {
+  color: #97928A;
+  font-weight: 700;
+}
+.vault-passport-val {
+  font-weight: 600;
+  line-height: 1.6;
+}
+.vault-acc-item {
+  border-top: 1px solid #e5e5e5;
+}
+.vault-acc-title {
+  padding: 16px 0;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+.vault-acc-content {
+  padding-bottom: 16px;
+  font-size: 14px;
+  color: #4a4a4a;
+  line-height: 1.6;
+  display: none;
+}
+.vault-acc-item.is-open .vault-acc-content {
+  display: block;
+}
+.vault-sticky {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+.vault-sticky.is-visible {
+  transform: translateY(0);
+}
+</style>
+
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح" style="margin: 20px 20px 0;">
+    <a href="{{ routes.root_url }}">الرئيسية</a> ›
+    <a href="/pages/vault">VAULT</a> ›
+    <span aria-current="page">{{ product.vendor }}</span>
+  </nav>
+
+  <div class="vault-pdp">
+    <div class="vault-gallery" id="vaultGallery">
+      <div class="vault-gallery-badge">REAL PHOTOS</div>
+      {%- comment -%}
+        Written as a raw <img> rather than the image_tag filter so each photo can
+        carry its own width/height plus the lightbox data-* hooks. Do not hardcode
+        a shared ratio: these are one-of-one second-hand photos and they do not
+        share one. The lightbox reads data-w/data-h to size each image correctly.
+
+        ── srcset RESTORED 2026-08-23 ──────────────────────────────────────────
+        The first version of this loop dropped the responsive output that
+        `image_tag` had been generating (srcset at 352w/832w/1000w), so every
+        visitor downloaded the single 1000px file. That is a real regression on
+        mobile, which is 1,879 of the store's 2,520 impressions. The srcset is
+        rebuilt below by hand — same job, but keeping full control of the
+        attributes the lightbox needs.
+
+        `sizes` is NEW rather than restored: without it a browser assumes the
+        image fills 100vw and over-downloads on desktop, where the gallery
+        column is roughly 46vw. The original omitted it.
+
+        Candidate widths are filtered to those the source can actually supply —
+        Shopify will not upscale, and listing a width above the original just
+        advertises a file that does not exist at that size.
+      {%- endcomment -%}
+      {% for media in product.media %}
+        {%- assign pv = media.preview_image -%}
+        {%- capture vault_srcset -%}
+          {%- assign w_list = '352,512,832,1000,1400,2000' | split: ',' -%}
+          {%- assign w_first = true -%}
+          {%- for w in w_list -%}
+            {%- assign wn = w | times: 1 -%}
+            {%- if wn <= pv.width -%}
+              {%- unless w_first %}, {% endunless -%}
+              {{ pv | image_url: width: wn }} {{ wn }}w
+              {%- assign w_first = false -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endcapture -%}
+        <img class="vault-img"
+             src="{{ pv | image_url: width: 1000 }}"
+             {% if vault_srcset != blank %}srcset="{{ vault_srcset | strip }}"
+             sizes="(min-width: 900px) 46vw, 92vw"{% endif %}
+             alt="{{ product.title | escape }}{% if condition_confirmed %} — {{ condition_label | escape }}{% endif %} — صورة {{ forloop.index }} من {{ product.media.size }}"
+             width="{{ pv.width }}" height="{{ pv.height }}"
+             loading="{% if forloop.first %}eager{% else %}lazy{% endif %}" decoding="async"
+             data-vault-zoom="{{ pv | image_url: width: 2000 }}"
+             data-w="{{ pv.width }}" data-h="{{ pv.height }}" data-i="{{ forloop.index0 }}"
+             role="button" tabindex="0"
+             aria-label="كبّر الصورة {{ forloop.index }} من {{ product.media.size }}">
+      {% endfor %}
+    </div>
+
+    <div class="vault-info">
+      <div class="vault-brand">VAULT · {{ product.vendor }}</div>
+      <h1 class="vault-title">{{ product.title }}</h1>
+
+      <div class="vault-facts">
+        <div class="vault-fact"><b>الحالة:</b> {{ condition_label }}</div>
+        {% unless product.has_only_default_variant %}
+          <div class="vault-fact"><b>القياس:</b> {% for v in product.variants %}{{ v.title }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+        {% endunless %}
+        <div class="vault-fact"><b>التوفر:</b> {% if product.available %}متوفرة دابا{% else %}تباعت{% endif %}</div>
+      </div>
+
+      <div class="vault-price">{{ product.price | money }}</div>
+      <div class="vault-shipping">🚚 20 د.م. مراكش · 40 د.م. باقي المدن · مجاني +500 د.م.</div>
+
+      {% if product.available %}
+        {% form 'product', product, id: 'vaultAddToCartForm' %}
+          <input type="hidden" name="id" value="{{ current_variant.id }}">
+          <button type="submit" class="vault-btn vault-btn-primary">زيدها للسلة</button>
+        {% endform %}
+      {% else %}
+        <button disabled class="vault-btn vault-btn-primary" style="opacity: 0.5;">القطعة تباعت</button>
+      {% endif %}
+
+      <a href="https://wa.me/491754264425?text={{ 'سلام Lbass، بغيت نسول على هاد القطعة من VAULT: ' | append: product.title | url_encode }}" class="vault-btn vault-btn-outline" target="_blank">سولنا فالواتساب</a>
+      
+      <div class="vault-trust-line">صور حقيقية لنفس القطعة · الحالة موضحة · COD أو PayPal</div>
+
+      <div class="vault-passport">
+        <h3>تفاصيل القطعة (Passport)</h3>
+        <div class="vault-passport-row">
+          <div class="vault-passport-label">الحالة</div>
+          <div class="vault-passport-val">{{ condition_label }}</div>
+        </div>
+        <div class="vault-passport-row">
+          <div class="vault-passport-label">الملاحظات</div>
+          <div class="vault-passport-val">{{ notes }}</div>
+        </div>
+        <div class="vault-passport-row">
+          <div class="vault-passport-label">القياسات</div>
+          <div class="vault-passport-val">{{ measurements }}</div>
+        </div>
+        <div class="vault-passport-row">
+          <div class="vault-passport-label">المصدر</div>
+          <div class="vault-passport-val">جاية من ألمانيا · تشيكّات فمراكش</div>
+        </div>
+        <div class="vault-passport-row">
+          <div class="vault-passport-label">الصور</div>
+          <div class="vault-passport-val">الصور اللي كتشوف هي ديال نفس القطعة المعروضة.</div>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; font-weight: 700; background: #f8f8f8; padding: 16px; border-radius: 8px; margin-bottom: 30px;">
+        <span style="color: #97928A; display: block; margin-bottom: 4px;">علاش دخلات للـ Vault؟</span>
+        {%- comment -%}
+          Condition claims removed 2026-08-23. This asserted "بحالة ممتازة"
+          (excellent condition) purely from a TAG, so a `good`-grade item was
+          advertised as excellent. Brand and style framing is fine; the grade
+          must come from the recorded metafield or not be stated at all.
+        {%- endcomment -%}
+        {% if product.tags contains 'vintage' %}قطعة vintage أصلية من {{ product.vendor }}، مختارة ضمن قطع Vault.{% elsif product.tags contains 'sneakers' %}موديل مطلوب من {{ product.vendor }}، واختيار محدود فالمخزون.{% else %}قطعة {{ product.vendor }} بستايل مميز، مختارة ضمن قطع Vault الحالية.{% endif %}{% if condition_confirmed %} الحالة المسجّلة: {{ condition_label }}.{% endif %}
+      </div>
+
+      <div class="vault-acc">
+        <div class="vault-acc-item">
+          <div class="vault-acc-title" onclick="this.parentElement.classList.toggle('is-open')">التوصيل والخلاص <span>+</span></div>
+          <div class="vault-acc-content">
+            <b>🚚 التوصيل</b><br>
+            20 د.م. داخل مراكش<br>
+            40 د.م. باقي المدن<br>
+            مجاني ابتداءً من 500 د.م.<br><br>
+            <b>💵 COD</b><br>
+            تقدر تخلص ملي توصلك القطعة وتشوفها.<br><br>
+            <b>💳 PayPal</b><br>
+            الدفع أونلاين متوفر بكل أمان.<br><br>
+            <b>↩ الإرجاع</b><br>
+            الإرجاع كيتطبق حسب طريقة الدفع والشروط المنشورة.<br>
+            <a href="/pages/shipping-and-payment" style="color: #c89a0e; font-weight: 800;">شوف شروط الإرجاع كاملة →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="vault-sticky" id="vaultSticky">
+  <div style="font-weight: 900; font-size: 18px;">{{ product.price | money }}</div>
+  {% if product.available %}
+    <button onclick="document.querySelector('#vaultAddToCartForm button').click()" class="vault-btn vault-btn-primary" style="width: auto; margin: 0; padding: 12px 24px;">زيدها للسلة</button>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sticky = document.getElementById('vaultSticky');
+  const mainBtn = document.querySelector('#vaultAddToCartForm button');
+  if (mainBtn && sticky) {
+    const observer = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) {
+        sticky.classList.add('is-visible');
+      } else {
+        sticky.classList.remove('is-visible');
+      }
+    }, { threshold: 0 });
+    observer.observe(mainBtn);
+  }
+});
+</script>
+
+{%- comment -%} ══ VAULT LIGHTBOX — added 2026-08-23 ══ {%- endcomment -%}
+<div class="vlb" id="vlb" role="dialog" aria-modal="true" aria-label="صور المنتج" aria-hidden="true">
+  <button type="button" class="x" id="vlbX" aria-label="سدّ الصور">✕</button>
+  <button type="button" class="vlb__nav vlb__nav--prev" id="vlbPrev" aria-label="الصورة السابقة" hidden>‹</button>
+  <figure class="vlb__stage">
+    {%- comment -%}
+      ImgWidthAndHeight disabled for this one tag on purpose — the SAME reason
+      documented in templates/product.liquid: ONE element shows every photo in
+      turn and they do not share a ratio. Correct per-image width/height are set
+      from data-w/data-h in JS. No CLS to prevent: the modal is display:none.
+    {%- endcomment -%}
+    {% # theme-check-disable ImgWidthAndHeight %}
+    <img class="vlb__img" id="vlbImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" decoding="async">
+    {% # theme-check-enable ImgWidthAndHeight %}
+  </figure>
+  <button type="button" class="vlb__nav vlb__nav--next" id="vlbNext" aria-label="الصورة الموالية" hidden>›</button>
+  <p class="vlb__count" id="vlbCount" aria-live="polite" hidden></p>
+</div>
+
+<script>
+(function(){
+  var gal = document.getElementById('vaultGallery');
+  var lb  = document.getElementById('vlb');
+  if(!gal || !lb) return;
+  var shots = [].slice.call(gal.querySelectorAll('.vault-img'));
+  if(!shots.length) return;
+
+  var img=document.getElementById('vlbImg'), cnt=document.getElementById('vlbCount'),
+      prev=document.getElementById('vlbPrev'), next=document.getElementById('vlbNext'),
+      closeBtn=document.getElementById('vlbX'), idx=0, lastFocus=null;
+
+  function show(i){
+    idx = (i + shots.length) % shots.length;
+    var s = shots[idx];
+    /* real per-image dimensions — never a shared hardcoded ratio */
+    img.width  = s.getAttribute('data-w') || '';
+    img.height = s.getAttribute('data-h') || '';
+    img.src    = s.getAttribute('data-vault-zoom') || s.src;
+    img.alt    = s.getAttribute('alt') || '';
+    var many = shots.length > 1;
+    prev.hidden = next.hidden = cnt.hidden = !many;
+    if(many) cnt.textContent = (idx+1) + ' / ' + shots.length;
+  }
+  function open(i){
+    lastFocus = document.activeElement;
+    show(i);
+    lb.classList.add('show');
+    lb.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    closeBtn.focus();
+  }
+  function close(){
+    lb.classList.remove('show');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    img.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  shots.forEach(function(s,i){
+    s.addEventListener('click', function(){ open(i); });
+    s.addEventListener('keydown', function(e){
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(i); }
+    });
+  });
+  closeBtn.addEventListener('click', close);
+  prev.addEventListener('click', function(e){ e.stopPropagation(); show(idx-1); });
+  next.addEventListener('click', function(e){ e.stopPropagation(); show(idx+1); });
+  lb.addEventListener('click', function(e){ if(e.target===lb||e.target.classList.contains('vlb__stage')) close(); });
+
+  document.addEventListener('keydown', function(e){
+    if(!lb.classList.contains('show')) return;
+    if(e.key==='Escape'){ close(); }
+    else if(e.key==='ArrowRight'){ show(idx+1); }
+    else if(e.key==='ArrowLeft'){ show(idx-1); }
+    else if(e.key==='Tab'){ /* focus trap */
+      var f=[closeBtn,prev,next].filter(function(b){return !b.hidden;});
+      var i=f.indexOf(document.activeElement);
+      e.preventDefault();
+      f[(i + (e.shiftKey?-1:1) + f.length) % f.length].focus();
+    }
+  });
+
+  /* swipe */
+  var x0=null,y0=null;
+  lb.addEventListener('touchstart',function(e){ x0=e.touches[0].clientX; y0=e.touches[0].clientY; },{passive:true});
+  lb.addEventListener('touchend',function(e){
+    if(x0===null) return;
+    var dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)) show(idx + (dx<0?1:-1));
+    x0=y0=null;
+  },{passive:true});
+})();
+</script>
+
+{%- comment -%}
+  ══ VAULT STRUCTURED DATA — added 2026-08-23 ══
+  Vault products emitted NO Product/Offer/BreadcrumbList at all, because
+  templates/product.liquid only emits them in its {% else %} branch. Mirrors
+  that block, with the same two non-negotiable rules:
+    • itemCondition / condition claims only when condition_confirmed
+    • aggregateRating ONLY when a real review exists (rating_count > 0)
+  Breadcrumb matches the VISIBLE breadcrumb above (Home › VAULT › vendor).
+{%- endcomment -%}
+{%- assign vault_desc = product.description | strip_html | strip | truncate: 300 -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "@id": "{{ shop.url }}{{ product.url }}#product",
+  "name": {{ product.title | json }},
+  "url": "{{ shop.url }}{{ product.url }}",
+  {% if vault_sku != blank %}"sku": {{ vault_sku | json }},{% endif %}
+  "productID": "shopify:{{ product.id }}",
+  {% if vault_desc != blank %}"description": {{ vault_desc | json }},{% endif %}
+  "image": [{% for image in product.images %}"https:{{ image | image_url: width: 1200 }}"{% unless forloop.last %},{% endunless %}{% endfor %}],
+  "category": {{ product.type | default: product.product_type | default: 'Apparel' | json }},
+  "brand": {"@type": "Brand", "name": {{ product.vendor | json }}},
+  {% if condition_confirmed %}"itemCondition": "{% if is_new_condition %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}",{% endif %}
+  {% unless product.has_only_default_variant %}"size": {{ current_variant.title | json }},{% endunless %}
+  "additionalProperty": [
+    {"@type": "PropertyValue", "name": "Photos", "value": "{% if is_new_condition %}Photos show the exact item offered for sale{% else %}Photos show the exact second-hand item offered for sale{% endif %}"}
+    {% if is_one_of_one %},{"@type": "PropertyValue", "name": "Inventory status", "value": "One-of-one item; one unit is currently offered"}{% endif %}
+    {% if condition_confirmed %},{"@type": "PropertyValue", "name": "Condition grade", "value": {{ condition_label | json }}}{% endif %}
+    {% if notes_confirmed %},{"@type": "PropertyValue", "name": "Inspection notes", "value": {{ notes | strip_newlines | json }}}{% endif %}
+    ,{"@type": "PropertyValue", "name": "Sourcing", "value": "Selected in Germany, checked in Marrakech"}
+  ],
+  {%- assign v_rating = product.metafields.reviews.rating.value -%}
+  {%- assign v_count = product.metafields.reviews.rating_count.value | default: 0 -%}
+  {%- if v_count > 0 and v_rating != blank and v_rating.rating != blank -%}
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ v_rating.rating }},
+    "reviewCount": {{ v_count }},
+    "bestRating": {{ v_rating.scale_max | default: 5 }},
+    "worstRating": {{ v_rating.scale_min | default: 1 }}
+  },
+  {%- endif -%}
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ shop.url }}{{ product.url }}",
+    "priceCurrency": {{ shop.currency | json }},
+    "price": {{ current_variant.price | divided_by: 100.0 | json }},
+    "availability": "{% if current_variant.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"{% if condition_confirmed %},
+    "itemCondition": "{% if is_new_condition %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}"{% endif %},
+    "inventoryLevel": {"@type": "QuantitativeValue", "value": {{ current_variant.inventory_quantity | at_least: 0 }}}{% if is_one_of_one %},
+    "eligibleQuantity": {"@type": "QuantitativeValue", "value": 1, "unitText": "One-of-One"}{% endif %},
+    {%- comment -%}
+      Declares 40 MAD — the HIGHER of the two Morocco rates — so a Marrakech
+      buyer is never charged more than advertised. Free over 500 MAD depends on
+      cart total, which a per-product offer cannot express. deliveryTime omitted
+      on purpose: no transit figure is published.
+    {%- endcomment -%}
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {"@type": "MonetaryAmount", "value": "40", "currency": "MAD"},
+      "shippingDestination": {"@type": "DefinedRegion", "addressCountry": "MA"},
+      "shippingSettingsLink": "{{ shop.url }}/pages/shipping-and-payment",
+      "description": "Delivery from Marrakech: 20 MAD within Marrakech, 40 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
+    },
+    "seller": {"@id": "{{ shop.url }}/#store"}
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}},
+    {"@type": "ListItem", "position": 2, "name": "VAULT", "item": "{{ shop.url }}/pages/vault"},
+    {"@type": "ListItem", "position": 3, "name": {{ product.title | json }}}
+  ]
+}
+</script>

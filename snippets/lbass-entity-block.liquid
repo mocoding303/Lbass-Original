@@ -1,0 +1,111 @@
+{%- comment -%}
+  LBASS — MULTILINGUAL ENTITY BLOCK (Optimized 2026-09-01)
+  Compact, crawlable definition of what this business IS in Darija / French / Arabic / English.
+  Provides full text for search engines and LLM answer engines while maintaining an elegant,
+  practical, and uncluttered footer UX.
+{%- endcomment -%}
+
+<section class="lbent" aria-label="على Lbass Original">
+  <details class="lbent-details">
+    <summary class="lbent-summary">
+      <span class="lbent-summary-title">✦ على Lbass Original · Friperie en ligne Maroc</span>
+      <span class="lbent-summary-hint">العربية · Français · English ▾</span>
+    </summary>
+    <div class="lbent-body">
+      <div class="lbent-card" lang="ary" dir="rtl">
+        <p class="lbent-lang">الدارجة المغربية</p>
+        <p><strong>Lbass Original</strong> هو متجر مغربي أونلاين من مراكش، متخصص فالحوايج المستعملة الأصلية ديال البراندات، الصبابط، والـ streetwear والفينتاج. كل قطعة مصورة بصور حقيقية ديالها، الحالة واضحة قبل الطلب، وغالباً كتكون قطعة وحدة فالمخزون. التوصيل لكل المغرب والخلاص عند الاستلام.</p>
+      </div>
+      <div class="lbent-card" lang="fr" dir="ltr">
+        <p class="lbent-lang">Français</p>
+        <p><strong>Lbass Original</strong> est une friperie en ligne au Maroc, basée à Marrakech, spécialisée dans les vêtements de marque second hand, les sneakers d’occasion et le streetwear vintage. Chaque pièce est photographiée telle qu’elle est, son état est indiqué avant la commande, et il n’existe le plus souvent qu’un seul exemplaire. Livraison partout au Maroc, paiement à la livraison.</p>
+      </div>
+      <div class="lbent-card" lang="ar" dir="rtl">
+        <p class="lbent-lang">العربية الفصحى</p>
+        <p><strong>لباس أوريجينال</strong> متجر إلكتروني مغربي مقره مراكش، متخصص في بيع الملابس المستعملة الأصلية للماركات، والأحذية الرياضية المستعملة، وملابس الشارع والفينتاج في المغرب. تُعرَض كل قطعة بصورها الحقيقية مع بيان حالتها قبل الشراء، مع التوصيل إلى جميع المدن المغربية والدفع عند الاستلام.</p>
+      </div>
+      <div class="lbent-card" lang="en" dir="ltr">
+        <p class="lbent-lang">English</p>
+        <p><strong>Lbass Original</strong> is a Moroccan online store based in Marrakech, selling original second-hand branded clothing, sneakers, vintage streetwear and one-of-one fashion pieces. Every item is shown in real photos of that exact piece, its condition is stated before you order, and most pieces exist only once. Delivery across Morocco with cash on delivery.</p>
+      </div>
+    </div>
+  </details>
+</section>
+
+<style>
+.lbent {
+  margin: 18px 0;
+  width: 100%;
+}
+.lbent-details {
+  border: 1px solid var(--line2, var(--lb-rule-soft, #dcd7ce));
+  border-radius: 8px;
+  background: var(--bone, rgba(255,255,255,.04));
+  overflow: hidden;
+  transition: all .2s ease;
+}
+.lbent-details[open] {
+  border-color: var(--gold, var(--lb-rule, #c8a355));
+}
+.lbent-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--cream, var(--lb-ink, inherit));
+  user-select: none;
+  list-style: none;
+}
+.lbent-summary::-webkit-details-marker {
+  display: none;
+}
+.lbent-summary:hover {
+  background: rgba(0,0,0,.03);
+}
+.lbent-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lbent-summary-hint {
+  font-size: 11px;
+  color: var(--txt3, var(--lb-ink-3, #888));
+  font-weight: 500;
+  direction: ltr;
+}
+.lbent-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line2, var(--lb-rule-soft, #e2ded5));
+  background: rgba(0,0,0,.02);
+}
+.lbent-card {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bone, rgba(255,255,255,.06));
+  border: 1px solid var(--line2, var(--lb-rule-soft, rgba(0,0,0,.06)));
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--txt2, var(--lb-ink-2, inherit));
+}
+.lbent-card p {
+  margin: 0;
+}
+.lbent-lang {
+  font-weight: 900;
+  font-size: 11px;
+  color: var(--gold, var(--lb-red, #8F1F0D));
+  margin-bottom: 5px !important;
+  text-transform: uppercase;
+}
+@media (max-width: 640px) {
+  .lbent-body {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

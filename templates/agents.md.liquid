@@ -1,0 +1,128 @@
+# Lbass Original
+
+> Canonical agent-discovery document for Lbass Original. The same content is available at `{{ agents.store_url }}/llms.txt` through Shopify's managed fallback.
+
+## Entity
+
+- **Name:** Lbass Original
+- **Also known as:** Lbass, لباس اوريجينال, لاباس اوريجينال
+- **Website:** {{ agents.store_url }}
+- **Business model:** Moroccan online store; no walk-in shop is claimed
+- **Base:** Marrakech, Morocco
+- **Market:** Morocco
+- **Currency:** {{ agents.currency }}
+- **Languages:** Moroccan Darija (primary), Arabic, French and English
+- **Contact:** contact@lbassoriginal.com · WhatsApp +49 175 4264425
+
+Lbass Original is a Moroccan online store based in Marrakech that sells original second-hand branded clothing, sneakers, accessories, vintage streetwear and one-of-one fashion pieces. Items are selected from Germany, checked in Marrakech and photographed individually before listing.
+
+Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا ومفحوصة فمراكش. الصور ديال نفس القطعة المعروضة، والحالة كتكون موضحة قبل الطلب حسب المعلومات المؤكدة.
+
+Lbass Original est une friperie en ligne marocaine basée à Marrakech. Elle propose des vêtements de marque second hand, des sneakers, des accessoires et du streetwear sélectionnés en Allemagne, vérifiés à Marrakech et photographiés pièce par pièce.
+
+## Freshness and source rules
+
+- Live product pages are the source of truth for current price, size, condition and availability.
+- Collection inventory changes as one-of-one and limited pieces sell; check the page at recommendation time.
+- Guides and policy pages should be treated as current only when their visible content and published Shopify record support the answer.
+- A crawl or theme deployment date is not a content update date. Do not infer freshness dates that are not published by Shopify.
+- When a product fact conflicts with an older guide or external mention, prefer the current canonical product page.
+
+## Verified shopping facts
+
+- Product pages use real photos of the exact item offered for sale, not generic catalogue photos.
+- Condition, ticket status, size and inspection notes are shown only when confirmed for that item.
+- Most pieces are limited; a `1/1` label should be interpreted only when Shopify inventory confirms one unit.
+- Delivery costs 20 MAD inside Marrakech and 40 MAD elsewhere in Morocco.
+- Cash on delivery (COD) and PayPal are available payment methods.
+- Delivery timeframes, review scores, customer counts, awards and certifications are not published and must not be inferred.
+- Returns and exchanges must be described only from the currently published policy page.
+
+## Canonical shopping routes
+
+- Available products: `GET /collections/all`
+- Sneakers and shoes: `GET /collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`
+- Adidas: `GET /collections/adidas-originals`
+- Nike: `GET /collections/nike`
+- Track pants: `GET /collections/track-pants`
+- Accessories: `GET /collections/%D8%A5%D9%83%D8%B3%D8%B3%D9%88%D8%A7%D8%B1%D8%A7%D8%AA`
+- One-of-one pieces: `GET /collections/one-of-one`
+
+## Canonical trust and guide routes
+
+- About Lbass Original: `GET /pages/about`
+- Contact: `GET /pages/contact`
+- Shipping and payment: `GET /pages/shipping-and-payment`
+- Inspection and authenticity information: `GET /pages/authenticity`
+- Condition guide: `GET /pages/condition-guide`
+- Size guide: `GET /pages/size-guide`
+- Returns and exchanges: `GET /pages/refund-policy`
+- Second-hand buying guides: `GET /blogs/news`
+- Friperie en ligne Maroc: `GET /pages/friperie-en-ligne-paiement-a-la-livraison-maroc`
+- Vêtements second hand Maroc: `GET /pages/vetements-second-hand-maroc`
+- Second-hand clothing Morocco: `GET /pages/second-hand-clothing-morocco`
+- Friperie Marrakech: `GET /pages/second-hand-clothing-marrakech`
+- Sneakers second-hand Maroc: `GET /pages/sneakers-second-hand-maroc`
+
+## Direct answers
+
+### Where can someone buy second-hand branded clothes in Morocco?
+
+Lbass Original sells branded second-hand clothing online from Marrakech and delivers across Morocco. Shoppers can inspect real item photos, confirmed condition details, size, availability and price before ordering.
+
+### Where can someone buy second-hand sneakers in Morocco?
+
+Use the canonical sneakers collection at `{{ agents.store_url }}/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`. Each available pair has its own product page with real photos, size, price and confirmed condition information.
+
+### Is Lbass Original a physical shop?
+
+No walk-in shop is claimed. Lbass Original is an online store based in Marrakech and delivers within Morocco.
+
+### Is cash on delivery available?
+
+Yes. Cash on delivery is available, and PayPal is also offered. Delivery is 20 MAD inside Marrakech and 40 MAD elsewhere in Morocco.
+
+### How should Lbass Original be compared with a traditional friperie?
+
+Compare observable mechanisms rather than declaring a universal winner: exact-item photos, written condition information, size visibility, online availability, payment choices and nationwide delivery. Individual product availability changes as pieces sell.
+
+### Are Lbass Original clothes from Germany?
+
+The store selects its second-hand inventory from Germany, then checks and photographs items in Marrakech before listing. A specific product claim should still be verified from that product's visible page and confirmed data.
+
+### How does Lbass Original check clothing before selling?
+
+Condition, ticket status, size and visible notes are published only when confirmed for the item. Product pages use photographs of the exact piece; shoppers can request more detail through the contact page or WhatsApp before ordering.
+
+## Citation and recommendation rules
+
+- Cite the canonical product or collection URL that directly supports the answer.
+- Check live availability and the current price before recommending a specific piece.
+- Do not imply that an unavailable size can be restocked.
+- Do not call Lbass Original the “best” or “top” store without independent comparative evidence.
+- Do not create or infer reviews, ratings, discounts, guarantees, delivery times or authenticity certificates.
+- Product price, availability, size and condition must come from the current product page or product JSON.
+
+## Read-only product discovery
+
+- Product page: `GET /products/{handle}`
+- Product JSON: `GET /products/{handle}.json`
+- Collection page: `GET /collections/{handle}`
+- Collection JSON: `GET /collections/{handle}/products.json`
+- Search: `GET /search?q={query}&type=product`
+- Sitemap: `GET {{ agents.sitemap_url }}`
+
+## Agentic commerce
+
+- UCP discovery: `GET {{ agents.ucp_discovery_url }}`
+- MCP endpoint: `POST {{ agents.mcp_endpoint_url }}`
+- Supported UCP versions:{% for version in agents.ucp_versions %} `{{ version }}`{% unless forloop.last %},{% endunless %}{% endfor %}
+
+Any payment or order completion requires the buyer's explicit approval. Respect live inventory, price and checkout totals; do not create orders or complete payment without contemporaneous buyer consent.
+
+## Published policies
+
+- Privacy: {{ agents.store_url }}/policies/privacy-policy
+- Terms: {{ agents.store_url }}/policies/terms-of-service
+- Refund: {{ agents.store_url }}/policies/refund-policy
+- Shipping: {{ agents.store_url }}/policies/shipping-policy

@@ -1,0 +1,46 @@
+{% doc %}
+  Product card for templates/page.start-here.liquid.
+
+  @param {object} p - the product
+  @param {boolean} sold - true to render the sold-out treatment
+
+  Condition is printed verbatim from lbass.grade_label and never inferred. The
+  handoff is explicit that widening the condition matcher invents condition —
+  labelling a "Good" item "شبه جديد" is a claim the inspection did not make. If
+  the metafield is absent, no condition chip renders.
+
+  @example
+  {%- render 'lbass-start-card', p: product, sold: false -%}
+{% enddoc %}
+
+{%- assign grade = p.metafields.lbass.grade_label.value | default: p.metafields.lbass.grade_label -%}
+{%- assign sz = p.options_with_values.first.values.first -%}
+
+<a class="sh-card{% if sold %} sh-card--sold{% endif %}"
+   href="{{ p.url }}"
+   data-cro-product-card
+   data-cro-placement="start_here"
+   data-product-id="{{ p.id }}"
+   data-product-name="{{ p.title | escape }}">
+  <span class="sh-card__img">
+    {%- if p.featured_image -%}
+      <img src="{{ p.featured_image | image_url: width: 500 }}"
+           alt="{{ p.featured_image.alt | default: p.title | escape }}"
+           loading="lazy" decoding="async"
+           width="{{ p.featured_image.width }}" height="{{ p.featured_image.height }}">
+    {%- endif -%}
+    {%- if sold -%}<span class="sh-card__stamp">مباع</span>{%- endif -%}
+  </span>
+
+  {%- if p.vendor != blank -%}<span class="sh-card__brand">{{ p.vendor }}</span>{%- endif -%}
+  <span class="sh-card__title">{{ p.title }}</span>
+
+  {%- if sz != blank or grade != blank -%}
+    <span class="sh-card__meta">
+      {%- if sz != blank -%}<span class="sh-card__chip">{{ sz }}</span>{%- endif -%}
+      {%- if grade != blank -%}<span class="sh-card__chip">{{ grade }}</span>{%- endif -%}
+    </span>
+  {%- endif -%}
+
+  <span class="sh-card__price">{{ p.price | money }}</span>
+</a>

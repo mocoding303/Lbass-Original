@@ -1,0 +1,158 @@
+{%- comment -%}
+  LBASS — HOMEPAGE BRAND PROOF BLOCK (2026-08-05)
+  Rendered from snippets/lbass-cro-tracking.liquid, gated to template=='index'.
+  NOT from layout/theme.liquid — templates/index.liquid declares {% layout none %}
+  so the layout never runs on "/". See snippets/lbass-cro-tracking-hook.liquid.
+
+  ══ WHY THIS EXISTS ══
+  Measured 2026-08-05, the homepage was the single weakest page on the site for
+  French/English discovery, despite being the highest-authority URL:
+      <title>  "Lbass Original | براند أصلي بثمن يناسبك 🇲🇦"  — no French,
+               no English, no category noun, no "Maroc"
+      <h1>     "قطع أصلية. لوك ما كيتعاودش."  — 100% Arabic script
+  And because the layout never runs here, the homepage was also the ONLY page
+  on the site with no entity statement at all.
+
+  ══ WHY IT DOES NOT DUPLICATE THE FOOTER ══
+  snippets/lbass-entity-block.liquid carries a four-language entity statement
+  in the footer of every page that uses the layout. Repeating that paragraph
+  here would be padding. So this block is written fresh: the footer states WHAT
+  the business is, this states HOW buying works and WHAT you get.
+
+  ══ LANGUAGE HIERARCHY IS THE WHOLE POINT ══
+  Darija is typographically dominant — it is the conversion language and this
+  must read as a Moroccan shop, not an English shop with Arabic bolted on.
+  French and English are present, real and crawlable, but visually secondary
+  and correctly marked with lang/dir so screen readers and search engines
+  switch pronunciation and tokenisation instead of guessing.
+
+  ══ COLOURS ARE HARDCODED ON PURPOSE — DO NOT "TIDY" THEM INTO var() ══
+  snippets/lbass-stamp.liquid loads last and REDEFINES the theme tokens to a
+  light palette. Measured live 2026-08-05:
+        --cream → #0B0B0C  (black, not cream)
+        --ink2  → #F4F2ED  (white, not near-black)
+        --gold  → #BF2E15  (red, not gold)
+  So `background:var(--ink2)` + `color:var(--cream)` — which reads as
+  "dark background, light text" — actually renders light-on-light-ish and the
+  design inverts. Every colour below is therefore a literal value. The palette
+  chosen (ink band, bone text, red accent) matches the homepage marquee `.mq`,
+  which solved the same problem the same way.
+
+  ══ EVERY CLAIM IS CHECKABLE IN ONE CLICK ══
+  real photos / condition / 1-of-1 / COD each link to the page that proves it.
+  No review counts, no customer numbers, no discounts, no fake stock urgency and
+  no certificate claim beyond the internal inspection described honestly on
+  /pages/authenticity. Any refund promise must match the published policy.
+
+  ══ LINK TARGETS ARE ALL VERIFIED TO EXIST ══
+  The keyword row points at the EXISTING friperie pSEO page rather than a new
+  /pages/friperie-en-ligne-maroc. A second friperie page would compete with it
+  for the same query — the kind of cannibalisation this project avoids by
+  strengthening one useful URL per search intent.
+{%- endcomment -%}
+
+<section class="lbbp" aria-labelledby="lbbp-h">
+  <div class="lbbp-in">
+    <p class="lbbp-kick">MOROCCO · SECOND-HAND · 1/1</p>
+    <h2 class="lbbp-h" id="lbbp-h">Lbass Original شنو هو؟</h2>
+
+    <p class="lbbp-lead" lang="ary" dir="rtl">
+      <strong>Lbass Original</strong> هو متجر مغربي كيجمع ليك حوايج
+      second-hand أصلية، sneakers، streetwear وقطع one-of-one — بصور
+      حقيقية ديال نفس القطعة، حالة مكتوبة بلا تجميل، والتوصيل لكل
+      المغرب مع الدفع عند الاستلام.
+    </p>
+
+    <div class="lbbp-mirror">
+      <p lang="fr" dir="ltr">
+        <span class="lbbp-tag">FR</span>
+        Friperie en ligne au Maroc spécialisée dans les vêtements de marque
+        second hand, les sneakers d’occasion et le streetwear vintage.
+        Paiement à la livraison.
+      </p>
+      <p lang="en" dir="ltr">
+        <span class="lbbp-tag">EN</span>
+        Original branded second-hand clothing and one-of-one streetwear in
+        Morocco — real photos, stated condition, cash on delivery.
+      </p>
+    </div>
+
+    {%- comment -%}
+      Marrakech line added 2026-08-09. States base of operations and the real
+      shipping split so the homepage answers "where are you / what does delivery
+      cost" before the shopper has to look. Marrakech is owner-confirmed as the
+      BASE only — there is no walk-in shop, so the wording is "من مراكش"
+      (from/based in), never anything implying a storefront you can visit.
+      Figures match the live Shopify delivery profile: 20 / 40 / free at 500.
+    {%- endcomment -%}
+    <p class="lbbp-mrk"><b>من مراكش، كنوصّلو لكل المغرب</b> — التوصيل داخل مراكش <b>20 درهم</b>، وخارج مراكش <b>40 درهم</b>، ومجاني من <b>500 درهم</b>. الدفع عند الاستلام متاح.</p>
+    <ul class="lbbp-proof">
+      <li><a href="/pages/authenticity"><b>🔍 فحص ٦ نقط</b><span>قبل ما تتعرض القطعة</span></a></li>
+      <li><a href="/pages/condition-guide"><b>📸 صور حقيقية</b><span>نفس القطعة اللي غادي توصلك</span></a></li>
+      <li><a href="/collections/one-of-one"><b>✦ قطع 1/1</b><span>نسخة وحدة، ملي كتباع سالات</span></a></li>
+      <li><a href="/pages/shipping-and-payment"><b>💵 خلّص ملي توصلك</b><span>COD لكل المغرب</span></a></li>
+    </ul>
+
+    <p class="lbbp-links">
+      <a href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc">friperie en ligne Maroc</a>
+      <a href="/pages/vetements-second-hand-maroc">vêtements second hand Maroc</a>
+      <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7">sneakers occasion Maroc</a>
+      <a href="/pages/second-hand-clothing-morocco">second-hand clothing Morocco</a>
+      <a href="/collections/one-of-one">قطع 1/1 متوفرة دابا</a>
+    </p>
+  </div>
+</section>
+
+<style>
+/* Literal colours only — see the token-inversion note in the comment above. */
+.lbbp{background:#0B0B0C!important;border-block:0!important}
+.lbbp-in{max-width:1100px;margin:0 auto;padding:40px 24px 38px;text-align:start;
+  background:radial-gradient(120% 100% at 100% 0%,rgba(191,46,21,.16) 0%,rgba(191,46,21,0) 58%)}
+.lbbp .lbbp-kick{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px!important;
+  letter-spacing:.24em!important;color:#E8734F!important;font-weight:800!important;
+  direction:ltr;margin:0 0 9px!important}
+.lbbp h2.lbbp-h{font-size:clamp(22px,3.4vw,30px)!important;color:#F2F0EB!important;
+  font-weight:900!important;margin:0 0 13px!important;line-height:1.32!important;
+  letter-spacing:normal!important}
+.lbbp .lbbp-lead{margin:0 0 17px!important;color:#DEDAD2!important;font-size:15.5px!important;
+  line-height:1.95!important;max-width:66ch;letter-spacing:normal!important}
+.lbbp .lbbp-lead strong{color:#F2F0EB!important}
+
+/* FR/EN are real, crawlable and legible — but deliberately quieter than Darija.
+   #A8A29A on #0B0B0C measures 7.4:1, so "quieter" never means "failing AA". */
+.lbbp-mirror{display:grid;gap:8px;margin:0 0 20px;max-width:72ch}
+.lbbp .lbbp-mirror p{margin:0!important;color:#A8A29A!important;font-size:12.5px!important;
+  line-height:1.78!important;letter-spacing:normal!important}
+.lbbp .lbbp-tag{display:inline-block;border:1px solid #3A3A3C;border-radius:4px;
+  padding:0 5px;margin-inline-end:7px;font-size:9.5px!important;font-weight:800!important;
+  letter-spacing:.1em!important;color:#E8734F!important;vertical-align:1.5px}
+
+.lbbp .lbbp-mrk{margin:0 0 14px!important;font-size:13.5px!important;line-height:1.85!important;color:#DEDAD2!important;letter-spacing:normal!important}
+.lbbp .lbbp-mrk b{color:#F2F0EB!important}
+.lbbp .lbbp-proof{list-style:none!important;padding:0!important;margin:0 0 18px!important;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.lbbp .lbbp-proof li{margin:0!important;color:inherit!important}
+.lbbp .lbbp-proof a{display:block;height:100%;border:1px solid #2A2A2D;border-radius:13px;
+  padding:13px 15px;background:rgba(255,255,255,.03);text-decoration:none;
+  transition:border-color .2s ease,transform .2s ease,background .2s ease}
+.lbbp .lbbp-proof a:hover{border-color:rgba(191,46,21,.75);transform:translateY(-2px);
+  background:rgba(191,46,21,.09)}
+.lbbp .lbbp-proof b{display:block;color:#F2F0EB!important;font-size:14px;font-weight:900;
+  margin-bottom:3px;letter-spacing:normal!important}
+.lbbp .lbbp-proof span{display:block;color:#A8A29A!important;font-size:12px;line-height:1.6}
+
+.lbbp .lbbp-links{margin:0!important;display:flex;flex-wrap:wrap;gap:7px 15px}
+.lbbp .lbbp-links a{color:#E8734F!important;font-size:12.5px!important;font-weight:700!important;
+  text-decoration:underline;text-underline-offset:3px;letter-spacing:normal!important}
+.lbbp .lbbp-links a:hover{color:#F2F0EB!important}
+
+@media(max-width:640px){
+  .lbbp-in{padding:30px 16px 28px}
+  .lbbp .lbbp-lead{font-size:14.5px!important}
+  .lbbp .lbbp-proof{grid-template-columns:1fr 1fr;gap:8px}
+  .lbbp .lbbp-proof a{padding:11px 12px;border-radius:11px}
+  .lbbp .lbbp-proof b{font-size:13px}
+  .lbbp .lbbp-proof span{font-size:11.5px}
+}
+@media(max-width:380px){.lbbp .lbbp-proof{grid-template-columns:1fr}}
+</style>

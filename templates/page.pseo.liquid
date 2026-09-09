@@ -1,0 +1,423 @@
+{% comment %}
+  Lbass Original — Programmatic SEO/AEO landing template.
+  One template drives every pSEO landing page, keyed on page.handle.
+  To activate a page: Admin → Pages → Add page → set the handle below,
+  assign theme template "pseo", paste the SEO title/description provided.
+  Pages render ONLY real available products, pulled dynamically by tag/vendor —
+  no hard-coded product IDs, sold items excluded automatically.
+
+  2026-08-13: the H1 follows the Admin page title and verified shipping is
+  20 MAD inside Marrakech / 40 MAD outside Marrakech,
+  and parent links point at the canonical brand-* collections.
+  See snippets/lbass-pseo-h1.liquid for the full rationale.
+{% endcomment %}
+
+{%- assign ps_avail = collections.all.products | where: 'available', true -%}
+{%- assign ps_mode = '' -%}
+
+{% case page.handle %}
+{% when 'sneakers-second-hand-maroc' %}
+  {%- assign ps_mode = 'tags' -%}
+  {%- assign ps_filter = 'shoes,slides,sneaker,flip' -%}
+  {%- assign ps_kick = 'SNEAKERS — MAROC' -%}
+  {%- assign ps_h1 = 'سنيكرز second-hand أصلية فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى سنيكرز وصبابط براند second-hand أصلية فالمغرب — Nike, Adidas, Vans, Converse وغيرهم. كل جوج بصور حقيقية ديالو، الحالة مكتوبة بلا تجميل، وقياس النعل الداخلي بالسنتيمتر ملي كيكون متوفر. الخلاص عند الاستلام، والتوصيل لجميع المدن.{%- endcapture -%}
+  {%- capture ps_mirror -%}Baskets et sneakers de marque authentiques d'occasion au Maroc — photos réelles de la paire exacte, état détaillé, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}قبل ما تطلب: شوف الصور الحقيقية (ماشي صور البراند)، قرا الحالة المؤكدة، وقارن قياس النعل بالسنتيمتر ملي يكون مسجّل مع صباط عندك مريح. المخزون وشارة 1/1 كيبانو حسب Shopify فصفحة كل منتج.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/صبابط' -%}
+  {%- assign ps_parent_txt = 'كولكسيون الصبابط كامل' -%}
+{% when 'nike-second-hand-maroc' %}
+  {%- assign ps_mode = 'vendor' -%}
+  {%- assign ps_filter = 'Nike' -%}
+  {%- assign ps_kick = 'NIKE — MAROC' -%}
+  {%- assign ps_h1 = 'حوايج Nike second-hand أصلية فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى قطع <strong>Nike</strong> second-hand أصلية فالمغرب — سنيكرز، تيشرتات، كاسكيطات وسراويل. الصور ديال نفس القطعة، والتّيكيت والحالة كيبانو حسب التأكيد، والخلاص عند الاستلام حسب خيارات الطلب.{%- endcapture -%}
+  {%- capture ps_mirror -%}Vêtements et sneakers Nike d'occasion au Maroc — photos réelles, état et ticket affichés lorsqu'ils sont confirmés, paiement à la livraison selon les options de commande.{%- endcapture -%}
+  {%- capture ps_intro -%}Nike من البراندات اللي كيتقلّد بزاف. فصفحة كل منتج كنبيّنو صور القطعة نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مسجلة ومؤكدة؛ وتقدر تطلب صور قريبة فالواتساب قبل الطلب.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/nike' -%}
+  {%- assign ps_parent_txt = 'كولكسيون Nike كامل' -%}
+{% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
+  {%- assign ps_mode = 'all' -%}
+  {%- assign ps_kick = 'FRIPERIE EN LIGNE — COD' -%}
+  {%- assign ps_h1 = 'Friperie en ligne فالمغرب بالدفع عند الاستلام' -%}
+  {%- capture ps_answer -%}<strong>Friperie en ligne Maroc avec paiement à la livraison:</strong> commandez une pièce photographiée individuellement chez Lbass Original, puis payez à la réception selon l’option COD disponible. التوصيل 20 درهم داخل مراكش و40 درهم خارج مراكش.{%- endcapture -%}
+  {%- capture ps_mirror -%}Lbass Original est une friperie en ligne marocaine avec paiement à la livraison. Livraison 20 MAD dans Marrakech et 40 MAD ailleurs au Maroc.{%- endcapture -%}
+  {%- capture ps_intro -%}الفرق هو أن كل منتج عندو صور القطعة نفسها. الحالة والتّيكيت والملاحظات كيبانو غير حسب التأكيد، وتقدر تختار الدفع عند الاستلام حسب خيارات الطلب. الإرجاع والتبديل كيتطبقو حسب السياسة المنشورة.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/all' -%}
+  {%- assign ps_parent_txt = 'كل القطع المتوفرة' -%}
+{% when 'adidas-second-hand-maroc' %}
+  {%- assign ps_mode = 'vendor' -%}
+  {%- assign ps_filter = 'adidas' -%}
+  {%- assign ps_kick = 'ADIDAS — MAROC' -%}
+  {%- assign ps_h1 = 'حوايج Adidas second-hand أصلية فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى قطع <strong>Adidas</strong> و<strong>Adidas Originals</strong> second-hand أصلية فالمغرب — سراويل تراك، صبابط، وإكسسوارات. الصور ديال نفس القطعة، والحالة والتّيكيت حسب التأكيد، والخلاص عند الاستلام حسب خيارات الطلب.{%- endcapture -%}
+  {%- capture ps_mirror -%}Vêtements Adidas et Adidas Originals authentiques d'occasion au Maroc — pièces inspectées, photos réelles, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}من Trefoil القديم حتى للتراك سويت — الحالة والتّيكيت والمخزون كيبانو حسب المعلومات المؤكدة فصفحة كل قطعة. قارن القياسات بالسنتيمتر ملي تكون مسجلة، وإلا شكيتي سولنا فالواتساب.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/adidas-originals' -%}
+  {%- assign ps_parent_txt = 'كولكسيون Adidas كامل' -%}
+{% when 'jordan-second-hand-maroc' %}
+  {%- assign ps_mode = 'vendor' -%}
+  {%- assign ps_filter = 'jordan' -%}
+  {%- assign ps_kick = 'JORDAN — MAROC' -%}
+  {%- assign ps_h1 = 'قطع Jordan second-hand أصلية فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى قطع <strong>Jordan</strong> second-hand أصلية فالمغرب — تيشرتات، سراويل Jumpman وقطع محدودة. الصور ديال نفس القطعة، والحالة والتّيكيت حسب التأكيد، والخلاص عند الاستلام حسب خيارات الطلب.{%- endcapture -%}
+  {%- capture ps_mirror -%}Pièces Jordan authentiques d'occasion au Maroc — inspectées, photos réelles de l'article exact, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}Jordan من البراندات اللي كيتقلّدو بزاف. كنبيّنو صور القطعة نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مؤكدة. المخزون وشارة 1/1 كيبانو حسب Shopify.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/brand-jordan' -%}
+  {%- assign ps_parent_txt = 'كولكسيون Jordan كامل' -%}
+{% when 'jackets-second-hand-maroc' %}
+  {%- assign ps_mode = 'tags' -%}
+  {%- assign ps_filter = 'jacket,jackets,puffer,biker,coat' -%}
+  {%- assign ps_kick = 'JACKETS — MAROC' -%}
+  {%- assign ps_h1 = 'جاكيطات براند second-hand أصلية فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى جاكيطات براند second-hand أصلية فالمغرب — بوفر، بايكر، تراك جاكيط وغيرهم من Nike, Zara, Ellesse, Tommy. الصور ديال نفس القطعة، والحالة والتّيكيت حسب التأكيد، والخلاص عند الاستلام حسب الخيارات.{%- endcapture -%}
+  {%- capture ps_mirror -%}Vestes et blousons de marque d'occasion au Maroc — puffer, biker, track — photos réelles, état détaillé, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}الجاكيط قطعة كتشوفها كل نهار — علاش خاص القياس يكون مضبوط. قيس الصدر (من إبط لإبط ×2)، الطول، والكم، وقارن مع جاكيط عندك مريح. الحالة والملاحظات والمخزون كيبانو حسب التأكيد فصفحة المنتج.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/جاكيطات-و-معاطف' -%}
+  {%- assign ps_parent_txt = 'كولكسيون الجاكيطات كامل' -%}
+{% when 'cargo-pants-second-hand-maroc' %}
+  {%- assign ps_mode = 'tags' -%}
+  {%- assign ps_filter = 'cargo,pants,track-pants,jeans' -%}
+  {%- assign ps_kick = 'CARGO & PANTS — MAROC' -%}
+  {%- assign ps_h1 = 'سراويل كارغو وتراك second-hand فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى سراويل كارغو وتراك second-hand أصلية فالمغرب — New Balance, Adidas, Jordan, H&M وغيرهم. الصور ديال نفس القطعة، والحالة والتّيكيت والقياسات كيبانو ملي يكونو مؤكدين، والخلاص عند الاستلام حسب الخيارات.{%- endcapture -%}
+  {%- capture ps_mirror -%}Pantalons cargo et track de marque d'occasion au Maroc — mesures réelles (taille, longueur, entrejambe), photos réelles, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}أهم قياس فالسروال هو الـ inseam (من الملتقى ديال الرجلين حتى للكعب) والوسط — كنكتبوهم بالسنتيمتر ملي كيكونو متوفرين. قارنهم مع سروال عندك كيجيك مزيان؛ المخزون الحقيقي كيبان فصفحة المنتج.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/سراويل-و-كارغو' -%}
+  {%- assign ps_parent_txt = 'كولكسيون السراويل كامل' -%}
+{% when 'streetwear-original-maroc' %}
+  {%- assign ps_mode = 'tags' -%}
+  {%- assign ps_filter = 'streetwear,vintage,y2k' -%}
+  {%- assign ps_kick = 'STREETWEAR 1/1 — MAROC' -%}
+  {%- assign ps_h1 = 'Streetwear أصلي 1/1 فالمغرب' -%}
+  {%- capture ps_answer -%}فـ <strong>Lbass Original</strong> كتلقى streetwear أصلي ومحدود فالمغرب — قطع براند مختارة بصور حقيقية. شارة 1/1 كتظهر غير ملي Shopify كيأكد مخزون وحدة، والحالة كاتبان حسب التأكيد.{%- endcapture -%}
+  {%- capture ps_mirror -%}Streetwear original one-of-one au Maroc — des pièces de marque rares, photos réelles, paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}الفكرة ديال 1/1 كتطبق غير ملي المخزون كيأكد قطعة وحدة. كنختارو قطع عندها كاراكتير: vintage، Y2K، أو براند مطلوب، والحالة كاتبان بلا تجميل ملي تكون مؤكدة.{%- endcapture -%}
+  {%- assign ps_parent_url = '/pages/vault' -%}
+  {%- assign ps_parent_txt = 'شوف الـ VAULT' -%}
+{% when 'comment-acheter-second-hand-original-maroc' %}
+  {%- assign ps_mode = 'guide' -%}
+  {%- assign ps_kick = 'GUIDE — ACHAT SÉCURISÉ' -%}
+  {%- assign ps_h1 = 'كيفاش تشري second-hand أصلي بلا مفاجآت فالمغرب' -%}
+  {%- capture ps_answer -%}باش تشري حوايج second-hand أصلية بلا مفاجآت فالمغرب: ١) شوف الصور ديال نفس القطعة. ٢) قرا الحالة والملاحظات المؤكدة. ٣) قارن القياسات ملي تكون مسجلة. ٤) شوف خيارات الدفع عند الاستلام. فـ <strong>Lbass Original</strong> المعلومات الناقصة كنخليوها للتأكيد بدل التخمين.{%- endcapture -%}
+  {%- capture ps_mirror -%}Comment acheter de la seconde main authentique au Maroc sans surprise : vérifiez les photos réelles, lisez l'état et les défauts, comparez les mesures, et choisissez le paiement à la livraison.{%- endcapture -%}
+  {%- capture ps_intro -%}شراء second-hand أونلاين كيخوّف من ٣ حوايج: الأصالة، الحالة، والقياس. هاد الدليل كيوريك كيفاش تتجنب كل واحد فيهم — وكيفاش Lbass Original كيحل هاد المشاكل بالصور الحقيقية، الفحص، القياسات، والدفع عند الاستلام.{%- endcapture -%}
+  {%- assign ps_parent_url = '/pages/authenticity' -%}
+  {%- assign ps_parent_txt = 'كيفاش كنشيّكو الأصالة' -%}
+{% when 'ma3na-thrift-second-hand-vintage-one-of-one' %}
+  {%- assign ps_mode = 'guide' -%}
+  {%- assign ps_kick = 'دليل المصطلحات — LBASS GLOSSARY' -%}
+  {%- assign ps_h1 = 'معنى Thrift و Second-Hand و Vintage و One-of-One' -%}
+  {%- capture ps_answer -%}<strong>معنى thrift وsecond-hand وvintage وone-of-one:</strong> كلهم كيصفو حوايج مستعملة، لكن مش بنفس المعنى. <strong>Thrift</strong> كتعني شراء مستعمل بثمن مناسب. <strong>Second-hand</strong> يعني مستعمل فقط. <strong>Vintage</strong> يعني مستعمل وقديم (20+ سنة) بقيمة خاصة. <strong>One-of-one (1/1)</strong> يعني نسخة وحدة فالمخزون — ملي تتباع تخرج.{%- endcapture -%}
+  {%- capture ps_mirror -%}Thrift signifie acheter de l'occasion à bon prix. Second-hand = utilisé. Vintage = ancien avec valeur. One-of-one = pièce unique en stock.{%- endcapture -%}
+  {%- capture ps_intro -%}فالمغرب كتسمع بزاف الكلمات هاذي: thrift، second-hand، vintage، سكند هاند، ون اوف ون. هاد الدليل كيشرح كل واحدة بالدارجة مع أمثلة حقيقية من Lbass Original.{%- endcapture -%}
+  {%- assign ps_parent_url = '/collections/all' -%}
+  {%- assign ps_parent_txt = 'تسوق الكوليكسيون' -%}
+  {%- capture ps_extra_content -%}
+<div class="lb-answer" style="margin:32px 0">
+
+<h2 id="thrift">معنى Thrift بالعربي</h2>
+<p><strong>Thrift</strong> كلمة إنجليزية معناها "الاقتصاد في الإنفاق". فسياق الموضة، <strong>thrifting</strong> كتعني شراء حوايج مستعملة من محلات أو مواقع متخصصة بدل شرائها جديدة بثمن غالي. فالمغرب كتقابلها الفريبيري.</p>
+
+<h3>معنى Thrift Store</h3>
+<p><strong>Thrift store</strong> هو المحل أو الموقع اللي كيبيع الحوايج المستعملة. <strong>Lbass Original</strong> هو thrift store أونلاين من مراكش — متخصص في حوايج براند أصلية مختارة من ألمانيا.</p>
+
+<h3>معنى Thrifted</h3>
+<p><strong>Thrifted</strong> يعني أن القطعة جات من متجر second-hand — مش من متجر جديد. "هاد الجاكيط thrifted" يعني شريتيه من فريبيري أو متجر مستعمل.</p>
+
+<h3>معنى Thrifting</h3>
+<p><strong>Thrifting</strong> هو الفعل — عملية التسوق والبحث في محلات ومواقع الحوايج المستعملة.</p>
+
+<hr>
+
+<h2 id="vintage">معنى Vintage بالعربي</h2>
+<p><strong>Vintage</strong> مش نفس second-hand. Vintage كتعني قطعة قديمة — غالباً من 20 أو 30 سنة أو أكثر — عندها قيمة خاصة بسبب نادريتها أو تصميمها الكلاسيكي. مش كل مستعمل هو vintage.</p>
+<p>مثال: سنيكر Nike Air Max من التسعينيات = vintage. جاكيط Adidas من 2020 مستعمل = second-hand.</p>
+
+<table style="width:100%;border-collapse:collapse;margin:20px 0">
+  <thead style="background:rgba(200,154,14,0.1)">
+    <tr>
+      <th style="padding:10px;text-align:right;border-bottom:2px solid var(--gold)">الكلمة</th>
+      <th style="padding:10px;text-align:right;border-bottom:2px solid var(--gold)">المعنى</th>
+      <th style="padding:10px;text-align:right;border-bottom:2px solid var(--gold)">مثال</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="padding:10px;border-bottom:1px solid #333"><strong>Thrift / Thrifting</strong></td><td style="padding:10px;border-bottom:1px solid #333">شراء مستعمل بثمن مناسب</td><td style="padding:10px;border-bottom:1px solid #333">كنثريفت من lbassoriginal.com</td></tr>
+    <tr><td style="padding:10px;border-bottom:1px solid #333"><strong>Second-hand</strong></td><td style="padding:10px;border-bottom:1px solid #333">مستعمل من قبل</td><td style="padding:10px;border-bottom:1px solid #333">جاكيط Nike second-hand</td></tr>
+    <tr><td style="padding:10px;border-bottom:1px solid #333"><strong>Vintage</strong></td><td style="padding:10px;border-bottom:1px solid #333">قديم (20+ سنة) بقيمة خاصة</td><td style="padding:10px;border-bottom:1px solid #333">Nike Air de 1994</td></tr>
+    <tr><td style="padding:10px"><strong>1/1 / One-of-one</strong></td><td style="padding:10px">نسخة وحيدة فالمخزون</td><td style="padding:10px">قطعة Lbass تخرج ملي تتباع</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2 id="second-hand">معنى Second-Hand وسكند هاند</h2>
+<p><strong>Second-hand</strong> (أو "سكند هاند") تعني ببساطة "مستعمل من قبل". هاد المصطلح أوسع من vintage ومش لازم تكون القطعة قديمة. فـ <strong>Lbass Original</strong>، كل القطع second-hand أصلية — يعني براند حقيقي مش تقليد — مختارة من ألمانيا ومفحوصة فمراكش.</p>
+
+<hr>
+
+<h2 id="one-of-one">معنى One-of-One (1/1) وون اوف ون</h2>
+<p><strong>One-of-one</strong> أو <strong>1/1</strong> تعني قطعة وحدة فالمخزون. ملي تتباع، تخرج للأبد — ما كترجعش. فـ Lbass Original، الغالبية هي 1/1 — لأن كل قطعة second-hand وحيدة.</p>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin:28px 0">
+  <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" class="btn btn-gold">تسوق الصبابط</a>
+  <a href="/collections/adidas-originals" class="btn btn-line">Adidas Second-Hand</a>
+  <a href="/collections/all" class="btn btn-line">شوف الكوليكسيون</a>
+</div>
+
+</div>
+  {%- endcapture -%}
+{% endcase %}
+
+{%- comment -%}
+  H1 FOLLOWS THE ADMIN PAGE TITLE — see snippets/lbass-pseo-h1.liquid.
+  The values above are now fallbacks only. Before this, the titles were
+  rewritten to informational framing while the hardcoded H1s stayed
+  transactional, so every page promised a guide and delivered a category.
+  ps_h1 also feeds the breadcrumb, WhatsApp prefill and both schema blocks,
+  so all of them now follow the Admin title too.
+{%- endcomment -%}
+{%- if page.title != blank -%}{%- assign ps_h1 = page.title -%}{%- endif -%}
+
+{% if ps_mode == '' %}
+  {%- comment -%} Unknown handle on this template: render plain page content, noindex-safe fallback. {%- endcomment -%}
+  <div class="wrap"><h1>{{ page.title }}</h1><div style="max-width:860px">{{ page.content }}</div></div>
+{% else %}
+
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح"><a href="{{ routes.root_url }}">الرئيسية</a> › <span aria-current="page">{{ ps_h1 }}</span></nav>
+
+  <p style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.2em;color:var(--gold);direction:ltr;font-weight:800">{{ ps_kick }}</p>
+  <h1>{{ ps_h1 }}</h1>
+
+  {%- comment -%} AEO direct-answer block — first thing humans and AI read {%- endcomment -%}
+  <section style="max-width:860px;margin:14px 0 10px;padding:16px 18px;border:1px solid rgba(200,154,14,.3);border-radius:14px;background:rgba(200,154,14,.05)">
+    <p style="margin:0;line-height:1.9;font-weight:700">{{ ps_answer }}</p>
+    <p style="margin:8px 0 0;color:var(--txt3);font-size:12px;font-weight:700" dir="ltr">{{ ps_mirror }}</p>
+  </section>
+
+  <nav aria-label="محتويات الصفحة" style="max-width:860px;display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px">
+    <a class="chip" href="#products">القطع المتوفرة</a>
+    <a class="chip" href="#proof">علاش Lbass</a>
+    <a class="chip" href="#buying-help">القياس والحالة</a>
+    <a class="chip" href="#faq">أسئلة شائعة</a>
+    <a class="chip" href="#related">صفحات مرتبطة</a>
+  </nav>
+
+  <p style="max-width:820px;color:var(--txt2);line-height:1.9;margin:12px 0 20px">{{ ps_intro }}</p>
+
+  {%- comment -%} Dynamic products — available only, no hard-coded IDs {%- endcomment -%}
+  {%- assign ps_terms = ps_filter | split: ',' -%}
+  {%- assign ps_shown = 0 -%}
+  {%- if ps_mode == 'guide' -%}
+  <h2 id="products" style="margin:8px 0 4px;scroll-margin-top:100px">ابدا من هنا — قطع متوفرة دابا 👇</h2>
+  <p style="color:var(--txt3);font-size:13px;font-weight:800;margin:0 0 14px">طبّق النقط اللي فوق على هاد القطع — صور حقيقية، حالة حسب التأكيد، ومخزون Shopify.</p>
+  {%- else -%}
+  <h2 id="products" style="margin:8px 0 4px;scroll-margin-top:100px">المتوفر دابا 👇</h2>
+  <p style="color:var(--txt3);font-size:13px;font-weight:800;margin:0 0 14px">المخزون وشارة 1/1 كيبانو حسب Shopify فصفحة كل قطعة.</p>
+  {%- endif -%}
+  <div class="grid" data-cro-list data-cro-list-name="pseo_{{ page.handle | escape }}">
+    {%- for p in ps_avail -%}
+      {%- if ps_shown >= 8 -%}{%- break -%}{%- endif -%}
+      {%- if page.handle == 'comment-acheter-second-hand-original-maroc' and p.price < 19900 -%}{%- continue -%}{%- endif -%}
+      {%- if page.handle == 'comment-acheter-second-hand-original-maroc' and p.price > 39900 -%}{%- continue -%}{%- endif -%}
+      {%- assign ps_match = false -%}
+      {%- if ps_mode == 'all' or ps_mode == 'guide' -%}
+        {%- assign ps_match = true -%}
+      {%- elsif ps_mode == 'vendor' -%}
+        {%- assign p_vendor_dc = p.vendor | downcase -%}
+        {%- assign p_tags_dc = p.tags | join: ',' | downcase -%}
+        {%- assign ps_filter_dc = ps_filter | downcase -%}
+        {%- if p_vendor_dc contains ps_filter_dc or p_tags_dc contains ps_filter_dc -%}{%- assign ps_match = true -%}{%- endif -%}
+      {%- else -%}
+        {%- assign p_tags = p.tags | join: ',' | downcase -%}
+        {%- assign p_type = p.product_type | downcase -%}
+        {%- for t in ps_terms -%}
+          {%- if p_tags contains t or p_type contains t -%}{%- assign ps_match = true -%}{%- break -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if ps_match -%}
+        {%- assign ps_shown = ps_shown | plus: 1 -%}
+        {% render 'lbass-look-card', rp: p %}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if ps_shown == 0 -%}
+      <div style="grid-column:1/-1;border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--ink2)">
+        <h3 style="margin-top:0">القطع ديال هاد القسم ما بقاوش متوفرين دابا.</h3>
+        <p style="color:var(--txt2);margin:0 0 14px">الجديد كيجي مع كل Drop. شوف الباقي المتوفر أو سولنا فالواتساب على اللي كتقلب عليه.</p>
+        <a class="btn btn-c" href="{{ routes.all_products_collection_url }}">شوف كل القطع المتوفرة</a>
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} Trust block — proof, not adjectives {%- endcomment -%}
+  <section id="proof" style="margin:26px 0;scroll-margin-top:100px" aria-label="معلومات الثقة">
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <span class="chip">📸 صور حقيقية ديال نفس القطعة</span>
+      <span class="chip">🔍 الحالة والتّيكيت حسب التأكيد</span>
+      <span class="chip">📝 الملاحظات كيبانو ملي تكون مسجلة</span>
+      <span class="chip">📏 قياسات بالسنتيمتر حسب المتوفر</span>
+      <span class="chip">💵 خلّص ملي توصلك (COD)</span>
+      <span class="chip">🚚 مراكش 20 د · خارج مراكش 40 د</span>
+    </div>
+  </section>
+
+  {%- comment -%} Size + condition + COD explainer {%- endcomment -%}
+  <section id="buying-help" style="max-width:860px;margin:0 0 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;scroll-margin-top:100px" aria-label="القياس والحالة والطلب">
+    <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+      <h3 style="margin:0 0 6px">📏 القياس قبل الطلب</h3>
+      <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8">قارن القياسات المكتوبة مع قطعة عندك كتجيك مزيانة — أضمن من label size، خصوصاً فالـ vintage. <a href="/pages/size-guide" style="color:var(--gold2);text-decoration:underline">دليل القياسات كامل</a>.</p>
+    </div>
+    <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+      <h3 style="margin:0 0 6px">🔍 الحالة بلا تجميل</h3>
+      <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8">درجة الحالة وأي ملاحظة معروفة كيبانو ملي يكونو مؤكدين؛ وإذا بقات المعلومة ناقصة كنطلبو التأكيد. <a href="/pages/condition-guide" style="color:var(--gold2);text-decoration:underline">دليل الحالة</a>.</p>
+    </div>
+    <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
+      <h3 style="margin:0 0 6px">💵 كيفاش كيدوز الطلب</h3>
+      <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8">كتطلب → كنأكدو فالواتساب → كتخلص كاش ملي توصلك. التفاصيل فـ <a href="/pages/shipping-and-payment" style="color:var(--gold2);text-decoration:underline">التوصيل والخلاص</a>.</p>
+    </div>
+  </section>
+
+  {%- comment -%} Page FAQ — visible, mirrored in schema below {%- endcomment -%}
+  <section class="coll-faq" id="faq" aria-label="أسئلة" style="max-width:860px;display:grid;gap:8px;margin:0 0 24px;scroll-margin-top:100px">
+    {% case page.handle %}
+    {% when 'sneakers-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف قياس السنيكر الصحيح؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">قيس النعل الداخلي (insole) ديال صباط عندك مريح بالسنتيمتر وقارنو مع القياس المكتوب فصفحة المنتج — أرقام EU/US كيختلفو بين البراندات، السنتيمتر هو الحقيقة.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش السنيكرز أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض سنيكرز branded second-hand أصلية. فصفحة كل منتج كنبيّنو صور الجوج نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مؤكدة.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش نقدر نشوف صور إضافية للنعل والتفاصيل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">نعم — صيفط رابط المنتج فالواتساب وكنصورو ليك النعل، الخياطة، أو أي زاوية بغيتيها قبل ما تطلب.</p></details>
+    {% when 'nike-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش كتشيّكو واش قطعة Nike أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية ديال Nike. أي قطعة فيها شك — ما كتتعرضش.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو كاين من Nike دابا؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">التشكيلة كتبدل مع كل Drop، والمخزون الحقيقي كيبان فصفحة كل منتج. شوف القطع المعروضة فوق أو سولنا فالواتساب على موديل معين.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش الثمن ديال Nike second-hand يستاهل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها.</p></details>
+    {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش خاصني نخلص شي حاجة قبل التوصيل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شحال التوصيل وشحال المدة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">20 درهم داخل مراكش و40 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو الفرق بينكم وبين الفريب العادية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء.</p></details>
+    {% when 'adidas-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش قطع Adidas أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو الفرق بين Adidas و Adidas Originals؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Adidas Originals هي الخط الكلاسيكي/lifestyle (Trefoil, Stan Smith)، وAdidas العادي أكثر رياضي. عندنا الجوج، وكل قطعة مكتوب فيها البراند بالضبط.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف القياس ديال سروال تراك؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">قيس الوسط والطول والـ inseam بالسنتيمتر وقارنهم مع سروال عندك مريح — كنكتبو القياسات فصفحة المنتج ملي كيكونو متوفرين.</p></details>
+    {% when 'jordan-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش كتشيّكو واش قطعة Jordan أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية. Jordan كيتقلّد بزاف، علاش الفحص صارم.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش عندكم صبابط Jordan ولا غير حوايج؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">التشكيلة كتبدل مع كل Drop. شوف القطع المعروضة فوق، وإلا كتقلب على موديل معين (صباط ولا حوايج) سولنا فالواتساب ونعلموك ملي يجي.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش القطعة اللي فالصورة هي اللي غادي توصلني؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">إيه — الصور ديال نفس القطعة المعروضة للبيع، والمخزون الحقيقي كيبان فصفحة المنتج.</p></details>
+    {% when 'jackets-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف قياس الجاكيط؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">قيس الصدر (من إبط لإبط ×2)، الطول (من الكتف للحاشية)، والكم — وقارنهم مع جاكيط عندك مريح. القطع vintage غالباً كتجي أوسع.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف حالة الجاكيط؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">شوف الحالة والتّيكيت والملاحظات المؤكدة فصفحة المنتج، وإذا بغيتي شي زاوية إضافية سولنا فالواتساب قبل الطلب.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش عندكم جاكيطات ديال الشتا؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">عندنا بوفر جاكيط وقطع دافية، وقطع خفيفة للـ mid-season. شوف المتوفر فوق أو سولنا فالواتساب على شنو كتقلب.</p></details>
+    {% when 'cargo-pants-second-hand-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف قياس السروال الصحيح؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">أهم قياس هو الـ inseam (من الملتقى ديال الرجلين حتى للكعب) والوسط. قيسهم على سروال عندك مريح وقارن مع القياسات المكتوبة فصفحة المنتج.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش السراويل أصلية وكيفاش كاتبان الحالة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض سراويل branded second-hand أصلية بصور القطعة نفسها. الحالة والتّيكيت والملاحظات كيبانو غير حسب التأكيد.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش كاين كارغو ولا حتى تراك؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">عندنا الجوج — كارغو (بجيوب) وتراك بانت رياضي. شوف المتوفر فوق، والمخزون فصفحة كل قطعة.</p></details>
+    {% when 'streetwear-original-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو معنى قطعة 1/1؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">1/1 يعني نسخة وحدة فقط فالمخزون — ملي كتباع، ما كتعاودش. اللوك ديالك ما كيتكررش.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش القطع أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض streetwear branded second-hand أصلي بصور القطعة نفسها. معلومات الفحص كاتبان غير ملي تكون مؤكدة.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نلقى قطعة تناسب ستايلي؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">شوف المتوفر فوق، أو استعمل الـ VAULT للقطع النادرة، أو صيفط لينا الستايل اللي كتقلب عليه فالواتساب ونقترحو ليك.</p></details>
+    {% when 'comment-acheter-second-hand-original-maroc' %}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف واش القطعة أصلية قبل ما نشري؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">شوف صور القطعة والتّيكيت وملاحظات الفحص المؤكدة. إلا بقات شي معلومة ناقصة، طلب صور قريبة فالواتساب قبل الشراء.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نتأكد من الحالة والقياس؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">قرا درجة الحالة والعيوب المكتوبين، وقارن القياسات بالسنتيمتر مع قطعة عندك كتجيك مزيانة. هادشي كينقص المفاجآت بزاف.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش كيخدم الدفع عند الاستلام؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كتوصلك الطلبية وكتخلص عند الاستلام حسب طريقة الطلب. راجع التوصيل وسياسة الإرجاع أو تواصل معنا قبل ما تكمل.</p></details>
+    {% endcase %}
+  </section>
+
+  {%- comment -%} Internal linking: parent + adjacent + guides {%- endcomment -%}
+  <nav id="related" style="margin:0 0 26px;scroll-margin-top:100px" aria-label="صفحات مرتبطة">
+    <p style="color:var(--txt3);font-size:12.5px;font-weight:800;margin:0 0 8px">كمّل التصفح 👇</p>
+    <a class="chip" href="{{ ps_parent_url }}">{{ ps_parent_txt }}</a>
+    {% unless page.handle == 'sneakers-second-hand-maroc' %}<a class="chip" href="/pages/sneakers-second-hand-maroc">سنيكرز second-hand فالمغرب</a>{% endunless %}
+    {% unless page.handle == 'nike-second-hand-maroc' %}<a class="chip" href="/pages/nike-second-hand-maroc">Nike second-hand فالمغرب</a>{% endunless %}
+    {% unless page.handle == 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}<a class="chip" href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc">friperie بالدفع عند الاستلام</a>{% endunless %}
+    <a class="chip" href="/collections/adidas-originals">Adidas second-hand</a>
+    <a class="chip" href="/pages/vault" style="border-color:rgba(200,154,14,.4);color:var(--gold)">✦ VAULT</a>
+    <a class="chip" href="/pages/authenticity">كيفاش كنشيّكو الأصالة</a>
+    <a class="chip" href="/pages/size-guide">دليل القياسات</a>
+  </nav>
+
+  {% render 'lbass-bridge-shop' %}
+  {% render 'lbass-bridge-categories' %}
+  {% render 'lbass-bridge-trust' %}
+</div>
+
+{% if page.handle == 'comment-acheter-second-hand-original-maroc' %}
+  <a class="lbpseo-sticky-shop"
+     href="{{ routes.all_products_collection_url }}"
+     data-cro-event="available_now_click"
+     data-cro-label="pseo_buying_guide_sticky"
+     data-source-section="pseo_buying_guide">شوف القطع المتوفرة</a>
+  <style>
+    .lbpseo-sticky-shop{display:none}
+    @media(max-width:700px){
+      .lbpseo-sticky-shop{display:flex;position:fixed;z-index:115;right:14px;left:14px;bottom:14px;min-height:52px;align-items:center;justify-content:center;border-radius:12px;background:var(--gold,#c89a0e);color:#0B0B0C;font-size:14px;font-weight:950;text-decoration:none;box-shadow:0 14px 38px rgba(0,0,0,.28)}
+      body{padding-bottom:76px}
+    }
+  </style>
+{% endif %}
+
+{%- comment -%} Schema: Breadcrumb + CollectionPage/ItemList + FAQ (mirrors visible text) {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}},
+    {"@type": "ListItem", "position": 2, "name": {{ ps_h1 | json }}}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "@id": "{{ shop.url }}{{ page.url }}#page",
+  "name": {{ ps_h1 | json }},
+  "description": {{ ps_answer | strip_html | json }},
+  "url": "{{ shop.url }}{{ page.url }}",
+  "inLanguage": "ar-MA",
+  "isPartOf": {"@id": "{{ shop.url }}/#website"},
+  "about": {"@id": "{{ shop.url }}/#organization"}
+}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","@id":"{{ shop.url }}{{ page.url }}#faq","mainEntity":[
+{% case page.handle %}
+{% when 'sneakers-second-hand-maroc' %}
+{"@type":"Question","name":"كيفاش نعرف قياس السنيكر الصحيح؟","acceptedAnswer":{"@type":"Answer","text":"قيس النعل الداخلي (insole) ديال صباط عندك مريح بالسنتيمتر وقارنو مع القياس المكتوب فصفحة المنتج — أرقام EU/US كيختلفو بين البراندات، السنتيمتر هو الحقيقة."}},
+{"@type":"Question","name":"واش السنيكرز أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض سنيكرز branded second-hand أصلية. فصفحة كل منتج كنبيّنو صور الجوج نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مؤكدة."}},
+{"@type":"Question","name":"واش نقدر نشوف صور إضافية للنعل والتفاصيل؟","acceptedAnswer":{"@type":"Answer","text":"نعم — صيفط رابط المنتج فالواتساب وكنصورو ليك النعل، الخياطة، أو أي زاوية بغيتيها قبل ما تطلب."}}
+{% when 'nike-second-hand-maroc' %}
+{"@type":"Question","name":"كيفاش كتشيّكو واش قطعة Nike أصلية؟","acceptedAnswer":{"@type":"Answer","text":"كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية ديال Nike. أي قطعة فيها شك — ما كتتعرضش."}},
+{"@type":"Question","name":"شنو كاين من Nike دابا؟","acceptedAnswer":{"@type":"Answer","text":"التشكيلة كتبدل مع كل Drop، والمخزون الحقيقي كيبان فصفحة كل منتج. شوف القطع المعروضة فوق أو سولنا فالواتساب على موديل معين."}},
+{"@type":"Question","name":"واش الثمن ديال Nike second-hand يستاهل؟","acceptedAnswer":{"@type":"Answer","text":"كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها."}}
+{% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
+{"@type":"Question","name":"واش خاصني نخلص شي حاجة قبل التوصيل؟","acceptedAnswer":{"@type":"Answer","text":"لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح."}},
+{"@type":"Question","name":"شحال التوصيل وشحال المدة؟","acceptedAnswer":{"@type":"Answer","text":"20 درهم داخل مراكش و40 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال."}},
+{"@type":"Question","name":"شنو الفرق بينكم وبين الفريب العادية؟","acceptedAnswer":{"@type":"Answer","text":"كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء."}}
+{% when 'adidas-second-hand-maroc' %}
+{"@type":"Question","name":"واش قطع Adidas أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج."}},
+{"@type":"Question","name":"شنو الفرق بين Adidas و Adidas Originals؟","acceptedAnswer":{"@type":"Answer","text":"Adidas Originals هي الخط الكلاسيكي/lifestyle (Trefoil, Stan Smith)، وAdidas العادي أكثر رياضي. عندنا الجوج، وكل قطعة مكتوب فيها البراند بالضبط."}},
+{"@type":"Question","name":"كيفاش نعرف القياس ديال سروال تراك؟","acceptedAnswer":{"@type":"Answer","text":"قيس الوسط والطول والـ inseam بالسنتيمتر وقارنهم مع سروال عندك مريح — كنكتبو القياسات فصفحة المنتج ملي كيكونو متوفرين."}}
+{% when 'jordan-second-hand-maroc' %}
+{"@type":"Question","name":"كيفاش كتشيّكو واش قطعة Jordan أصلية؟","acceptedAnswer":{"@type":"Answer","text":"كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية. Jordan كيتقلّد بزاف، علاش الفحص صارم."}},
+{"@type":"Question","name":"واش عندكم صبابط Jordan ولا غير حوايج؟","acceptedAnswer":{"@type":"Answer","text":"التشكيلة كتبدل مع كل Drop. شوف القطع المعروضة فوق، وإلا كتقلب على موديل معين (صباط ولا حوايج) سولنا فالواتساب ونعلموك ملي يجي."}},
+{"@type":"Question","name":"واش القطعة اللي فالصورة هي اللي غادي توصلني؟","acceptedAnswer":{"@type":"Answer","text":"إيه — الصور ديال نفس القطعة المعروضة للبيع، والمخزون الحقيقي كيبان فصفحة المنتج."}}
+{% when 'jackets-second-hand-maroc' %}
+{"@type":"Question","name":"كيفاش نعرف قياس الجاكيط؟","acceptedAnswer":{"@type":"Answer","text":"قيس الصدر (من إبط لإبط ×2)، الطول (من الكتف للحاشية)، والكم — وقارنهم مع جاكيط عندك مريح. القطع vintage غالباً كتجي أوسع."}},
+{"@type":"Question","name":"كيفاش نعرف حالة الجاكيط؟","acceptedAnswer":{"@type":"Answer","text":"شوف الحالة والتّيكيت والملاحظات المؤكدة فصفحة المنتج، وإذا بغيتي شي زاوية إضافية سولنا فالواتساب قبل الطلب."}},
+{"@type":"Question","name":"واش عندكم جاكيطات ديال الشتا؟","acceptedAnswer":{"@type":"Answer","text":"عندنا بوفر جاكيط وقطع دافية، وقطع خفيفة للـ mid-season. شوف المتوفر فوق أو سولنا فالواتساب على شنو كتقلب."}}
+{% when 'cargo-pants-second-hand-maroc' %}
+{"@type":"Question","name":"كيفاش نعرف قياس السروال الصحيح؟","acceptedAnswer":{"@type":"Answer","text":"أهم قياس هو الـ inseam (من الملتقى ديال الرجلين حتى للكعب) والوسط. قيسهم على سروال عندك مريح وقارن مع القياسات المكتوبة فصفحة المنتج."}},
+{"@type":"Question","name":"واش السراويل أصلية وكيفاش كاتبان الحالة؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض سراويل branded second-hand أصلية بصور القطعة نفسها. الحالة والتّيكيت والملاحظات كيبانو غير حسب التأكيد."}},
+{"@type":"Question","name":"واش كاين كارغو ولا حتى تراك؟","acceptedAnswer":{"@type":"Answer","text":"عندنا الجوج — كارغو (بجيوب) وتراك بانت رياضي. شوف المتوفر فوق، والمخزون فصفحة كل قطعة."}}
+{% when 'streetwear-original-maroc' %}
+{"@type":"Question","name":"شنو معنى قطعة 1/1؟","acceptedAnswer":{"@type":"Answer","text":"1/1 يعني نسخة وحدة فقط فالمخزون — ملي كتباع، ما كتعاودش. اللوك ديالك ما كيتكررش."}},
+{"@type":"Question","name":"واش القطع أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض streetwear branded second-hand أصلي بصور القطعة نفسها. معلومات الفحص كاتبان غير ملي تكون مؤكدة."}},
+{"@type":"Question","name":"كيفاش نلقى قطعة تناسب ستايلي؟","acceptedAnswer":{"@type":"Answer","text":"شوف المتوفر فوق، أو استعمل الـ VAULT للقطع النادرة، أو صيفط لينا الستايل اللي كتقلب عليه فالواتساب ونقترحو ليك."}}
+{% when 'comment-acheter-second-hand-original-maroc' %}
+{"@type":"Question","name":"كيفاش نعرف واش القطعة أصلية قبل ما نشري؟","acceptedAnswer":{"@type":"Answer","text":"شوف صور القطعة والتّيكيت وملاحظات الفحص المؤكدة. إلا بقات شي معلومة ناقصة، طلب صور قريبة فالواتساب قبل الشراء."}},
+{"@type":"Question","name":"كيفاش نتأكد من الحالة والقياس؟","acceptedAnswer":{"@type":"Answer","text":"قرا درجة الحالة والعيوب المكتوبين، وقارن القياسات بالسنتيمتر مع قطعة عندك كتجيك مزيانة. هادشي كينقص المفاجآت بزاف."}},
+{"@type":"Question","name":"كيفاش كيخدم الدفع عند الاستلام؟","acceptedAnswer":{"@type":"Answer","text":"كتوصلك الطلبية وكتخلص عند الاستلام حسب طريقة الطلب. راجع التوصيل وسياسة الإرجاع أو تواصل معنا قبل ما تكمل."}}
+{% endcase %}
+]}
+</script>
+{% endif %}

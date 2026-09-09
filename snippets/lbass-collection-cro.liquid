@@ -1,0 +1,246 @@
+{%- comment -%}
+  LBASS — COLLECTION CRO: SHIPPING LINE + IN-STOCK-FIRST + SIZE FILTER (2026-08-10)
+  Self-gating. Rendered unconditionally from snippets/lbass-cro-tracking.liquid;
+  the guard is here, matching the lbass-pseo-links pattern.
+
+  ═══ WHY ═══
+  Report 10 Aug 2026 §12: /collections/صبابط is the best non-home landing page —
+  10 Moroccan sessions, 0 add-to-carts. "Size is the number-one objection on
+  one-of-one footwear." Asks for three things: size filter at top of grid,
+  in-stock items first, and the 20/40 MAD shipping line above the grid.
+
+  ═══ THE ACTUAL BLOCKER WAS DATA, NOT CODE ═══
+  Measured across the 13 products in صبابط: 10 DISTINCT size formats.
+
+      'EU 42'   'EU 43'   'EU 44'   'EU 42.5'   '43'
+      '42 EU'   '44 EU'   'EU 42.5 / US 9 / UK 8'
+      'EU 43 / US W 11 / UK 8.5'      'US M 11 / W 12'
+
+  Reading option values straight into filter chips would render ten chips for
+  four real sizes, with 'EU 43' and '43' as separate buttons. So the value is
+  normalised below: take the text before the first '/', strip 'EU', keep it only
+  if it starts with a digit. That collapses to 42 · 42.5 · 43 · 44, plus one
+  US-only product ('US M 11 / W 12') which has no EU equivalent and is bucketed
+  as "قياسات أخرى" rather than silently dropped or wrongly labelled.
+
+  THE REAL FIX IS IN ADMIN: standardise the Size option to one format ("EU 43").
+  This snippet degrades honestly until then — it never invents a size.
+
+  ═══ WHY THE FILTER IS CLIENT-SIDE ═══
+  A filter is inherently interactive, and Shopify's native filtering needs the
+  storefront filter API wired into templates/collection.liquid (32KB). Showing
+  and hiding already-rendered cards changes nothing about what is crawled: all
+  products stay in the DOM and in the ItemList schema. Cards are matched by
+  data-product-id, which templates/collection.liquid already emits — no
+  dependency on card text or markup order.
+
+  ═══ COLOURS ═══
+  Literal hex, DARK text on the LIGHT bone page (#F2F0EB). Same polarity trap
+  documented in lbass-home-answer.liquid — do not "restore" light text.
+{%- endcomment -%}
+
+{%- if template == 'collection' and collection != blank -%}
+{%- assign digits = '0123456789' -%}
+{%- assign size_pairs = '' -%}
+{%- assign other_ids = '' -%}
+{%- assign brands = '' -%}
+{%- assign min_price = 0 -%}
+{%- assign max_price = 0 -%}
+{%- assign instock = 0 -%}
+
+{%- for p in collection.products -%}
+  {%- assign raw = '' -%}
+  {%- for opt in p.options_with_values -%}
+    {%- assign nm = opt.name | downcase -%}
+    {%- if nm contains 'size' or nm contains 'pointure' or nm contains 'قياس' -%}
+      {%- assign raw = opt.values.first -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if raw == blank -%}{%- assign raw = p.options_with_values.first.values.first -%}{%- endif -%}
+
+  {%- assign sz = raw | split: '/' | first | remove: 'EU' | remove: 'eu' | strip -%}
+  {%- assign c0 = sz | slice: 0 -%}
+  {%- if sz != blank and digits contains c0 -%}
+    {%- assign size_pairs = size_pairs | append: p.id | append: '=' | append: sz | append: ';' -%}
+  {%- else -%}
+    {%- assign other_ids = other_ids | append: p.id | append: ';' -%}
+  {%- endif -%}
+
+  {%- if p.available -%}
+    {%- assign instock = instock | plus: 1 -%}
+    {%- unless brands contains p.vendor -%}{%- assign brands = brands | append: p.vendor | append: ';' -%}{%- endunless -%}
+    {%- if min_price == 0 or p.price < min_price -%}{%- assign min_price = p.price -%}{%- endif -%}
+    {%- if p.price > max_price -%}{%- assign max_price = p.price -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<section class="lb-cf" data-lb-cf>
+  <p class="lb-cf-ship">
+    <strong>التوصيل 20 درهم داخل مراكش</strong> · <strong>40 درهم خارج مراكش</strong> · <strong>مجاني من 500 درهم</strong>
+    <span>الخلاص عند الاستلام ولا بـ PayPal · كل قطعة وحدة فقط</span>
+  </p>
+
+  {%- if collection.handle == 'صبابط' and instock > 0 -%}
+  <div class="lb-cf-aeo">
+    <p>
+      صبابط second-hand أصلية فالمغرب، مفحوصة فمراكش.
+      {% if brands != blank %}البراندات المتوفرة دابا: {{ brands | split: ';' | join: '، ' }}.{% endif %}
+      الأثمنة من {{ min_price | money }} حتى {{ max_price | money }}.
+      كل زوج كيجي بقياس وحد وكمية وحدة — ملي كيتباع ما كيتعاودش، والحالة مكتوبة فصفحة المنتج.
+    </p>
+  </div>
+  {%- endif -%}
+
+  <div class="lb-cf-bar" hidden>
+    <span class="lb-cf-label">القياس:</span>
+    <div class="lb-cf-chips" role="group" aria-label="تصفية حسب القياس"></div>
+    <label class="lb-cf-stock">
+      <input type="checkbox" id="lbCfStock"> المتوفر فقط
+    </label>
+    <span class="lb-cf-count" aria-live="polite"></span>
+  </div>
+</section>
+
+<script type="application/json" id="lb-cf-data">
+{"sizes":"{{ size_pairs }}","other":"{{ other_ids }}"}
+</script>
+
+<style>
+.lb-cf{max-width:1180px;margin:0 auto;padding:0 20px}
+.lb-cf-ship{
+  margin:0 0 10px;padding:11px 16px;
+  border:1px solid rgba(200,154,14,.45);border-radius:12px;
+  background:rgba(200,154,14,.08);
+  color:#2E2E31;font-size:13px;font-weight:700;line-height:1.7;letter-spacing:normal;
+}
+.lb-cf-ship strong{color:#6B5307}
+.lb-cf-ship span{display:block;margin-top:3px;color:#5A5A5E;font-size:11.5px}
+.lb-cf-aeo p{
+  margin:0 0 12px;color:#3A3A3C;font-size:12.5px;font-weight:600;
+  line-height:1.85;letter-spacing:normal;
+}
+.lb-cf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px}
+.lb-cf-label{color:#3A3A3C;font-size:12px;font-weight:800;letter-spacing:normal}
+.lb-cf-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lb-cf-chip{
+  border:1px solid rgba(0,0,0,.18);border-radius:999px;background:transparent;
+  color:#1A1A1C;font-size:12px;font-weight:700;padding:5px 13px;cursor:pointer;
+  font-family:inherit;letter-spacing:normal;
+}
+.lb-cf-chip:hover{border-color:rgba(200,154,14,.75)}
+.lb-cf-chip[aria-pressed="true"]{background:#0B0B0C;color:#F2F0EB;border-color:#0B0B0C}
+.lb-cf-stock{display:inline-flex;align-items:center;gap:5px;color:#3A3A3C;font-size:12px;font-weight:700;cursor:pointer}
+.lb-cf-count{color:#5A5A5E;font-size:11.5px;font-weight:700}
+.lb-cf-hidden{display:none!important}
+
+/* In-stock first, no JS required. Sold cards carry .lb-stamp--sold, which
+   templates/collection.liquid already renders.
+   NOTE: do NOT add `display:flex` here. The grid is already a CSS Grid, and
+   `order` applies to grid items exactly as it does to flex items — forcing
+   flex would drop grid-template-columns and collapse the card sizing. */
+.grid > .card{order:1}
+.grid > .card:has(.lb-stamp--sold){order:99}
+
+@media(max-width:767px){
+  .lb-cf{padding:0 14px}
+  .lb-cf-ship{font-size:12.5px;padding:10px 13px}
+}
+</style>
+
+<script>
+(function(){
+  'use strict';
+  if(window.__lbassCollectionCro) return;
+  window.__lbassCollectionCro = true;
+
+  function parseMap(s){
+    var out={};
+    (s||'').split(';').forEach(function(pair){
+      if(!pair) return;
+      var kv=pair.split('=');
+      if(kv.length===2) out[kv[0]]=kv[1];
+    });
+    return out;
+  }
+
+  function init(){
+    var host=document.querySelector('[data-lb-cf]');
+    var grid=document.querySelector('.grid');
+    if(!host||!grid) return;
+
+    /* Server-rendered block lands at the end of <body>; move it above the grid.
+       Content is in the HTML either way — only position is scripted. */
+    if(host.parentNode!==grid.parentNode || host.nextElementSibling!==grid){
+      grid.parentNode.insertBefore(host,grid);
+    }
+
+    var el=document.getElementById('lb-cf-data');
+    if(!el) return;
+    var data={};
+    try{ data=JSON.parse(el.textContent); }catch(e){ return; }
+
+    var sizes=parseMap(data.sizes);
+    var cards=Array.prototype.slice.call(grid.querySelectorAll('.card[data-product-id]'));
+    if(!cards.length) return;
+
+    cards.forEach(function(c){
+      var id=c.getAttribute('data-product-id');
+      c.setAttribute('data-lb-size', sizes[id] || '');
+      c.setAttribute('data-lb-sold', c.querySelector('.lb-stamp--sold') ? '1' : '0');
+    });
+
+    /* Chips only for sizes that exist, ordered numerically. */
+    var present={};
+    cards.forEach(function(c){ var s=c.getAttribute('data-lb-size'); if(s) present[s]=1; });
+    var list=Object.keys(present).sort(function(a,b){ return parseFloat(a)-parseFloat(b); });
+    var hasOther=cards.some(function(c){ return !c.getAttribute('data-lb-size'); });
+    if(list.length<2 && !hasOther) return;
+
+    var chips=host.querySelector('.lb-cf-chips');
+    var bar=host.querySelector('.lb-cf-bar');
+    var count=host.querySelector('.lb-cf-count');
+    var stockBox=host.querySelector('#lbCfStock');
+    var active=null;
+
+    function mk(label,value){
+      var b=document.createElement('button');
+      b.type='button'; b.className='lb-cf-chip'; b.textContent=label;
+      b.setAttribute('aria-pressed','false'); b.setAttribute('data-v',value);
+      b.addEventListener('click',function(){
+        active = (active===value) ? null : value;
+        apply();
+      });
+      chips.appendChild(b);
+    }
+    mk('الكل','');
+    list.forEach(function(s){ mk(s,s); });
+    if(hasOther) mk('قياسات أخرى','__other');
+
+    function apply(){
+      var shown=0, onlyStock=stockBox && stockBox.checked;
+      cards.forEach(function(c){
+        var s=c.getAttribute('data-lb-size');
+        var ok=true;
+        if(active==='__other') ok = !s;
+        else if(active) ok = (s===active);
+        if(ok && onlyStock && c.getAttribute('data-lb-sold')==='1') ok=false;
+        c.classList.toggle('lb-cf-hidden',!ok);
+        if(ok) shown++;
+      });
+      Array.prototype.forEach.call(chips.children,function(b){
+        b.setAttribute('aria-pressed', String((b.getAttribute('data-v')||'')===(active||'')));
+      });
+      count.textContent = shown + ' من ' + cards.length;
+    }
+
+    if(stockBox) stockBox.addEventListener('change',apply);
+    bar.hidden=false;
+    apply();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init,{once:true});
+  } else { init(); }
+})();
+</script>
+{%- endif -%}

@@ -1,0 +1,25 @@
+{%- comment -%}
+  LBASS — COLLECTION CANONICAL SAFETY NOTE (documentation only)
+
+  This snippet is NOT rendered. The live logic remains inline in
+  layout/theme.liquid because render scope cannot update the parent assignment.
+
+  ══ DEFECT FOUND 2026-08-20 ══
+  The override sent /collections/nike and /collections/adidas-originals to
+  /collections/brand-nike and /collections/brand-adidas. Browser verification
+  showed both brand-* targets were not published and returned 404. A canonical
+  must never point to a missing page.
+
+  ══ CURRENT SAFE STATE ══
+  Shopify's canonical_url is used without a cross-collection override. The
+  published /nike and /adidas-originals pages self-canonicalize, and internal
+  links use those working handles.
+
+  ══ REVERSING IT ══
+  Any future merge requires a published destination, equivalent inventory,
+  owner-approved 301 redirects and a sitemap/internal-link update before the
+  canonical changes.
+
+  Do not recreate the old override unless the destination is verified 200 and
+  actually contains the equivalent collection.
+{%- endcomment -%}

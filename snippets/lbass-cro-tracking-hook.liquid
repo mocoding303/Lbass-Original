@@ -1,0 +1,47 @@
+{%- comment -%}
+  LBASS — WHY THE HOMEPAGE BRAND BLOCK IS RENDERED FROM lbass-cro-tracking
+  (documentation only — this snippet is never rendered)
+
+  ══ THE PROBLEM ══
+  templates/index.liquid declares {% layout none %} and emits its own complete
+  HTML document — its own <html>, <head>, <title>, robots meta and footer.
+  Measured 2026-08-05: 548KB rendered, of which the <head> alone is 249KB.
+
+  Consequences, all verified on the live homepage:
+    • layout/theme.liquid does not run on "/" at all
+    • so the four-language entity block (lbass-entity-block) is on EVERY page
+      EXCEPT the highest-authority one
+    • so any <title> / meta description logic added to theme.liquid is inert
+      for the homepage — index.liquid already emitted its own
+    • shop.description is empty, so the homepage description is not coming
+      from Admin either; it is hardcoded in index.liquid
+
+  ══ WHY NOT JUST EDIT index.liquid ══
+  The Admin API has no partial write — changing one line means uploading all
+  226KB back. That is slow, and a single transcription slip silently corrupts
+  a working storefront. Not worth it to insert one render call.
+
+  ══ WHY lbass-cro-tracking IS THE RIGHT HOST ══
+  It is one of the very few snippets rendered at BODY level by BOTH
+  index.liquid and theme.liquid — its own header comment says so, and it is
+  measurably the LAST thing in the homepage body (its </style> closes the
+  document). That makes it the only cheap, server-rendered hook into the
+  homepage.
+
+  Server-rendered matters: the block has to be crawlable. Injecting it with
+  JavaScript would work for Googlebot but is fragile, and content that only
+  exists after JS runs is exactly the pattern this project has been avoiding.
+
+  ══ THE GATE ══
+  {% if template == 'index' %} — on every other page theme.liquid already
+  renders lbass-entity-block in the footer, and two "what is Lbass Original"
+  blocks on one page is padding, not SEO.
+
+  ══ STILL OWED ══
+  The homepage <title> and meta description remain hardcoded in index.liquid
+  and STILL carry no French or English discovery term:
+      "Lbass Original | براند أصلي بثمن يناسبك 🇲🇦"
+  A <title> cannot be injected from body-level Liquid, and rewriting it in JS
+  would be a genuinely bad idea for a title tag. Fixing it requires editing
+  index.liquid. The replacement strings are ready in the owner-action list.
+{%- endcomment -%}

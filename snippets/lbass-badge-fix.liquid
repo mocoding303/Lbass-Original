@@ -1,0 +1,153 @@
+{%- comment -%}
+  LBASS — PRODUCT BADGE SYSTEM (2026-07-31, rev 4)
+
+  WHY REV 1 DID NOTHING. It targeted `.pb` / `.pb-grade` at specificity
+  (0,1,0) and relied on !important. But snippets/lbass-stamp.liquid — the
+  ~49KB token sheet rendered LAST in <head> — already sets
+      .pb, .pb-grade { background:rgba(255,255,255,.94)!important; ... }
+  at the SAME specificity. Between two !important rules of equal weight the
+  LATER sheet wins, and this snippet is rendered early (from
+  lbass-entity-schema, near the top of <head>). So rev 1 lost every time.
+
+  THE FIX: win on SPECIFICITY instead of order. Every rule below is anchored
+  through `.pcard .pbadges` (0,3,0) or `.pcard .pviz .pbadges` (0,4,0), which
+  outrank the token sheet's `.pcard .pb` (0,2,0) no matter what loads when.
+  Do not "simplify" these selectors back to bare classes — that is the bug.
+
+  DESIGN — one plate, two states, over unpredictable photography:
+    .pb-grade / .pdp-grade / .real-badge   ink plate  + bone type
+    .pb-new                                signal red + bone type (nwt only)
+
+  A SOLID ink plate is what survives a pale garment; translucency is what
+  failed there and is deliberately not used. The 1px bone hairline is what
+  survives the OPPOSITE case — a near-black photo such as the Tommy cap —
+  where an unbordered ink plate dissolves into the image. Both failure
+  directions are covered, so the hairline is structural, not decoration.
+{%- endcomment -%}
+<style>
+/* ── holder ───────────────────────────────────────────────────────── */
+.pcard .pbadges,
+.pcard .pviz .pbadges{
+  position:absolute!important; z-index:4!important;
+  top:10px!important; inset-inline-end:10px!important;
+  display:flex!important; flex-direction:column!important;
+  align-items:flex-end!important; gap:5px!important;
+  max-width:calc(100% - 20px)!important;
+  pointer-events:none!important;
+}
+
+/* ── shared plate geometry ────────────────────────────────────────── */
+.pcard .pbadges .pb,
+.pcard .pviz .pbadges .pb,
+.pdp-meta .pdp-grade{
+  display:inline-block!important;      /* inline-block, not flex: ellipsis */
+  font-family:'Tajawal',system-ui,sans-serif!important;
+  font-size:11.5px!important;
+  font-weight:800!important;
+  line-height:1.3!important;
+  letter-spacing:normal!important;     /* Arabic: tracking breaks joining */
+  padding:6px 10px!important;
+  border-radius:0!important;
+  opacity:1!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  max-width:min(74%,190px)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* ── condition: ink plate, bone type ──────────────────────────────── */
+.pcard .pbadges .pb,
+.pcard .pviz .pbadges .pb,
+.pcard .pbadges .pb-grade,
+.pcard .pviz .pbadges .pb-grade{
+  background:#0B0B0C!important;
+  color:#F2F0EB!important;
+  -webkit-text-fill-color:#F2F0EB!important;
+  border:1px solid rgba(242,240,235,.28)!important;
+}
+
+/* ── new with tags: signal red ──────────────────────────────────── */
+.pcard .pbadges .pb-new,
+.pcard .pviz .pbadges .pb-new{
+  background:#BF2E15!important;
+  color:#F2F0EB!important;
+  -webkit-text-fill-color:#F2F0EB!important;
+  border:1px solid rgba(242,240,235,.34)!important;
+}
+
+/* ── PDP buy-panel chip ───────────────────────────────────────── */
+.pdp-meta .pdp-grade{
+  background:#0B0B0C!important;
+  color:#F2F0EB!important;
+  -webkit-text-fill-color:#F2F0EB!important;
+  border:1px solid #0B0B0C!important;
+  max-width:none!important;
+}
+
+/* ── HOMEPAGE "الكولكسيون الكامل" GRID — .real-badge ───────────────
+   THE GREY BOX. templates/index.liquid styles this badge as:
+       .real-badge{ background:rgba(10,10,11,.72); color:var(--cream); }
+   It was written for the ORIGINAL DARK theme, where --cream was #F4EFE6
+   (light type on a dark translucent plate — correct). When the site moved to
+   the light identity, --cream was remapped to #0B0B0C. The rule did not
+   change, but its meaning inverted: ink type on a dark plate, i.e. an
+   unreadable grey box floating over the photo.
+
+   This is why a semantic token name can be more dangerous than a literal:
+   the rule still "reads" correct while rendering backwards. Colours below are
+   stated LITERALLY so no future token remap can invert them again.
+
+   Specificity: index.liquid uses `.real-badge` (0,1,0) and lbass-stamp uses
+   `.real-badge, .vc-badge` (0,1,0). This snippet loads BEFORE both, so it is
+   anchored at (0,3,0) to win on specificity rather than order.
+
+   Position is deliberately NOT overridden — index.liquid pins it with
+   `right:12px` (physical right, which is where it belongs on this grid).
+─────────────────────────────────────────────────────────────── */
+.real-grid .real-card .real-badge,
+.real-card .real-media .real-badge{
+  background:#0B0B0C!important;
+  color:#F2F0EB!important;
+  -webkit-text-fill-color:#F2F0EB!important;
+  border:1px solid rgba(242,240,235,.28)!important;
+  border-radius:0!important;
+  font-family:'Tajawal',system-ui,sans-serif!important;
+  font-size:11.5px!important;
+  font-weight:800!important;
+  line-height:1.3!important;
+  letter-spacing:normal!important;
+  padding:6px 10px!important;
+  opacity:1!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  max-width:min(74%,190px)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+@media (max-width:520px){
+  .pcard .pbadges,
+  .pcard .pviz .pbadges{ top:8px!important; inset-inline-end:8px!important; }
+  .pcard .pbadges .pb,
+  .pcard .pviz .pbadges .pb,
+  .pdp-meta .pdp-grade,
+  .real-grid .real-card .real-badge,
+  .real-card .real-media .real-badge{
+    font-size:11px!important; padding:5px 9px!important;
+    max-width:min(80%,150px)!important;
+  }
+}
+</style>
+
+{%- comment -%}
+  Condition badges are now emitted directly from verified ticket/condition
+  metafields. Tags such as `nwt` and `new` are merchandising labels only and
+  never become customer-facing condition claims at runtime.
+{%- endcomment -%}

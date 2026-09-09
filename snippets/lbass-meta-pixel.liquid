@@ -1,0 +1,34 @@
+{%- comment -%}
+  Meta Pixel — main-window bridge.
+  The Shopify Facebook app loads fbevents.js inside a sandboxed Web Pixel iframe,
+  so window.fbq is never available in the storefront. This snippet loads the SDK
+  directly in the main window so custom event calls (InitiateCheckout, ViewContent,
+  lbass_vault_view) actually reach Meta.
+
+  PageView is NOT fired here — the Shopify app already handles that.
+{%- endcomment -%}
+<script>
+(function(){
+  /* If fbq already exists (e.g. from another script), skip */
+  if (window.fbq) return;
+
+  /* Standard Meta Pixel base code */
+  !function(f,b,e,v,n,t,s){
+    if(f.fbq)return;
+    n=f.fbq=function(){
+      n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
+    };
+    if(!f._fbq) f._fbq=n;
+    n.push=n; n.loaded=!0; n.version='2.0'; n.queue=[];
+    t=b.createElement(e); t.async=!0; t.src=v;
+    s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s);
+  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+  fbq('init', '905499551256322');
+  /* PageView intentionally omitted — Shopify FB app handles it */
+})();
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=905499551256322&ev=PageView&noscript=1"
+/></noscript>

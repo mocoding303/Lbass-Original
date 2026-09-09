@@ -1,0 +1,16 @@
+{% comment %}
+  Preserve Shopify's required crawl rules. Public search and answer-engine
+  crawlers (including GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot and
+  PerplexityBot) inherit the public access in the wildcard group while private
+  and low-value Shopify routes keep the platform's current disallow rules.
+{% endcomment %}
+{% for group in robots.default_groups %}
+{{ group.user_agent }}
+{% for rule in group.rules %}
+{{ rule }}
+{% endfor %}
+{{ group.sitemap }}
+{% endfor %}
+
+# GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot and PerplexityBot are not
+# blocked; they inherit the wildcard rules above.

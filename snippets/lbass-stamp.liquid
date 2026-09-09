@@ -1,0 +1,940 @@
+{% comment %}
+  LBASS ORIGINAL — "1/1 STAMP" design system.
+  Art direction: bone ground · ink type · one red · zero radius.
+  Signature element: the 1/1 die-cut stamp (.psave / .lb-stamp).
+
+  Loaded LAST (after existing theme CSS) so it overrides without editing
+  any Liquid logic, section, cart or checkout markup. Purely additive.
+  Surface 1 of 3: PRODUCT CARD.
+{% endcomment %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Alexandria:wght@700;900&family=Epilogue:wght@400;500;600;700&display=swap">
+
+<style>
+/* ══════════════ TOKENS ══════════════ */
+html:root{
+  /* ground + ink */
+  --lb-bone:#FFFFFF;
+  --lb-bone-2:#F4F2ED;      /* recessed panel */
+  --lb-ink:#0B0B0C;
+  --lb-ink-2:#3A3A3C;       /* secondary text — 9.4:1 on bone */
+  --lb-ink-3:#6B6B6E;       /* tertiary — 4.8:1 on bone, AA */
+  --lb-rule:#0B0B0C;        /* hairlines are ink, not grey */
+  --lb-rule-soft:rgba(11,11,12,.14);
+  /* the one accent */
+  --lb-red:#BF2E15;         /* 5.1:1 on bone · 5.8:1 white-on — AA */
+  --lb-red-deep:#8F1F0D;
+  /* type */
+  --lb-display:'Anton',Impact,sans-serif;
+  --lb-arabic:'Alexandria','Tajawal',system-ui,sans-serif;
+  --lb-body:'Epilogue',system-ui,sans-serif;
+  /* form */
+  --lb-r:0px;
+  --lb-ease:cubic-bezier(.2,.9,.24,1);   /* custom snap — not stock material */
+  --lb-fast:160ms;
+  --lb-med:240ms;
+
+  /* ── LEGACY TOKEN INVERSION ──
+     The old world was dark: --ink* were backgrounds, --cream/--txt* were light
+     text. Flipping the ground would leave every legacy rule invisible
+     (bone text on bone). Rather than chase hundreds of selectors, we invert the
+     inherited variables once — the whole cascade follows. Roles swap cleanly
+     because --ink and --cream were already each other's opposite. */
+  --ink:#FFFFFF;            /* was bg-dark   → now ground */
+  --ink2:#F4F2ED;           /* was card-dark → now recessed panel */
+  --ink3:#EAE7E0;
+  --cream:#0B0B0C;          /* was text-light → now ink text */
+  --txt:#1A1A1C;            /* body text on bone — 15.8:1 */
+  --txt2:#3A3A3C;           /* secondary — 9.4:1 */
+  --txt3:#6B6B6E;           /* tertiary — 4.8:1, AA */
+  --line:rgba(11,11,12,.16);
+  --line2:rgba(11,11,12,.26);
+  --gold:#BF2E15;           /* single accent is now red */
+  --gold2:#8F1F0D;          /* deeper red for text-on-bone contrast */
+  --gold-br:rgba(191,46,21,.42);
+  --gold-dim:rgba(191,46,21,.08);
+  --green:#1F7A44;          /* success stays semantic, darkened for bone */
+  --green2:#186236;
+  --sand:#F4F2ED;
+  --sand2:#EAE7E0;
+  /* hard edges + custom easing replace the inherited soft/stock values */
+  --r-lg:0px; --r-md:0px; --r-sm:0px;
+  --tr:240ms cubic-bezier(.2,.9,.24,1);
+}
+
+/* [hidden] must win over the theme's display rules (cart badge showed "0") */
+[hidden]{ display:none!important; }
+/* gold wordmark → ink on bone ground */
+.brand-logo,.brand-monogram,.foot-logo{ filter:brightness(0); }
+
+/* ══════════════ SHELL — bone ground ══════════════ */
+body{
+  background:var(--lb-bone)!important;
+  color:var(--lb-ink)!important;
+  font-family:var(--lb-body)!important;
+}
+h1,h2,h3{ color:var(--lb-ink)!important;font-family:var(--lb-arabic)!important;font-weight:900!important;text-wrap:balance; }
+h1{ font-size:clamp(30px,7vw,58px)!important;line-height:1.08!important;letter-spacing:-.01em; }
+p,li,span,div{ color:inherit; }
+a{ color:var(--lb-ink); }
+.wrap{ background:transparent; }
+.top{
+  background:var(--lb-bone)!important;
+  border-bottom:1px solid var(--lb-rule)!important;
+  backdrop-filter:none!important;
+}
+.foot{
+  background:var(--lb-bone-2)!important;
+  border-top:1px solid var(--lb-rule)!important;
+  color:var(--lb-ink-2)!important;
+}
+.foot a{ color:inherit;text-decoration:none; }
+.foot a:hover{ color:var(--lb-red)!important; }
+.crumb{ color:var(--lb-ink-3)!important;font-family:var(--lb-body)!important;font-size:12px; }
+.crumb a{ color:var(--lb-ink-2)!important; }
+.lb-cartbtn{ border:1px solid var(--lb-ink)!important;background:transparent!important;color:var(--lb-ink)!important;border-radius:0!important; }
+.lb-cartbtn .lb-bub{ background:var(--lb-red)!important;color:#fff!important;border-radius:0!important; }
+/* category nav strip */
+.lb-catnav{ background:var(--lb-bone)!important;border-bottom:1px solid var(--lb-rule)!important; }
+.lb-catnav a{
+  border:1px solid var(--lb-rule-soft)!important;border-radius:0!important;
+  color:var(--lb-ink-2)!important;font-family:var(--lb-arabic)!important;font-weight:700!important;
+}
+.lb-catnav a:hover{ border-color:var(--lb-ink)!important;color:var(--lb-ink)!important; }
+.lb-catnav a.on{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border-color:var(--lb-ink)!important; }
+.lb-catnav-vault{ border-color:var(--lb-red)!important;color:var(--lb-red)!important; }
+/* generic chips + buttons on bone */
+.chip{ border:1px solid var(--lb-rule-soft)!important;border-radius:0!important;color:var(--lb-ink-2)!important;background:transparent!important;font-family:var(--lb-arabic)!important; }
+.btn{ border-radius:0!important;font-family:var(--lb-arabic)!important;font-weight:900!important; }
+.btn-c{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important; }
+.btn-g{ background:var(--lb-red)!important;color:#fff!important;border:1px solid var(--lb-red)!important; }
+.coll-trust{ background:transparent!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+.ct-pill{ background:transparent!important;border:1px solid var(--lb-rule-soft)!important;border-radius:0!important;color:var(--lb-ink-2)!important;font-family:var(--lb-arabic)!important; }
+/* dark inline-styled panels inherited from the old world → bone */
+.wrap section[style*="var(--ink2)"],
+.wrap div[style*="var(--ink2)"]{ background:var(--lb-bone-2)!important;border-color:var(--lb-rule-soft)!important;color:var(--lb-ink-2)!important; }
+
+/* ══════════════ CARD — all three variants unified ══════════════ */
+.lbqa-wrap,
+.real-grid > a.real-card,
+.grid > .lbqa-wrap{ min-width:0; }
+
+.pcard,
+.real-card,
+.grid .card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  overflow:visible;                     /* stamp may bleed past edge */
+  border:1px solid var(--lb-rule)!important;
+  border-radius:var(--lb-r)!important;
+  background:var(--lb-bone)!important;
+  color:var(--lb-ink)!important;
+  box-shadow:none!important;
+  transform:none!important;
+  transition:box-shadow var(--lb-med) var(--lb-ease),
+             transform var(--lb-med) var(--lb-ease)!important;
+  text-decoration:none;
+}
+/* hard offset shadow on hover — print/sticker feel, not glow */
+@media (hover:hover){
+  .pcard:hover,
+  .real-card:hover,
+  .grid .card:hover{
+    transform:translate(-3px,-3px)!important;
+    box-shadow:6px 6px 0 0 var(--lb-ink)!important;
+    border-color:var(--lb-ink)!important;
+  }
+}
+.pcard:focus-visible,
+.real-card:focus-visible,
+.grid .card:focus-visible{
+  outline:3px solid var(--lb-red)!important;
+  outline-offset:3px!important;
+}
+
+/* image well */
+.pcard .pviz,
+.real-card .real-media,
+.grid .card .card-img{
+  position:relative;
+  aspect-ratio:4/5;
+  overflow:hidden;
+  border-radius:0!important;
+  border-bottom:1px solid var(--lb-rule);
+  background:var(--lb-bone-2)!important;
+}
+.pcard .pviz img,
+.real-card .real-media img,
+.grid .card .card-img img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  transform:none!important;
+  transition:transform 500ms var(--lb-ease)!important;
+}
+@media (hover:hover){
+  .pcard:hover .pviz img,
+  .real-card:hover .real-media img,
+  .grid .card:hover .card-img img{ transform:scale(1.04)!important; }
+}
+
+/* ── SIGNATURE: the 1/1 die-cut stamp ──
+   A rotated red label riding the lower-left edge of the image well, like a
+   lot number stapled to a garment. It encodes the actual inventory fact:
+   one of one. Snaps square on hover. */
+.lb-stamp,
+.pcard .psave{
+  position:absolute;
+  z-index:3;
+  bottom:10px;
+  inset-inline-start:10px;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:54px;height:34px;
+  padding:0 11px;
+  border:1px solid var(--lb-ink)!important;
+  border-radius:0!important;
+  background:var(--lb-red)!important;
+  color:var(--lb-bone)!important;
+  font-family:var(--lb-display)!important;
+  font-size:19px!important;font-weight:400!important;line-height:1!important;
+  letter-spacing:.03em;
+  direction:ltr;
+  transform:rotate(-6deg);
+  transform-origin:center;
+  transition:transform var(--lb-fast) var(--lb-ease);
+  white-space:nowrap;
+  pointer-events:none;
+}
+/* .psave already renders inside .prow, so it stays in flow — same stamp, inline */
+.pcard .psave{ position:static;transform:rotate(-6deg);align-self:center;flex:none; }
+.lb-stamp--sold{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;font-size:15px!important; }
+@media (hover:hover){
+  .grid .card:hover .lb-stamp,
+  .pcard:hover .psave{ transform:rotate(0deg) scale(1.05); }
+}
+
+/* condition / new badges — quiet, ink outline on bone */
+.pcard .pbadges{ position:absolute;z-index:3;top:8px;inset-inline-end:8px;display:flex;flex-direction:column;gap:5px;align-items:flex-end; }
+.pcard .pb{
+  border:1px solid var(--lb-ink)!important;
+  border-radius:0!important;
+  background:var(--lb-bone)!important;
+  color:var(--lb-ink)!important;
+  font-family:var(--lb-arabic);
+  font-size:10.5px;font-weight:700;
+  padding:4px 7px;
+  letter-spacing:0;
+}
+.pcard .pb-new{ background:var(--lb-ink)!important;color:var(--lb-bone)!important; }
+
+/* info block */
+.pcard .pinfo,
+.real-card .real-info,
+.grid .card .card-body{ padding:13px 13px 15px!important;background:var(--lb-bone)!important;display:flex;flex-direction:column;gap:7px; }
+
+.pcard .pinfo-brand,
+.real-card .real-vendor,
+.grid .card .card-vendor{
+  margin:0!important;
+  font-family:var(--lb-display)!important;
+  font-size:11px!important;
+  font-weight:400!important;
+  letter-spacing:.13em!important;
+  text-transform:uppercase;
+  color:var(--lb-red)!important;
+  direction:ltr;
+  text-align:start;
+}
+.pcard .pname,
+.real-card .real-title,
+.grid .card .card-title{
+  margin:0!important;
+  font-family:var(--lb-arabic)!important;
+  font-size:14.5px!important;
+  font-weight:700!important;
+  line-height:1.4!important;
+  color:var(--lb-ink)!important;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.8em;
+}
+.pcard .prow,
+.real-card .real-row{ display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0!important; }
+.pcard .pprice,
+.real-card .real-price,
+.grid .card .card-price{
+  font-family:var(--lb-display)!important;
+  font-size:22px!important;
+  font-weight:400!important;
+  letter-spacing:.01em;
+  color:var(--lb-ink)!important;
+  direction:ltr;
+  font-variant-numeric:tabular-nums;
+  margin:0!important;
+}
+.pcard .pold{ color:var(--lb-ink-3)!important;text-decoration:line-through;font-size:12px;font-family:var(--lb-body)!important; }
+
+/* size chips + meta — spec-sheet tone */
+.pcard .psizes,.grid .card .chip-sz{ display:flex;flex-wrap:wrap;gap:4px;margin:0!important; }
+.pcard .psz,
+.real-card .real-size,
+.grid .card .chip-sz{
+  border:1px solid var(--lb-rule-soft)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--lb-ink-2)!important;
+  font-family:var(--lb-body)!important;
+  font-size:11px!important;font-weight:600!important;
+  padding:3px 7px!important;
+  letter-spacing:.01em;
+}
+.pcard .pmeta-row{
+  display:flex;flex-wrap:wrap;gap:0;margin:0!important;
+  font-family:var(--lb-body);font-size:10.5px;font-weight:600;
+  color:var(--lb-ink-3)!important;letter-spacing:.04em;text-transform:uppercase;
+}
+.pcard .pmeta-row span{ position:relative;padding-inline-end:8px;margin-inline-end:8px; }
+.pcard .pmeta-row span:not(:last-child)::after{
+  content:"";position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);
+  width:1px;height:9px;background:var(--lb-rule-soft);
+}
+.pcard .pdelivery{
+  margin:0!important;font-family:var(--lb-body);font-size:11px;font-weight:600;
+  color:var(--lb-ink-3)!important;
+}
+.pcard .pviz-brand{ color:var(--lb-ink-3)!important;font-family:var(--lb-display);letter-spacing:.1em; }
+
+/* condition chip on collection cards */
+.grid .card .chip-cond{
+  border:1px solid var(--lb-rule-soft)!important;border-radius:0!important;
+  background:transparent!important;color:var(--lb-ink-2)!important;
+  font-family:var(--lb-arabic)!important;font-size:10.5px!important;font-weight:700!important;
+}
+.grid .card .chip-sold{
+  border:1px solid var(--lb-ink)!important;border-radius:0!important;
+  background:var(--lb-ink)!important;color:var(--lb-bone)!important;
+  font-family:var(--lb-arabic)!important;font-size:10.5px!important;font-weight:700!important;
+}
+
+/* ── quick-add: ink slab, red on press ── */
+.lbqa-btn{
+  width:100%;
+  margin-top:0!important;
+  min-height:46px!important;
+  padding:11px 14px!important;
+  border:1px solid var(--lb-ink)!important;
+  border-top:none!important;
+  border-radius:0!important;
+  background:var(--lb-ink)!important;
+  color:var(--lb-bone)!important;
+  font-family:var(--lb-arabic)!important;
+  font-size:13.5px!important;
+  font-weight:900!important;
+  letter-spacing:.01em;
+  gap:0!important;
+  cursor:pointer;
+  transition:background var(--lb-fast) var(--lb-ease),color var(--lb-fast) var(--lb-ease)!important;
+}
+.lbqa-btn .lbqa-en{
+  font-family:var(--lb-display)!important;
+  font-size:8.5px!important;letter-spacing:.24em!important;
+  opacity:.62;font-weight:400!important;
+}
+@media (hover:hover){ .lbqa-btn:hover{ background:var(--lb-red)!important;color:#fff!important; } }
+.lbqa-btn:active{ background:var(--lb-red-deep)!important; }
+.lbqa-btn:focus-visible{ outline:3px solid var(--lb-red)!important;outline-offset:2px!important; }
+.lbqa-btn.lbqa-sold{
+  background:var(--lb-bone-2)!important;color:var(--lb-ink-3)!important;
+  border-color:var(--lb-rule-soft)!important;cursor:not-allowed;
+}
+.lbqa-btn.busy{ opacity:.72; }
+.lbqa-btn.done{ background:var(--lb-red)!important;color:#fff!important; }
+
+/* sold-out cards recede but stay legible */
+.lb-sold .pcard,.lb-sold .card,.grid > .lb-sold{ opacity:1!important; }
+.lb-sold .card-img,.lb-sold .pviz{ filter:grayscale(1) contrast(.96); }
+
+/* ══════════════ motion respect ══════════════ */
+@media (prefers-reduced-motion:reduce){
+  .pcard,.real-card,.grid .card,
+  .lb-stamp,.pcard .psave,.real-card .real-badge,
+  .pcard .pviz img,.real-card .real-media img,.grid .card .card-img img,
+  .lbqa-btn{ transition:none!important; }
+  .pcard:hover,.real-card:hover,.grid .card:hover{ transform:none!important; }
+  .pcard:hover .pviz img,.real-card:hover .real-media img,.grid .card:hover .card-img img{ transform:none!important; }
+}
+
+/* ══════════════ mobile-first sizing ══════════════ */
+@media (max-width:640px){
+  .pcard .pname,.real-card .real-title,.grid .card .card-title{ font-size:13.5px!important; }
+  .pcard .pprice,.real-card .real-price,.grid .card .card-price{ font-size:19px!important; }
+  .lbqa-btn{ min-height:48px!important; }   /* ≥44px tap target */
+  .lb-stamp,.pcard .psave{ min-width:48px;height:30px;font-size:17px!important; }
+}
+/* ══════════════ PDP + HOMEPAGE — hardcoded-dark neutralisation ══════════════
+   Some panels paint dark hex/gradients directly (not via tokens), so the
+   inverted ground left ink text on a dark slab. These map them onto the
+   white world. Structure, copy and behaviour are untouched. */
+.pdp-buy-panel{
+  background:var(--lb-bone)!important;
+  border:1px solid var(--lb-rule)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.pdp-main-viz,.pdp-thumb{ background:var(--lb-bone-2)!important;border-radius:0!important;border-color:var(--lb-rule-soft)!important; }
+.pdp-nav{
+  background:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important;
+  color:var(--lb-ink)!important;border-radius:0!important;
+}
+.pdp-count{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border:none!important;border-radius:0!important;font-family:var(--lb-display);letter-spacing:.08em; }
+/* faint white tints were invisible on a light ground → ink-tinted panels */
+.pdp-mini,.pdp-why,.pdp-selected,.pdp-trio-card,.acc,.pdp-help-row>*{
+  background:var(--lb-bone-2)!important;
+  border:1px solid var(--lb-rule-soft)!important;
+  border-radius:0!important;
+}
+.pdp-name{ font-family:var(--lb-display)!important;color:var(--lb-ink)!important;letter-spacing:-.01em; }
+.pdp-brand{ color:var(--lb-red)!important;font-family:var(--lb-display)!important;letter-spacing:.14em!important; }
+.pdp-price{ font-family:var(--lb-display)!important;color:var(--lb-ink)!important;font-variant-numeric:tabular-nums; }
+.pdp-grade,.pdp-fit{ background:var(--lb-bone-2)!important;color:var(--lb-ink-2)!important;border:1px solid var(--lb-rule-soft)!important;border-radius:0!important; }
+.pdp-stock{ color:var(--lb-red)!important;font-weight:900; }
+.pdp-emo-line{ color:var(--lb-ink-2)!important; }
+.pdp-cart,#pdpAdd{
+  background:var(--lb-ink)!important;color:var(--lb-bone)!important;
+  border:1px solid var(--lb-ink)!important;border-radius:0!important;
+  font-family:var(--lb-arabic)!important;font-weight:900!important;
+}
+.pdp-cart:hover:not(:disabled),#pdpAdd:hover:not(:disabled){ background:var(--lb-red)!important;border-color:var(--lb-red)!important; }
+#pdpAdd:disabled,#pdpAdd:disabled:hover,.pdp-sticky button:disabled,.pdp-sticky button:disabled:hover{
+  background:#D8D2C7!important;border-color:#C2BAAD!important;color:#6B665E!important;
+  opacity:1!important;box-shadow:none!important;cursor:not-allowed!important;
+}
+.pdp-cart:focus-visible,#pdpAdd:focus-visible,.pdp-sticky button:focus-visible,.pdp-sticky a:focus-visible{
+  outline:3px solid var(--lb-red)!important;outline-offset:3px!important;
+}
+.pdp-wa,.dr-wa{ background:var(--lb-bone)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important; }
+.pdp-sticky{ background:var(--lb-bone)!important;border-top:1px solid var(--lb-rule)!important; }
+.pdp-buy-note span{ background:transparent!important;border:1px solid var(--lb-rule-soft)!important;color:var(--lb-ink-2)!important;border-radius:0!important; }
+.sz{ background:var(--lb-bone)!important;border:1px solid var(--lb-rule)!important;color:var(--lb-ink)!important;border-radius:0!important;min-height:44px; }
+.sz.on,.sz[aria-pressed="true"]{ background:var(--lb-ink)!important;color:var(--lb-bone)!important; }
+/* express COD block */
+.pdp-express{ background:var(--lb-bone-2)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important; }
+.pdp-express summary{ color:var(--lb-ink)!important;font-family:var(--lb-arabic)!important; }
+.pdpx-in{ background:var(--lb-bone)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+.pdpx-btn{ background:var(--lb-red)!important;color:#fff!important;border-radius:0!important;font-family:var(--lb-arabic)!important; }
+.pdpx-note{ color:var(--lb-ink-3)!important; }
+/* Judge.me review block (Codex shipped it dark) */
+.lbass-reviews{ background:var(--lb-bone)!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+.lbass-reviews #judgeme_product_reviews,.lbass-reviews .jm-no-reviews-state,.lbass-reviews .jm-review-item{
+  background:var(--lb-bone-2)!important;border-color:var(--lb-rule-soft)!important;border-radius:0!important;
+}
+.lbass-reviews,.lbass-reviews__title,.lbass-reviews__subtitle,.lbass-reviews .jm-text,
+.lbass-reviews .jm-review-content__body,.lbass-reviews .jm-reviewer-info__name{ color:var(--lb-ink)!important; }
+.lbass-reviews__guide,.lbass-reviews__trust,.lbass-reviews .jm-no-reviews-state__text{ color:var(--lb-ink-2)!important; }
+.lbass-reviews__eyebrow{ color:var(--lb-red)!important;font-family:var(--lb-display)!important; }
+.lbass-reviews__topics span{ background:transparent!important;border:1px solid var(--lb-rule-soft)!important;color:var(--lb-ink-2)!important;border-radius:0!important; }
+.lbass-reviews [data-testid="write-review-button"]{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important; }
+.jdgm-write-review-modal__content{ background:var(--lb-bone)!important;color:var(--lb-ink)!important; }
+.jdgm-write-review-modal__title,.jdgm-write-review-modal__field-label{ color:var(--lb-ink)!important; }
+.jdgm-write-review-modal__field-input{ background:var(--lb-bone)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+
+/* ── HOMEPAGE ── */
+.nav,.ann{ background:var(--lb-bone)!important;border-bottom:1px solid var(--lb-rule)!important;backdrop-filter:none!important; }
+.ann{ background:var(--lb-ink)!important;color:var(--lb-bone)!important; }
+.ann *{ color:var(--lb-bone)!important; }
+.nav-a,.icon-b{ color:var(--lb-ink)!important; }
+.icon-b{ border:1px solid var(--lb-ink)!important;border-radius:0!important;background:transparent!important; }
+.nav-wa{ background:var(--lb-red)!important;color:#fff!important;border-radius:0!important;font-family:var(--lb-arabic)!important; }
+.burger i{ background:var(--lb-ink)!important; }
+.hero{ background:var(--lb-bone)!important; }
+.hero-h{ color:var(--lb-ink)!important;font-family:var(--lb-arabic)!important;font-weight:900!important; }
+.hero-h em{ color:var(--lb-red)!important;font-style:normal; }
+.hero-lt{ color:var(--lb-ink-2)!important;font-family:var(--lb-display)!important; }
+.hero-kicker{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border-radius:0!important;border:none!important;font-family:var(--lb-arabic)!important; }
+.sec,.sec-in,.value-reminder,.home-faq,.grade-legend-bg,.vault-section{ background:var(--lb-bone)!important; }
+.kick{ color:var(--lb-red)!important;font-family:var(--lb-display)!important;letter-spacing:.16em!important; }
+.h2{ color:var(--lb-ink)!important;font-family:var(--lb-arabic)!important;font-weight:900!important; }
+.h2 em{ color:var(--lb-red)!important;font-style:normal; }
+.sec-sub,.value-copy,.foot-desc{ color:var(--lb-ink-2)!important; }
+.see-all{ color:var(--lb-ink)!important;border-bottom:2px solid var(--lb-red)!important; }
+.trust-card,.intent-card,.grade-card,.proof-card,.inspect-card,.tp-card,.sell-card,.value-points span,.mini-card{
+  background:var(--lb-bone-2)!important;border:1px solid var(--lb-rule-soft)!important;border-radius:0!important;color:var(--lb-ink-2)!important;
+}
+.trust-card b,.intent-card b,.grade-card b,.inspect-card b,.tp-card b,.proof-card b{ color:var(--lb-ink)!important; }
+.intent-card i{ color:var(--lb-red)!important;font-family:var(--lb-display)!important; }
+.home-faq details{ background:var(--lb-bone-2)!important;border:1px solid var(--lb-rule-soft)!important;border-radius:0!important; }
+.home-faq summary{ color:var(--lb-ink)!important;font-family:var(--lb-arabic)!important; }
+.home-faq details p{ color:var(--lb-ink-2)!important; }
+.lb-answer p{ background:var(--lb-bone-2)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important;color:var(--lb-ink-2)!important; }
+.lb-answer strong{ color:var(--lb-red)!important; }
+.vault-card{ border:1px solid var(--lb-ink)!important;border-radius:0!important;background:var(--lb-bone-2)!important; }
+.vault-card b{ color:var(--lb-bone)!important; }
+.vlt-cta{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important; }
+.btn-gold,.look-all-btn{ background:var(--lb-red)!important;color:#fff!important;border:1px solid var(--lb-red)!important;border-radius:0!important;font-family:var(--lb-arabic)!important; }
+.mmenu{ background:var(--lb-bone)!important;border-inline-start:1px solid var(--lb-rule)!important; }
+.mmenu-a{ color:var(--lb-ink)!important;border-bottom:1px solid var(--lb-rule-soft)!important; }
+.marq,.mq-track,.giant{ color:var(--lb-ink)!important;opacity:.06; }
+.foot-in,.foot-grid{ background:transparent!important; }
+.fs-b{ border:1px solid var(--lb-ink)!important;border-radius:0!important;color:var(--lb-ink)!important; }
+.nl-btn{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border-radius:0!important; }
+.nl-in{ background:var(--lb-bone)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+/* cart drawer on white */
+.lbdr{ background:var(--lb-bone)!important;border-inline-end:1px solid var(--lb-rule)!important; }
+.lbdr-title,.lbdr-it-n,.lbdr-total b{ color:var(--lb-ink)!important; }
+.lbdr-it-m,.lbdr-total span,.lbdr-ship{ color:var(--lb-ink-2)!important; }
+.lbdr-it-img{ border:1px solid var(--lb-rule-soft)!important;border-radius:0!important; }
+.lbdr-btn-g,#lbdrCheckout{ background:var(--lb-red)!important;color:#fff!important;border-radius:0!important; }
+.lbdr-btn-c{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border-radius:0!important; }
+.lbdr-x{ border:1px solid var(--lb-ink)!important;color:var(--lb-ink)!important;border-radius:0!important; }
+.lbqa-sheet-in{ background:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important; }
+.lbqa-sz{ background:var(--lb-bone)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-rule)!important;border-radius:0!important; }
+
+/* ══════════════ HERO — white split: type block | real 1/1 piece ══════════════
+   The old hero was a scroll-scrubbed film behind the type. It looked cinematic
+   but showed no purchasable item, which quietly contradicted the brand's core
+   claim (real photos of the exact piece). The film markup stays in the DOM so
+   the scroll JS keeps its references; it is simply no longer the hero. */
+.hero{
+  background:var(--lb-bone)!important;
+  height:auto!important;min-height:0!important;   /* was 1404px of scroll-scrub runway */
+  padding:0!important;margin:0!important;
+  display:block!important;position:relative!important;
+}
+.hero-sticky{ background:var(--lb-bone)!important;position:relative!important;top:auto!important; }
+.hero::after{ content:none!important; }
+.hero-media,.hero-frames,.hero-video,.hero-poster,#heroFx,.hero-star-bg{
+  display:none!important;
+}
+.hero-sticky{
+  position:relative!important;
+  height:auto!important;min-height:0!important;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:clamp(22px,4vw,44px);
+  align-items:center;
+  max-width:1240px;margin:0 auto;
+  padding:clamp(20px,3.4vw,40px) clamp(16px,4vw,40px) clamp(22px,3vw,40px);
+}
+.hero-in{ position:relative;z-index:1;text-align:start; }
+.hero-h,.hero-h *{ color:var(--lb-ink)!important; }
+.hero-h{ font-family:var(--lb-arabic)!important;font-weight:900!important;
+  font-size:clamp(38px,7.4vw,88px)!important;line-height:.96!important;letter-spacing:-.025em;margin:10px 0 0!important; }
+.hero-h em{ color:var(--lb-red)!important;font-style:normal; }
+.hero-lt{ color:var(--lb-ink-3)!important;font-family:var(--lb-display)!important;
+  letter-spacing:.18em!important;font-size:clamp(9.5px,1vw,11.5px)!important;margin:14px 0 0!important;line-height:1.5; }
+.hero-lt+.hero-lt{ margin-top:2px!important;opacity:.72; }
+.hero-sub{ color:var(--lb-ink-2)!important;max-width:46ch;font-size:clamp(13.5px,1.4vw,15px)!important;
+  line-height:1.7!important;margin:14px 0 18px!important;padding-top:14px;border-top:1px solid var(--lb-rule-soft); }
+.hero-kicker{
+  display:inline-block;background:var(--lb-ink)!important;color:var(--lb-bone)!important;
+  border:none!important;border-radius:0!important;font-family:var(--lb-arabic)!important;
+  font-weight:900!important;font-size:12px!important;padding:8px 14px!important;letter-spacing:0;
+}
+.hero-ctas{ display:flex;flex-wrap:wrap;gap:10px; }
+.hero .btn-gold{ background:var(--lb-red)!important;color:#fff!important;border:1px solid var(--lb-red)!important;border-radius:0!important;min-height:52px;display:inline-flex;align-items:center; }
+.hero .btn-line{ background:transparent!important;color:var(--lb-ink)!important;border:1px solid var(--lb-ink)!important;border-radius:0!important;min-height:52px;display:inline-flex;align-items:center; }
+.hero-proof{ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:18px;border-top:1px solid var(--lb-rule); }
+.hp-item{ padding:10px 12px;border-bottom:1px solid var(--lb-rule-soft); }
+.hp-item:nth-child(odd){ border-inline-end:1px solid var(--lb-rule-soft); }
+.hp-num{ font-family:var(--lb-display)!important;font-size:15px!important;color:var(--lb-red)!important;letter-spacing:.12em; }
+.hp-lbl{ color:var(--lb-ink-2)!important;font-size:11.5px!important;font-weight:600;line-height:1.5;margin-top:3px; }
+.hero-scroll{ display:none!important; }
+
+/* the real piece */
+.hero-drop{
+  position:relative;display:block;text-decoration:none;
+  border:1px solid var(--lb-ink);background:var(--lb-bone);
+  transition:transform var(--lb-med) var(--lb-ease),box-shadow var(--lb-med) var(--lb-ease);
+}
+@media (hover:hover){ .hero-drop:hover{ transform:translate(-4px,-4px);box-shadow:8px 8px 0 0 var(--lb-ink); } }
+.hero-drop:focus-visible{ outline:3px solid var(--lb-red);outline-offset:3px; }
+.hero-drop-img{ position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--lb-bone-2);border-bottom:1px solid var(--lb-ink); }
+.hero-drop-img img{ width:100%;height:100%;object-fit:cover;display:block;transition:transform 600ms var(--lb-ease); }
+@media (hover:hover){ .hero-drop:hover .hero-drop-img img{ transform:scale(1.04); } }
+.hero-drop-info{ display:grid;gap:5px;padding:14px 15px 16px; }
+.hero-drop-kick{ font-family:var(--lb-display);font-size:10.5px;letter-spacing:.2em;color:var(--lb-red); }
+.hero-drop-brand{ font-family:var(--lb-display);font-size:12px;letter-spacing:.14em;color:var(--lb-ink-2);direction:ltr; }
+.hero-drop-name{ font-family:var(--lb-arabic);font-weight:700;font-size:15px;color:var(--lb-ink);line-height:1.4; }
+.hero-drop-row{ display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:2px; }
+.hero-drop-row b{ font-family:var(--lb-display);font-weight:400;font-size:24px;color:var(--lb-ink);direction:ltr;font-variant-numeric:tabular-nums; }
+.hero-drop-go{ font-family:var(--lb-arabic);font-weight:900;font-size:13px;color:var(--lb-red); }
+
+@media (min-width:900px){
+  .hero-sticky{
+    grid-template-columns:1.2fr .8fr;gap:clamp(30px,4.4vw,56px);
+    min-height:calc(100svh - 118px);align-content:center;
+  }
+  .hero-drop{ max-width:330px;margin-inline-start:auto; }
+  /* headline sized so the CTA + proof row clear the fold on a laptop */
+  .hero-h{ font-size:clamp(44px,5.1vw,66px)!important; }
+  .hero-sub{ margin:12px 0 16px!important;padding-top:12px; }
+  .hero-kicker{ font-size:11px!important;padding:7px 12px!important; }
+  .hero-proof{ margin-top:16px; }
+  .hp-item{ padding:9px 10px; }
+  .hero-proof{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .hp-item:nth-child(odd){ border-inline-end:none; }
+  .hp-item:not(:last-child){ border-inline-end:1px solid var(--lb-rule-soft); }
+}
+@media (prefers-reduced-motion:reduce){
+  .hero-drop,.hero-drop-img img{ transition:none!important; }
+  .hero-drop:hover{ transform:none!important; }
+  .hero-drop:hover .hero-drop-img img{ transform:none!important; }
+}
+
+/* ── detector fixes on inherited code ──
+   Bounce/elastic easing overshoots and reads dated; the committed motion is a
+   single snap curve. The custom cursor animated width/height (layout thrash) —
+   same visual via transform. */
+.cursor{ transition:transform 200ms var(--lb-ease),opacity 200ms var(--lb-ease),background 200ms var(--lb-ease)!important; }
+.cursor.hover{ transform:scale(1.6); }
+
+/* ── WhatsApp CTA — it had gone white-on-white and read as dead ──
+   WhatsApp green carries its own recognition; keep it the one green on the page. */
+.pdp-wa,.dr-wa,#lbdrWa{
+  display:flex!important;align-items:center;justify-content:center;gap:9px;
+  width:100%!important;box-sizing:border-box;
+  min-height:54px!important;padding:15px 18px!important;
+  border:1px solid #0E7A5F!important;border-radius:0!important;
+  background:#128C7E!important;color:#fff!important;      /* 4.6:1 with white — AA */
+  font-family:var(--lb-arabic)!important;font-weight:900!important;
+  font-size:15px!important;line-height:1.2!important;text-decoration:none!important;
+  cursor:pointer;
+  transition:background var(--lb-fast) var(--lb-ease),transform var(--lb-fast) var(--lb-ease)!important;
+}
+.pdp-wa::before,#lbdrWa::before{ content:"";width:19px;height:19px;flex:none;
+  background:#fff;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.5.4.1.1.1.7-.1 1.3Z'/></svg>") center/contain no-repeat;
+          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.2 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.8.8 1.9.1.1.1.3 0 .5-.1.2-.1.3-.3.5l-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.5.4.1.1.1.7-.1 1.3Z'/></svg>") center/contain no-repeat; }
+@media (hover:hover){ .pdp-wa:hover,.dr-wa:hover,#lbdrWa:hover{ background:#0E7A5F!important;transform:translateY(-1px); } }
+.pdp-wa:active,#lbdrWa:active{ transform:translateY(0); }
+.pdp-wa:focus-visible,#lbdrWa:focus-visible{ outline:3px solid var(--lb-ink)!important;outline-offset:3px!important; }
+@media (prefers-reduced-motion:reduce){ .pdp-wa,.dr-wa,#lbdrWa{ transition:none!important; } .pdp-wa:hover{ transform:none!important; } }
+
+/* PDP hierarchy: Shopify Add to Cart stays primary; WhatsApp is supportive. */
+.pdp-buy-panel .pdp-wa{
+  min-height:50px!important;padding:13px 17px!important;
+  background:transparent!important;color:#0E7A5F!important;
+  border-color:#0E7A5F!important;font-size:14.5px!important;
+}
+.pdp-buy-panel .pdp-wa::before{ background:#0E7A5F!important; }
+@media (hover:hover){
+  .pdp-buy-panel .pdp-wa:hover{ background:#0E7A5F!important;color:#fff!important; }
+  .pdp-buy-panel .pdp-wa:hover::before{ background:#fff!important; }
+}
+.pdp-sticky .pdp-sticky-add{ background:var(--lb-ink)!important;color:var(--lb-bone)!important;border:1px solid var(--lb-ink)!important; }
+.pdp-sticky .pdp-sticky-wa{ width:50px!important;padding:0!important;background:#128C7E!important;color:#fff!important;border:1px solid #0E7A5F!important; }
+@media (prefers-reduced-motion:reduce){
+  .pdp-cart::after{ display:none!important; }
+  .pdp-sticky{ transition:none!important; }
+}
+
+/* ── hero proof chips + honest scarcity + 3-piece stack ── */
+.hero-chips{ display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:14px 0 0!important;padding:0!important; }
+.hero-chips li{
+  border:1px solid var(--lb-rule-soft);border-radius:0;
+  padding:6px 10px;font-family:var(--lb-arabic);font-weight:800;
+  font-size:11.5px;line-height:1.2;color:var(--lb-ink-2);white-space:nowrap;
+}
+.hero-chips li:first-child{ background:var(--lb-red);border-color:var(--lb-red);color:#fff;font-family:var(--lb-display);letter-spacing:.04em; }
+.hero-scarce{ margin:10px 0 0!important;font-family:var(--lb-arabic);font-weight:800;font-size:12.5px;color:var(--lb-ink-3)!important;line-height:1.6; }
+
+.hero-stack{ display:grid;gap:8px;align-content:start; }
+.hero-mini{
+  display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:11px;
+  padding:8px;border:1px solid var(--lb-rule-soft);background:var(--lb-bone);
+  text-decoration:none;min-height:60px;
+  transition:border-color var(--lb-fast) var(--lb-ease),transform var(--lb-fast) var(--lb-ease);
+}
+@media (hover:hover){ .hero-mini:hover{ border-color:var(--lb-ink);transform:translateX(-3px); } }
+.hero-mini:focus-visible{ outline:3px solid var(--lb-red);outline-offset:2px; }
+.hero-mini img{ width:56px;height:56px;object-fit:cover;display:block;border:1px solid var(--lb-rule-soft); }
+.hero-mini-txt{ display:grid;gap:1px;min-width:0; }
+.hero-mini-brand{ font-family:var(--lb-display);font-size:9.5px;letter-spacing:.16em;color:var(--lb-red);direction:ltr; }
+.hero-mini-name{ font-family:var(--lb-arabic);font-weight:700;font-size:12.5px;color:var(--lb-ink);
+  line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; }
+.hero-mini-meta{ display:grid;justify-items:end;gap:2px; }
+.hero-mini-meta b{ font-family:var(--lb-display);font-weight:400;font-size:15px;color:var(--lb-ink);direction:ltr;font-variant-numeric:tabular-nums; }
+.hero-mini-11{ font-family:var(--lb-display);font-size:9.5px;color:#fff;background:var(--lb-red);padding:1px 5px;letter-spacing:.04em; }
+@media (prefers-reduced-motion:reduce){ .hero-mini{ transition:none!important; } .hero-mini:hover{ transform:none!important; } }
+@media (min-width:900px){ .hero-stack{ max-width:330px;margin-inline-start:auto; } .hero-drop{ max-width:none!important; } }
+
+/* The compact chips carry the same four claims as .hero-proof in a fraction of
+   the height. Keeping both repeated the pitch twice above the fold, so the
+   verbose grid retires here — the detail still lives in the trust strip and the
+   6-point inspection section further down the page. */
+.hero-proof{ display:none!important; }
+.hero-scarce{ margin-bottom:2px!important; }
+
+/* ══════════ HERO — premium polish pass ══════════
+   Fewer competing weights, more air, one dominant action. */
+.hero-kicker{
+  background:transparent!important;color:var(--lb-ink-2)!important;
+  border:1px solid var(--lb-rule-soft)!important;
+  font-family:var(--lb-display)!important;font-weight:400!important;
+  font-size:10.5px!important;letter-spacing:.2em!important;
+  padding:7px 13px!important;
+}
+.hero-h{ margin:18px 0 0!important; }
+.hero-lt{ margin-top:16px!important; }
+.hero-sub{
+  max-width:44ch!important;font-size:clamp(14px,1.45vw,15.5px)!important;
+  line-height:1.72!important;color:var(--lb-ink-2)!important;
+  margin:16px 0 22px!important;padding-top:16px!important;
+}
+/* one dominant action; the secondary reads as a quiet link-button */
+.hero-ctas{ gap:10px!important;margin-bottom:0!important;align-items:stretch; }
+.hero .btn-gold{
+  padding:0 26px!important;min-height:56px!important;font-size:15.5px!important;
+  letter-spacing:0;box-shadow:0 1px 0 0 var(--lb-red-deep)!important;
+}
+.hero .btn-line{
+  padding:0 20px!important;min-height:56px!important;font-size:14px!important;
+  border-color:var(--lb-rule-soft)!important;color:var(--lb-ink-2)!important;background:transparent!important;
+}
+@media (hover:hover){
+  .hero .btn-gold:hover{ background:var(--lb-red-deep)!important; }
+  .hero .btn-line:hover{ border-color:var(--lb-ink)!important;color:var(--lb-ink)!important; }
+}
+/* chips: quieter, evenly weighted, one red anchor */
+.hero-chips{ gap:5px!important;margin-top:18px!important; }
+.hero-chips li{
+  padding:5px 10px!important;font-size:11px!important;font-weight:700!important;
+  color:var(--lb-ink-3)!important;border-color:var(--lb-rule-soft)!important;
+}
+.hero-chips li:first-child{
+  background:transparent!important;color:var(--lb-red)!important;
+  border-color:var(--lb-red)!important;font-weight:400!important;
+}
+.hero-scarce{ font-size:12px!important;color:var(--lb-ink-3)!important;margin-top:12px!important;font-weight:700!important; }
+
+/* product preview: editorial plate, quiet depth */
+.hero-stack{ gap:10px!important; }
+.hero-drop{ border-color:var(--lb-rule-soft)!important;box-shadow:0 1px 2px rgba(11,11,12,.05); }
+@media (hover:hover){
+  .hero-drop:hover{ transform:translate(-3px,-3px)!important;box-shadow:7px 7px 0 0 var(--lb-ink)!important;border-color:var(--lb-ink)!important; }
+}
+.hero-drop-info{ padding:15px 16px 17px!important;gap:4px!important; }
+.hero-drop-kick{ font-size:9.5px!important;letter-spacing:.22em!important;color:var(--lb-ink-3)!important; }
+.hero-drop-brand{ font-size:11px!important;color:var(--lb-ink-2)!important; }
+.hero-drop-name{ font-size:14.5px!important; }
+.hero-drop-row{ margin-top:6px!important;padding-top:10px;border-top:1px solid var(--lb-rule-soft); }
+.hero-drop-row b{ font-size:22px!important; }
+.hero-drop-go{ font-size:12.5px!important; }
+.hero-mini{ border-color:var(--lb-rule-soft)!important;min-height:64px!important;padding:9px!important; }
+.hero-mini-name{ font-size:12px!important;color:var(--lb-ink-2)!important; }
+
+@media (min-width:900px){
+  .hero-sticky{ gap:clamp(40px,5.5vw,76px)!important; }
+  .hero-h{ font-size:clamp(46px,5.4vw,70px)!important; }
+}
+/* mobile: one strong visual, chips scroll on a single line */
+@media (max-width:899px){
+  .hero-sticky{ gap:24px!important; }
+  .hero-mini{ display:none!important; }          /* one hero piece on small screens */
+  .hero-chips{ flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+               padding-bottom:2px!important; }
+  .hero-chips::-webkit-scrollbar{ display:none; }
+  .hero-chips li{ flex:none; }
+  .hero .btn-gold,.hero .btn-line{ flex:1 1 100%;justify-content:center; }
+}
+
+/* headline: each written line must hold as one visual line, or the break
+   reads as a mistake rather than a decision */
+.hero-h .ln{ display:block; }
+.hero-h .ln>span{ display:inline-block; }
+@media (min-width:900px){
+  .hero-h{ font-size:clamp(38px,4.1vw,54px)!important;line-height:1.0!important; }
+}
+@media (max-width:899px){
+  .hero-h{ font-size:clamp(32px,8.2vw,46px)!important;line-height:1.02!important; }
+}
+
+/* review section inherited the retired gold — bring it onto the red accent */
+.lbass-reviews [data-testid="write-review-button"],
+.lbass-reviews .jdgm-write-rev-link,
+.lbass-reviews .jm-button--primary{
+  background:var(--lb-red)!important;border-color:var(--lb-red)!important;
+  color:#fff!important;border-radius:0!important;min-height:48px!important;
+  font-family:var(--lb-arabic)!important;font-weight:900!important;
+}
+.lbass-reviews [data-testid="write-review-button"]:hover,
+.lbass-reviews .jdgm-write-rev-link:hover{ background:var(--lb-red-deep)!important; }
+.lbass-reviews .jm-star-rating__font-icon,.lbass-reviews .jm-review-item{ --jm-widget-primary-color:var(--lb-red)!important; }
+
+/* size on hero preview cards — spec detail, never louder than the price */
+.hero-drop-row{ display:flex!important;align-items:baseline;gap:9px;flex-wrap:wrap; }
+.hero-drop-size,.hero-mini-size{
+  font-family:var(--lb-body);font-size:11px;font-weight:600;
+  color:var(--lb-ink-3);border:1px solid var(--lb-rule-soft);
+  padding:2px 7px;white-space:nowrap;
+}
+.hero-drop-go{ margin-inline-start:auto; }
+.hero-mini-size{ font-size:10px;padding:1px 6px; }
+
+/* ══════════ LEGIBILITY REPAIR — sections built for the old dark world ══════════
+   Their text tokens inverted to ink, but their grounds stayed dark (gradient /
+   photography), leaving dark-on-dark. Two different correct answers:
+   panels join the white system; photo tiles stay dark and get light type. */
+
+/* 1 · Free-authentication panel → white system */
+.auth-panel{
+  background:var(--lb-bone)!important;
+  border:1px solid var(--lb-rule)!important;border-radius:0!important;
+  padding:clamp(20px,3vw,34px)!important;
+}
+.auth-panel .kick{ color:var(--lb-red)!important; }
+.auth-panel .h2,.auth-panel h2{ color:var(--lb-ink)!important; }
+.auth-panel .h2 em,.auth-panel h2 em{ color:var(--lb-red)!important;font-style:normal; }
+.auth-panel .sec-sub,.auth-panel p{ color:var(--lb-ink-2)!important; }
+/* the 01/02/03 steps inside it */
+.auth-panel .auth-step,.auth-panel ol li,.auth-panel .step{
+  background:var(--lb-bone-2)!important;border:1px solid var(--lb-rule-soft)!important;
+  border-radius:0!important;color:var(--lb-ink-2)!important;
+}
+.auth-panel b,.auth-panel strong{ color:var(--lb-ink)!important; }
+
+/* 2 · Category tiles keep their photography — type goes light over a scrim */
+.cat{ position:relative;border-radius:0!important;overflow:hidden;isolation:isolate; }
+.cat::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,8,9,.30) 0%,rgba(8,8,9,.62) 55%,rgba(8,8,9,.86) 100%);
+}
+.cat-t{ color:#fff!important;text-shadow:0 1px 12px rgba(0,0,0,.5); }
+.cat-d{ color:rgba(255,255,255,.90)!important; }
+.cat-c{ color:#FF7A5E!important;font-weight:800!important; }   /* 5.2:1 on the scrim */
+.cat-idx{ color:rgba(255,255,255,.86)!important; }
+.cat-cta{ color:#fff!important;border-bottom:1px solid rgba(255,255,255,.5); }
+@media (hover:hover){ .cat:hover::after{ background:linear-gradient(180deg,rgba(8,8,9,.24) 0%,rgba(8,8,9,.56) 55%,rgba(8,8,9,.84) 100%); } }
+
+/* ══════════ CONTRAST REPAIR — badges, marquee, hero secondary type ══════════ */
+
+/* 1 · product badges: .pb-grade painted a dark translucent pill, and its
+      color:var(--cream) inverted to ink → dark-on-dark. Global, not .pcard-scoped. */
+.pb,.pb-grade,.pb-new,.pb-best,.pb-drop{
+  border-radius:0!important;
+  font-size:10.5px!important;font-weight:800!important;
+  padding:5px 9px!important;letter-spacing:0!important;
+  backdrop-filter:none!important;
+}
+.pb,.pb-grade{
+  background:rgba(255,255,255,.94)!important;
+  color:var(--lb-ink)!important;
+  border:1px solid var(--lb-ink)!important;
+}
+.pb-new,.pb-best,.pb-drop{
+  background:var(--lb-ink)!important;color:#fff!important;border:1px solid var(--lb-ink)!important;
+}
+.real-badge,.vc-badge{ border-radius:0!important; }
+.vc-badge{ background:rgba(255,255,255,.94)!important;color:var(--lb-ink)!important;border:1px solid var(--lb-ink)!important; }
+.vc-bvault{ background:var(--lb-red)!important;color:#fff!important;border-color:var(--lb-red)!important; }
+
+/* 2 · brand marquee: legible ink on bone, calmer pace, pauses on hover,
+      and stops entirely for reduced-motion users */
+.mq{ background:var(--lb-bone-2)!important;border-block:1px solid var(--lb-rule-soft)!important;padding:13px 0!important; }
+.mq span{ color:var(--lb-ink-2)!important;font-weight:700!important;font-size:12.5px!important;letter-spacing:.16em!important; }
+.mq span .s,.mq i.s{ color:var(--lb-red)!important; }
+.mq-track{ animation-duration:64s!important; }
+.mq:hover .mq-track{ animation-play-state:paused!important; }
+@media (prefers-reduced-motion:reduce){ .mq-track{ animation:none!important;transform:none!important; } }
+
+/* 3 · hero secondary type was washed at --lb-ink-3 */
+.hero-chips li{ color:var(--lb-ink-2)!important;border-color:var(--lb-rule-soft)!important; }
+.hero-scarce{ color:var(--lb-ink-2)!important; }
+.hero-lt{ color:var(--lb-ink-2)!important;opacity:1!important; }
+.hero-lt+.hero-lt{ color:var(--lb-ink-3)!important;opacity:1!important; }
+.hero-drop-kick{ color:var(--lb-ink-2)!important; }
+
+/* ══════════ THE GREY BOX — root cause ══════════
+   .hero-sticky::after was a 46% black scrim built to protect type over the old
+   video hero. The video is gone; the scrim stayed, veiling the white hero and
+   stopping at the 1240px container edge — hence "grey box with white gutters". */
+.hero-sticky::after{ content:none!important;display:none!important; }
+
+/* full-bleed premium ground on the OUTER hero, content stays in a max-width box */
+.hero{
+  width:100%!important;max-width:none!important;
+  background:
+    radial-gradient(115% 80% at 50% 0%, #FFFFFF 0%, #FCFBF8 46%, #F1EEE7 100%)!important;
+  border-bottom:1px solid var(--lb-rule-soft)!important;
+}
+.hero-sticky{
+  max-width:1320px!important;
+  padding-inline:clamp(18px,4vw,48px)!important;
+  background:transparent!important;
+}
+
+/* ── typography: Arabic never gets letter-spacing; it breaks joining forms.
+      Rhythm comes from line-height, word-spacing and margins instead. ── */
+.hero-h,.hero-sub,.hero-chips li,.hero-scarce,.hero-kicker,
+.hero-drop-name,.hero-mini-name,.hero .btn{
+  letter-spacing:normal!important;
+}
+.hero-h{ line-height:1.06!important;word-spacing:.02em; }
+.hero-h .ln+.ln{ margin-top:.06em; }
+.hero-sub{ line-height:1.85!important;word-spacing:.04em;max-width:42ch!important; }
+.hero-scarce{ line-height:1.7!important;word-spacing:.03em; }
+.hero-chips li{ padding:6px 11px!important;line-height:1.5!important; }
+.hero-chips{ gap:6px!important; }
+.hero .btn{ word-spacing:.04em; }
+/* latin/french microcopy keeps its tracking — it reads as a rule, not a word */
+.hero-lt{ letter-spacing:.18em!important;line-height:1.7!important; }
+
+/* breathing room */
+.hero-kicker{ margin-bottom:4px!important; }
+.hero-ctas{ margin-top:22px!important; }
+.hero-chips{ margin-top:20px!important; }
+.hero-scarce{ margin-top:14px!important; }
+.hero-stack{ gap:12px!important; }
+
+@media (max-width:899px){
+  .hero{ background:radial-gradient(140% 60% at 50% 0%, #FFFFFF 0%, #FBFAF7 55%, #F1EEE7 100%)!important; }
+  .hero-sticky{ padding-inline:16px!important; }
+  .hero-h{ line-height:1.08!important; }
+  .hero-sub{ max-width:none!important; }
+}
+
+/* ══════════ HOMEPAGE AUDIT — Arabic typography + section rhythm ══════════ */
+
+/* 1 · Arabic must never be letter-spaced: it breaks the joining forms and is
+      the single biggest readability defect on the page (43 elements affected).
+      Default everything to normal, then re-grant tracking ONLY to Latin-only
+      microcopy, where spacing reads as a rule rather than a word. */
+h1,h2,h3,h4,p,li,span,b,strong,summary,div,button,a,
+.kick,.h2,.sec-sub,.hero-drop-kick,.pmeta-row,.pmeta-row span,
+.pb,.pb-grade,.chip,.ct-pill,.hero-chips li,.vc-title,.cat-t,.cat-d,
+.lbdr-it-n,.lbdr-it-m,.pname,.card-title,.hero-drop-name,.hero-mini-name{
+  letter-spacing:normal;
+}
+/* Latin-only labels keep their tracking */
+.hero-lt,.cat-idx,.lbqa-en,.hp-num,.pinfo-brand,.card-vendor,.real-vendor,
+.hero-drop-brand,.hero-mini-brand,.vc-vendor,.lbdr-it-v,.mq span,.lbass-reviews__eyebrow{
+  letter-spacing:.16em;
+}
+.lb-catnav a,.btn,.lbqa-btn,.lbdr-btn{ letter-spacing:normal; }
+
+/* Arabic rhythm comes from leading + word-spacing instead */
+p,li,.sec-sub,.acc-body,.home-faq p,.coll-faq p{ line-height:1.85;word-spacing:.03em; }
+h2,.h2{ line-height:1.18;word-spacing:.02em; }
+h3{ line-height:1.35; }
+
+/* 2 · Section rhythm: was 0 / 10 / 20 / 52 / 84 / 140px — no system.
+      One fluid scale, so the page breathes consistently top to bottom. */
+.sec{ padding-block:clamp(52px,6.4vw,96px)!important; }
+.sec.inspect,.sec.real-products{ padding-block:clamp(52px,6.4vw,96px)!important; }
+.value-reminder{ padding-block:clamp(40px,4.8vw,68px)!important; }
+.intent-moments{ padding-block:clamp(28px,3.4vw,48px)!important; }
+.lb-answer{ padding-block:clamp(22px,2.6vw,34px)!important; }
+.foot{ padding-block:clamp(52px,6vw,84px) clamp(24px,3vw,40px)!important; }
+.sec-head{ margin-bottom:clamp(20px,2.6vw,34px)!important; }
+.sec-sub{ max-width:56ch;line-height:1.8!important; }
+
+/* consistent control sizing across the page */
+.btn,.lbqa-btn,.lbdr-btn{ min-height:48px; }
+.chip,.ct-pill{ padding:6px 11px!important;line-height:1.5!important; }
+
+@media (max-width:640px){
+  .sec{ padding-block:clamp(40px,9vw,60px)!important; }
+  p,li,.sec-sub{ line-height:1.8; }
+}
+</style>

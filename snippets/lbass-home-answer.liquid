@@ -1,0 +1,47 @@
+{%- comment -%}
+  LBASS — HOMEPAGE TRIM (was: homepage answer block + accessories row)
+  Homepage only. Rendered from snippets/lbass-cro-tracking.liquid, AFTER
+  lbass-home-density.
+
+  ═══ WHAT CHANGED 2026-08-10 (second pass) ═══
+  This file used to render two homepage sections:
+      • a Darija/French/English direct-answer block (.lb-a2)
+      • the "بدا من هنا" accessories starter row (.lb-acc)
+  Both were removed from the homepage on the owner's call — together they made
+  the page feel crowded and less premium. The content was not deleted: it now
+  lives on its own page at /pages/start-here (templates/page.start-here.liquid),
+  reachable from the main menu.
+
+  Nothing about the products or the إكسسوارات collection changed.
+
+  ═══ WHY THIS FILE STILL EXISTS ═══
+  Two rules outlive the markup, and both still matter:
+
+  1. `main > section.lb-answer{display:none}` — templates/index.liquid hardcodes
+     its OWN answer block, and it is materially incomplete: it says only
+     "توصيل للمغرب" / "Morocco delivery" with no prices and no mention of Germany
+     or Marrakech. Stop hiding it and that half-answer reappears on the homepage,
+     which is both crowded AND wrong. Editing it at source means re-uploading all
+     236KB of index.liquid, which is the operation this project avoids.
+     `display:none` also removes it from the flex flow, so no gap is left behind.
+
+  2. The mobile hero height. Report §12 asks for 4+ product cards visible without
+     scrolling on a 375px screen. lbass-home-density sets 76svh; 64svh here keeps
+     products high on the page now that nothing sits between hero and grid.
+
+  ═══ RESULTING HOMEPAGE ORDER ═══
+  Ordering is left entirely to lbass-home-density now — the overrides this file
+  used to declare are gone, since the two sections they positioned are gone:
+      hero → marquee → THE DROP (products) → trust → intent → inspect → …
+{%- endcomment -%}
+
+<style>
+/* 1. keep index.liquid's incomplete built-in answer block suppressed */
+main > section.lb-answer{display:none!important}
+
+/* 2. mobile fold — products stay high now that the hero is the only thing above them */
+@media(max-width:767px){
+  .lbh{min-height:64svh!important}
+  @supports not (min-height:64svh){ .lbh{min-height:64vh!important} }
+}
+</style>
