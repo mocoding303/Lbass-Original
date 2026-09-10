@@ -282,9 +282,20 @@
 .pdp-pay-note{display:block;margin-top:3px;font-size:12px;color:var(--txt3)}
 .pdp-pay-link{font-size:12.8px;font-weight:800;color:var(--gold2);text-decoration:underline;
   text-underline-offset:3px}
-.pdp-prices{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:4px}
+/* One consistent gap between the two prices, at every width, so they read as a
+   pair rather than as two unrelated figures. */
+.pdp-prices{display:flex;align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:4px}
 .pdp-price{font-family:var(--lt);font-weight:700;font-size:clamp(22px,3vw,30px);color:var(--gold);direction:ltr;white-space:nowrap;line-height:1.1}
-.pdp-old{font-family:var(--lt);font-size:15px;color:var(--txt3);text-decoration:line-through;direction:ltr}
+/* THE REFERENCE PRICE. --txt3 on the --ink ground measures 2.89:1, which fails
+   WCAG AA for normal text (4.5:1 minimum) — it was not merely quiet, it was
+   under the readable threshold. --txt2 is the palette's own secondary token and
+   measures 6.40:1, so it reads clearly while staying well below the gold price.
+   Sized to sit at roughly 1.5x under the sale price rather than 2x, per the
+   requested ratio; 2px strikethrough so the line is not thinner than the
+   numerals it crosses; nowrap so a four-digit price cannot break mid-number. */
+.pdp-old{font-family:var(--lt);font-size:19px;font-weight:600;color:var(--txt2);
+  text-decoration:line-through;text-decoration-thickness:2px;text-decoration-skip-ink:none;
+  direction:ltr;white-space:nowrap;font-variant-numeric:tabular-nums}
 /* THE DISCOUNT. Was 11px in a pill at the end of the price row, which is
    smaller than the 15px strikethrough it is supposed to outrank and easy to
    miss entirely. Now a solid clay block on its own line above the price:
@@ -302,15 +313,20 @@
 /* The dirham saving. Clay, matching the .pdp-save pill, so the two read as one
    statement; smaller than both prices so it never competes with the number the
    customer actually pays. */
-.pdp-saved{margin:4px 0 0;font-size:14px;font-weight:900;color:var(--clay);text-align:start;letter-spacing:.01em}
+/* --clay measures 3.88:1 as TEXT on --ink and fails AA; --clay2 is 5.51:1 and
+   passes. (White ON --clay, which is how the discount block uses it, is 5.10:1
+   and was already fine — it is only clay-as-text that failed.) */
+.pdp-saved{margin:4px 0 0;font-size:14px;font-weight:900;color:var(--clay2);text-align:start;letter-spacing:.01em}
 .pdp-saved [dir=ltr]{font-variant-numeric:tabular-nums}
 /* Mobile keeps the discount large. It shrinks less than the price does
    (21 -> 19 against 30 -> 22), because a phone is where it has to be caught in
    about a second and where the price row is narrowest. */
 @media(max-width:600px){
   .pdp-save{font-size:19px;padding:6px 13px;margin-bottom:8px}
-  .pdp-old{font-size:14px}
+  /* The price clamps to 22px here, so 15px holds the ratio at 1.47. */
+  .pdp-old{font-size:15px}
   .pdp-saved{font-size:13.5px}
+  .pdp-prices{gap:10px}
 }
 .pdp-price-helper{margin:6px 0 0;color:var(--txt3);font-size:12px;font-weight:750;line-height:1.65}
 .pdp-price-helper strong{color:var(--txt2)}

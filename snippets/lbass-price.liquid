@@ -113,7 +113,17 @@
   {%- if lb_micro -%}
     <meta itemprop="priceCurrency" content="{{ cart.currency.iso_code }}">
     <meta itemprop="price" content="{{ lb_price | divided_by: 100.0 }}">
-    <span itemprop="availability" content="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}"></span>
+    {%- comment -%}
+      <meta>, not an empty <span>. The container is a flex row with a gap, and
+      an empty span is still a FLEX ITEM: it contributed a full column gap of
+      invisible width between the microdata and the price. Measured at 360px
+      that phantom 6px was exactly what pushed the reference price onto a second
+      line — the price pair fits in 128px of a 130px row, but not in 134px.
+      <meta> carries identical microdata (Google reads the content attribute,
+      not the box) and is display:none in the UA stylesheet, so it is not a flex
+      item at all. The two <meta> tags above were already written this way.
+    {%- endcomment -%}
+    <meta itemprop="availability" content="https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
   {%- endif -%}
 
   <span class="lb-price__now">{{ lb_price | money }}</span>
