@@ -34,6 +34,7 @@
           here; sort, availability, price, brand and size all work. {%- endcomment -%}
       {% render 'lbass-collection-filters', mode: 'search' %}
 
+{% render 'lbass-promo-css' %}
       <div class="grid">
         {% for item in search.results %}
           {% if item.object_type == 'product' %}

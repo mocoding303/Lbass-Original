@@ -45,7 +45,7 @@
       },
       {
         "type": "paragraph",
-        "content": "The discount applies to the CHEAPER of two items, not to the item on screen. Every label must keep its object — «-30% على الثانية», never «-30%» alone, which would read as this piece being 30% off."
+        "content": "The discount applies to a SECOND item, not to the item on screen. Every label must keep its object — «-30% على الثانية», never «-30%» alone, which would read as this piece being 30% off. Which of the two lines Shopify discounts is not documented and is UNVERIFIED — do not claim it in customer copy until you have seen it in a real 2-item cart."
       },
       {
         "type": "text",

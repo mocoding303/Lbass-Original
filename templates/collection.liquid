@@ -279,6 +279,18 @@
   {% assign coll_vendors = collection_product_source | map: 'vendor' | uniq %}
   {% if coll_vendors.size == 1 and coll_vendors.first == collection_display_title %}{% assign is_brand_coll = true %}{% endif %}
 
+{%- comment -%}
+  Price + campaign styles, rendered ONCE per page and only on pages that show
+  product cards. It was briefly rendered from layout/theme.liquid, which loaded
+  it on the cart, blog, articles and every content page too — pages with no card
+  on them. It is card CSS, so it belongs with the cards.
+
+  It stays after snippets/lbass-stamp (rendered in <head> by the layout) because
+  it reuses that sheet's --lb-* tokens and relies on source order, not
+  !important, to sit on top of its `.grid .card .card-price` rules. Body comes
+  after head, so that ordering holds here by construction.
+{%- endcomment -%}
+{% render 'lbass-promo-css' %}
   {% render 'lbass-collection-filters', collection: collection, count_override: collection_display_count %}
 
   <div class="grid" id="lbfGrid">
