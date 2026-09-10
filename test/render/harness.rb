@@ -3,6 +3,7 @@ Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 require 'liquid'
 require 'json'
+require 'zlib'
 
 THEME = File.expand_path('../..', __dir__)  # repo root
 # The standalone gem's LocalFileSystem rejects hyphens in template names.
@@ -48,7 +49,9 @@ def product(handle:, title:, vendor:, price:, cap: nil, tags: [], available: tru
          'has_original_ticket' => has_ticket,
          'condition_notes' => nil, 'visible_defects' => nil }
   lb['promo_eligible'] = promo_eligible unless promo_eligible.nil?
-  { 'id' => handle.hash.abs, 'handle' => handle, 'title' => title, 'vendor' => vendor,
+  # crc32, not String#hash: Ruby seeds String#hash per process, so the stub id
+  # changed on every run and dirtied the generated cards.html each time.
+  { 'id' => Zlib.crc32(handle), 'handle' => handle, 'title' => title, 'vendor' => vendor,
     'url' => "/products/#{handle}", 'price' => price, 'available' => available,
     'tags' => tags, 'variants' => [v], 'selected_or_first_available_variant' => v,
     'featured_image' => { 'src' => "https://img.test/#{handle}.jpg", 'alt' => nil },
