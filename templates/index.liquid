@@ -260,6 +260,14 @@ html.anim .hero-h.in .ln:nth-child(2)>span{transition-delay:.12s}
 .prow{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pprice{font-family:var(--lt);font-weight:700;font-size:17px;color:var(--gold);direction:ltr}
 .pold{font-family:var(--lt);font-size:12.5px;color:var(--txt3);text-decoration:line-through;direction:ltr}
+/* Monetary saving on the two Liquid-rendered homepage rails. Clay rather than
+   gold: gold is the PRICE colour on this page, and the saving must not compete
+   with the number the customer pays. */
+.psaving{margin:3px 0 0;font-family:var(--lt);font-size:12px;font-weight:900;color:var(--clay);direction:rtl;text-align:start;letter-spacing:.01em}
+.psaving [dir=ltr]{font-variant-numeric:tabular-nums}
+/* The "Real" rail has no .psave slot, so the percentage needs its own chip. */
+.real-off{font-family:var(--lt);font-size:11px;font-weight:900;color:var(--clay);direction:ltr;
+  padding:2px 7px;border-radius:30px;border:1px solid var(--clay);font-variant-numeric:tabular-nums}
 .psave{font-size:11px;font-weight:900;color:var(--clay2);direction:ltr}
 .psizes{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
 .psz{font-family:var(--lt);font-size:10.5px;font-weight:500;color:var(--txt2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;direction:ltr}
@@ -1279,10 +1287,23 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
           <div class="pinfo">
             <p class="pinfo-brand">{{ product.vendor | escape }}</p>
             <h3 class="pname">{{ display_title | escape }}</h3>
+            {%- comment -%}
+              The percentage comes from snippets/lbass-sale so this rail cannot
+              disagree with the collection grid or the product page about the
+              same piece. The .psave slot shows the DISCOUNT when there is one
+              and falls back to 1/1 otherwise — the same rule the JS-rendered
+              card at cardHTML() already follows, so the two card paths on this
+              page stay consistent.
+            {%- endcomment -%}
+            {%- assign drop_sale = false -%}
+            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign drop_sale = true -%}{%- endif -%}
+            {%- capture drop_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
+            {%- assign drop_pct = drop_pct | strip -%}
             <div class="prow">
-              <span><span class="pprice">{{ variant.price | money_without_trailing_zeros }}</span>{% if variant.compare_at_price > variant.price %} <span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}</span>
-              {% if drop_one %}<span class="psave">1/1</span>{% endif %}
+              <span><span class="pprice">{{ variant.price | money_without_trailing_zeros }}</span>{% if drop_sale %} <span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}</span>
+              {% if drop_sale and drop_pct != '0' %}<span class="psave">&minus;{{ drop_pct }}%</span>{% elsif drop_one %}<span class="psave">1/1</span>{% endif %}
             </div>
+            {% if drop_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
             <div class="psizes"><span class="psz">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span></div>
             <div class="pmeta-row"><span>{% if drop_one %}قطعة وحدة{% elsif variant.available %}متوفرة دابا{% else %}تباعت{% endif %}</span><span>COD أو PayPal</span></div>
             <p class="pdelivery">🚚 توصيل لكل المغرب</p>
@@ -1352,10 +1373,23 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
           <div class="real-info">
             <p class="real-vendor">{{ product.vendor | escape }}</p>
             <h3 class="real-title">{{ display_title | escape }}</h3>
+            {%- comment -%}
+              This rail rendered the price and nothing else, so a genuinely
+              marked-down piece showed FULL PRICE here and a strikethrough on
+              every other surface. Same class of drift that the collection grid
+              had before the shared card: one catalogue, two answers.
+            {%- endcomment -%}
+            {%- assign real_sale = false -%}
+            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign real_sale = true -%}{%- endif -%}
+            {%- capture real_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
+            {%- assign real_pct = real_pct | strip -%}
             <div class="real-row">
               <span class="real-price">{{ variant.price | money_without_trailing_zeros }}</span>
+              {% if real_sale %}<span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}
+              {% if real_sale and real_pct != '0' %}<span class="real-off">&minus;{{ real_pct }}%</span>{% endif %}
               <span class="real-size">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span>
             </div>
+            {% if real_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
             <p class="pdelivery">{{ real_condition }}</p>
           </div>
         </a>
