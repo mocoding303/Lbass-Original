@@ -1,0 +1,53 @@
+{%- comment -%}
+  ═══ LBASS — SALE PERCENTAGE ═══
+
+  Echoes the discount percentage as a bare integer, or `0` when the piece is not
+  genuinely marked down. Nothing else. No markup, no whitespace.
+
+  ── WHY THIS IS ITS OWN FILE ─────────────────────────────────────────────────
+  Three surfaces print a percentage for the same product: the badge on the card
+  image, the pill in the card price row, and the product page. If each does its
+  own arithmetic they can disagree, and a shopper who sees «‑35%» on the grid
+  and «‑36%» on the product page has been shown two different claims about one
+  price. templates/product.liquid did exactly that until 2026-09-10: it used a
+  plain `divided_by`, which FLOORS on integers, while snippets/lbass-price
+  rounded half-up. On a 300 -> 193 markdown that is 35% against 36%.
+
+  The subtraction (`compare_at - price`) is not here on purpose. It is exact,
+  has no rounding behaviour to get wrong, and callers that need the money value
+  do it inline. Only the part that can drift is centralised.
+
+  ── ROUNDING ─────────────────────────────────────────────────────────────────
+  Liquid's `divided_by` floors on integers, so a naive percentage reads low:
+  31.7% prints as 31. Going through per-mille and adding 5 before the final
+  divide rounds half-up instead, so the number matches what a shopper gets
+  dividing the two printed prices themselves.
+
+  ── ELIGIBILITY ──────────────────────────────────────────────────────────────
+  A percentage exists if and ONLY if Shopify's own `variant.compare_at_price` is
+  set and is greater than the price being charged — a former price the shop
+  actually asked for. The running campaign does not qualify (it discounts the
+  SECOND item, not this one) and neither does `lbass.retail_ref` (what the model
+  costs new, which was never our price). See snippets/lbass-price.liquid.
+
+  ── PARAMETERS ───────────────────────────────────────────────────────────────
+    product   required
+    variant   optional — defaults to selected_or_first_available_variant
+
+  USAGE
+      {%- capture pct %}{% render 'lbass-sale', product: product %}{% endcapture -%}
+      {%- assign pct = pct | strip -%}
+      {%- if pct != '0' -%} ... {%- endif -%}
+{%- endcomment -%}
+{%- liquid
+  assign lbs_v = variant | default: product.selected_or_first_available_variant
+  assign lbs_price = lbs_v.price | default: product.price
+  assign lbs_cap = lbs_v.compare_at_price
+
+  assign lbs_pct = 0
+  if lbs_cap and lbs_cap > lbs_price
+    assign lbs_save = lbs_cap | minus: lbs_price
+    assign lbs_pct = lbs_save | times: 1000 | divided_by: lbs_cap | plus: 5 | divided_by: 10
+  endif
+  echo lbs_pct
+-%}

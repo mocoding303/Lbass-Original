@@ -69,7 +69,12 @@ SETTINGS_ON = {
 SETTINGS_OFF = SETTINGS_ON.merge('promo_enabled' => false)
 
 def render_snippet(name, assigns, settings: SETTINGS_ON)
-  src = File.read("#{THEME}/snippets/#{name}.liquid", encoding: "UTF-8")
+  render_source(File.read("#{THEME}/snippets/#{name}.liquid", encoding: "UTF-8"), assigns, settings: settings)
+end
+
+# Same context, arbitrary Liquid source. Lets a test slice a fragment straight
+# out of a template and execute it, instead of keeping a copy that can rot.
+def render_source(src, assigns, settings: SETTINGS_ON)
   tpl = Liquid::Template.parse(src, error_mode: :strict)
   # Shopify exposes settings/shop/cart/routes as GLOBALS, which survive the
   # isolated scope of {% render %}. In the gem that is static_environments —

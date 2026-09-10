@@ -36,3 +36,27 @@ Two things the standalone gem does differently from Shopify, both handled in
   Shopify allows them and every snippet here uses them. `HyphenFS` widens it.
 
 `money` is approximated as `N DH` to match the storefront's format.
+
+## Promotional pricing
+
+```
+ruby test/render/test_sale_presentation.rb   # one percentage across both surfaces, rounding, no -0%
+ruby test/render/test_pdp_price.rb           # product page agrees with the card, for the same product
+node test/render/test_variant_switch.js      # switching size moves ALL four price elements
+ruby test/render/build_preview.rb && node test/render/measure_sale.js
+```
+
+`measure_sale.js` renders the QA matrix (no discount, the live -10%, a deep
+discount, a long price pair, a sold piece, a sub-1% markdown, and a card
+carrying both the markdown badge and the campaign ribbon) at 360px, 390px and
+1280px in **both** RTL and LTR, then asserts in a real browser that:
+
+* the sale price is strictly larger than the struck price (measured ratio 1.6-1.9x),
+* the markdown badge stays inside its own image and never overlaps the 1/1
+  stamp or the campaign ribbon,
+* the badge stays pinned bottom-right in both directions,
+* no card child overflows its card and the page never scrolls horizontally,
+* `-0%` reaches no surface.
+
+The JS tests need `playwright-core`; run `npm i` in this directory first. They
+use the pre-installed Chromium at `/opt/pw-browsers/`.

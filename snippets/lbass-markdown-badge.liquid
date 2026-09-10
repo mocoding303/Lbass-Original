@@ -1,0 +1,62 @@
+{%- comment -%}
+  ═══ LBASS — MARKDOWN BADGE (card image) ═══
+
+  The piece's OWN discount, stamped on the product image so the promotion is
+  legible before a word is read.
+
+  ── NOT THE CAMPAIGN RIBBON ──────────────────────────────────────────────────
+  snippets/lbass-promo-badge.liquid also puts a percentage on this image, and it
+  means something completely different: «تخفيضات الصيف ‑30% على الثانية» is a
+  discount on a SECOND item. This badge is how much THIS item is reduced.
+
+  They are therefore deliberately NOT styled as one family:
+
+      campaign ribbon   red     top-inline-START
+      markdown badge    ink     top-inline-END
+
+  A card can carry both. When it did — briefly, on 2026-09-09 — two red
+  percentages sat one above the other meaning «this item is 25% off» and «a
+  second item would be 30% off», and a shopper reading quickly takes the bigger
+  number as this item's discount. The colour split is what keeps them apart, so
+  do not "unify" it. The note in snippets/lbass-product-card.liquid records the
+  same incident.
+
+  Red is also already spoken for on this card: the 1/1 stamp, the percentage
+  pill and the savings line are all red. A fourth red element is what makes a
+  card look cheap.
+
+  ── ARIA ─────────────────────────────────────────────────────────────────────
+  aria-hidden. The percentage and the saving are both announced properly by the
+  price block a few elements later; a screen reader should not hear the discount
+  three times.
+
+  ── PARAMETERS ───────────────────────────────────────────────────────────────
+    product   required
+    variant   optional — defaults to selected_or_first_available_variant
+    pct       optional — precomputed percentage, as a string.
+                         Pass it from a card that renders up to 250 times to
+                         avoid a nested render per card; omit it anywhere else
+                         and this file asks snippets/lbass-sale itself.
+
+  USAGE
+      {%- render 'lbass-markdown-badge', product: product -%}
+      {%- render 'lbass-markdown-badge', product: product, pct: card_pct -%}
+{%- endcomment -%}
+{%- liquid
+  assign lbm_pct = pct
+  if lbm_pct == blank
+    capture lbm_pct
+      render 'lbass-sale', product: product, variant: variant
+    endcapture
+  endif
+  assign lbm_pct = lbm_pct | strip
+-%}
+{%- if lbm_pct != '0' and lbm_pct != '' -%}
+  {%- comment -%}
+    <bdi>, not dir="ltr" on the badge itself: direction on the box makes
+    `inset-inline-end` resolve against the BADGE rather than the page, which
+    pinned it to the right-hand corner in RTL too. bdi isolates the numeral run
+    from the surrounding RTL text and leaves the box's logical axis alone.
+  {%- endcomment -%}
+  <span class="lb-md-badge" aria-hidden="true"><bdi dir="ltr">&minus;{{ lbm_pct }}%</bdi></span>
+{%- endif -%}

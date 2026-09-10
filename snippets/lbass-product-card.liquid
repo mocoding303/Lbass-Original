@@ -118,6 +118,16 @@
 {%- assign card_promo = 'no' -%}
 {%- if card_promo_s == '1' -%}{%- assign card_promo = 'yes' -%}{%- endif -%}
 
+{%- comment -%}
+  Markdown percentage, asked ONCE for the same reason. It is printed twice per
+  card — the badge on the image and the pill in the price row — and both are fed
+  from this one answer, so they cannot disagree. Passing it down also keeps this
+  loop at one nested render for the percentage instead of two per card, i.e. 250
+  instead of 500 on a full collection page.
+{%- endcomment -%}
+{%- capture card_pct %}{% render 'lbass-sale', product: product, variant: cv %}{% endcapture -%}
+{%- assign card_pct = card_pct | strip -%}
+
 {%- capture card_alt -%}
 {{ product.vendor }} {{ card_title }} second-hand original in Morocco{% unless product.has_only_default_variant %}, size {{ cv.title }}{% endunless %}{% if card_condition != blank %}, {{ card_condition }}{% endif %}, photographed by Lbass Original
 {%- endcapture -%}
@@ -145,6 +155,7 @@
         <span class="lb-stamp lb-stamp--sold" aria-hidden="true">SOLD</span>
       {%- endif -%}
       {%- if card_promo == 'yes' -%}{%- render 'lbass-promo-badge', product: product, format: 'ribbon', active: card_promo -%}{%- endif -%}
+      {%- render 'lbass-markdown-badge', product: product, pct: card_pct -%}
       {%- if product.featured_image -%}
         <img src="{{ product.featured_image | image_url: width: 500 }}"
              alt="{{ product.featured_image.alt | default: card_alt | strip | escape }}"
@@ -168,7 +179,7 @@
       <div class="card-vendor" itemprop="brand">{{ product.vendor }}</div>
       <div class="card-title" itemprop="name" dir="auto">{{ card_title }}</div>
 
-      {%- render 'lbass-price', product: product, variant: cv -%}
+      {%- render 'lbass-price', product: product, variant: cv, pct: card_pct -%}
       {%- comment -%}
         NO campaign line in the card body — the ribbon on the image already says
         «تخفيضات الصيف −30% على الثانية» and repeating it here caused two

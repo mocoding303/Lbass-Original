@@ -286,6 +286,11 @@
 .pdp-price{font-family:var(--lt);font-weight:700;font-size:clamp(22px,3vw,30px);color:var(--gold);direction:ltr;white-space:nowrap;line-height:1.1}
 .pdp-old{font-family:var(--lt);font-size:15px;color:var(--txt3);text-decoration:line-through;direction:ltr}
 .pdp-save{background:var(--clay);color:#fff;font-weight:900;font-size:11px;padding:4px 10px;border-radius:30px;direction:ltr}
+/* The dirham saving. Clay, matching the .pdp-save pill, so the two read as one
+   statement; smaller than both prices so it never competes with the number the
+   customer actually pays. */
+.pdp-saved{margin:2px 0 0;font-size:13px;font-weight:900;color:var(--clay);text-align:start;letter-spacing:.01em}
+.pdp-saved [dir=ltr]{font-variant-numeric:tabular-nums}
 .pdp-price-helper{margin:6px 0 0;color:var(--txt3);font-size:12px;font-weight:750;line-height:1.65}
 .pdp-price-helper strong{color:var(--txt2)}
 .pdp-condition-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}
@@ -711,16 +716,43 @@
         original currency). The source is shown to the customer: if you cannot
         name one, do not set the price.
       {%- endcomment -%}
-        {% comment %}Only render a genuine Shopify compare-at value; this theme never fabricates one.{% endcomment %}
-        {% if product.selected_or_first_available_variant.compare_at_price and product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price %}
-          {% assign cap = product.selected_or_first_available_variant.compare_at_price %}
-          {% assign cur = product.selected_or_first_available_variant.price %}
-          {% assign diff = cap | minus: cur %}
-          {% assign pct = diff | times: 100 | divided_by: cap %}
-          <span class="pdp-old">{{ cap | money }}</span>
-          <span class="pdp-save">−{{ pct }}%</span>
-        {% endif %}
+        {% comment %}
+          Only render a genuine Shopify compare-at value; this theme never
+          fabricates one.
+
+          The percentage comes from snippets/lbass-sale, NOT from a local
+          `divided_by`. Liquid floors integer division, so the old inline
+          version could print a whole point below the collection card, which
+          rounds half-up: on a 300 -> 193 markdown, 35% here against 36% there.
+          Two numbers for one price is the failure this centralisation exists to
+          prevent. The empty spans are the variant-switch targets — see the
+          size-button handler, which keeps all four in step.
+        {% endcomment %}
+        {% comment %}
+          Re-declared locally although templates/product.liquid:170 already
+          assigns the same thing. This block is 550 lines below that, and it is
+          the one fragment of this template that gets executed on its own by
+          test/render/test_pdp_price.rb. Depending on a distant assignment made
+          the block silently render an EMPTY price with no strikethrough when
+          lifted out — which is also what it would do if that line above ever
+          moved. Idempotent, identical, and it makes the block self-contained.
+        {% endcomment %}
+        {% assign selv = product.selected_or_first_available_variant %}
+        {% assign on_sale = false %}
+        {% if selv.compare_at_price and selv.compare_at_price > selv.price %}{% assign on_sale = true %}{% endif %}
+        {% capture pct %}{% render 'lbass-sale', product: product, variant: selv %}{% endcapture %}
+        {% assign pct = pct | strip %}
+        {% assign diff = selv.compare_at_price | minus: selv.price %}
+        <span class="pdp-old" data-old{% unless on_sale %} hidden{% endunless %}>{% if on_sale %}{{ selv.compare_at_price | money }}{% endif %}</span>
+        <span class="pdp-save" data-savepct{% unless on_sale %} hidden{% endunless %}>{% if on_sale %}−{{ pct }}%{% endif %}</span>
       </div>
+      {%- comment -%}
+        The monetary saving. The percentage answers "how good is this deal", the
+        dirham figure answers "how much do I keep", and shoppers do not convert
+        one into the other in their heads. Rendered outside .pdp-prices so it
+        follows the page's RTL flow while the amount itself stays LTR.
+      {%- endcomment -%}
+      <p class="pdp-saved" data-saved dir="auto"{% unless on_sale %} hidden{% endunless %}>{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr" data-savesum>{% if on_sale %}{{ diff | money }}{% endif %}</span></p>
       {%- if product.metafields.lbass.retail_ref != blank -%}
       <span class="pdp-retail">
         <span class="pdp-retail-m">ثمنو جديد كيسوا ~{{ product.metafields.lbass.retail_ref }} درهم</span>
@@ -799,7 +831,22 @@
         <div class="pdp-selected"><span>القياس المختار</span><b id="pdpSelectedSize">مازال ما تختارش</b></div>
         <div class="pdp-sizes" id="pdpSizes" role="group" aria-label="اختيار القياس">
           {% for variant in product.variants %}
-            <button class="sz" type="button" data-vid="{{ variant.id }}" data-price="{{ variant.price | money }}" data-title="{{ variant.title | escape }}" {% unless variant.available %}disabled aria-disabled="true"{% endunless %} aria-pressed="false">{{ variant.title }}</button>
+            {%- comment -%}
+              Each size carries its OWN compare-at, percentage and saving.
+              Before 2026-09-10 only data-price was carried, so switching size
+              repriced the headline and left the struck price, the percentage
+              and the saving showing the previous variant's numbers. Latent
+              while every product is one-of-one; wrong the moment one is not.
+            {%- endcomment -%}
+            {%- capture vpct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
+            {%- assign vpct = vpct | strip -%}
+            {%- assign vsale = false -%}
+            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign vsale = true -%}{%- endif -%}
+            <button class="sz" type="button" data-vid="{{ variant.id }}" data-price="{{ variant.price | money }}" data-title="{{ variant.title | escape }}"
+              data-cap="{% if vsale %}{{ variant.compare_at_price | money }}{% endif %}"
+              data-pct="{% if vsale %}−{{ vpct }}%{% endif %}"
+              data-save="{% if vsale %}{{ variant.compare_at_price | minus: variant.price | money }}{% endif %}"
+              {% unless variant.available %}disabled aria-disabled="true"{% endunless %} aria-pressed="false">{{ variant.title }}</button>
           {% endfor %}
         </div>
         <input type="hidden" name="id" id="pdpVariantId" value="">
@@ -2002,6 +2049,21 @@
   var vidInput = document.getElementById('pdpVariantId');
   var priceEl  = document.querySelector('[data-price]');
   var priceMob = document.querySelector('[data-price-mobile]');
+  var oldEl    = document.querySelector('[data-old]');
+  var pctEl    = document.querySelector('[data-savepct]');
+  var savedEl  = document.querySelector('[data-saved]');
+  var saveSum  = document.querySelector('[data-savesum]');
+
+  // Repricing the headline without repricing the strikethrough, the percentage
+  // and the saving leaves three elements describing the PREVIOUS variant, which
+  // is a false discount claim on the page. All four move together or none do.
+  function applySale(d){
+    var on = !!(d && d.cap);
+    if (oldEl)   { oldEl.textContent   = on ? d.cap  : ''; oldEl.hidden   = !on; }
+    if (pctEl)   { pctEl.textContent   = on ? d.pct  : ''; pctEl.hidden   = !on; }
+    if (saveSum) { saveSum.textContent = on ? d.save : ''; }
+    if (savedEl) { savedEl.hidden = !on; }
+  }
   var sizeMob  = document.getElementById('pdpStickySize');
   var selectedSize = document.getElementById('pdpSelectedSize');
   var addBtn = document.getElementById('pdpAdd');
@@ -2015,6 +2077,7 @@
       if (vidInput) vidInput.value = btn.dataset.vid;
       if (priceEl  && btn.dataset.price) priceEl.textContent  = btn.dataset.price;
       if (priceMob && btn.dataset.price) priceMob.textContent = btn.dataset.price;
+      applySale(btn.dataset);
       if (sizeMob) sizeMob.textContent = 'القياس ' + btn.textContent.trim();
       if (selectedSize) selectedSize.textContent = btn.dataset.title || btn.textContent.trim();
       if (addBtn){ addBtn.disabled = false; addBtn.textContent = 'زيد للسلة'; addBtn.dataset.idleLabel = 'زيد للسلة'; }

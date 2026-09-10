@@ -50,18 +50,35 @@
   align-items:baseline;
   gap:5px 8px;
 }
-/* .lb-price__now intentionally sets nothing — see header note. */
+/* Off-sale, .lb-price__now sets nothing — it inherits .card-price untouched.
+   ON SALE it takes the lead: bigger than the struck price by a wide margin and
+   heavier, so the number a shopper pays is the first thing the eye lands on.
+   A rule on this child beats the inherited 22px/!important from the parent
+   without needing !important of its own. */
+.lb-price.is-sale .lb-price__now{
+  font-size:26px;
+  line-height:1.05;
+  letter-spacing:0;
+  font-variant-numeric:tabular-nums;
+}
+/* Colour is deliberately NOT changed on sale. The 1/1 stamp, the percentage
+   pill and the savings line are already red on this card; a red price would be
+   the fourth, which is what makes a card look cheap rather than premium. Size
+   and weight carry the hierarchy instead. To make the sale price red anyway,
+   add `color:var(--lb-red,#BF2E15)` here — one line, nothing else changes. */
 .lb-price__was{
   font-family:var(--lb-body,inherit);
   font-size:13px;
   font-weight:600;
   line-height:1.2;
   color:var(--lb-ink-3,#6B6B6E);
+  font-variant-numeric:tabular-nums;
   text-decoration-thickness:1px;
   text-underline-offset:2px;
 }
 .lb-price__off{
   font-family:var(--lb-body,inherit);
+  font-variant-numeric:tabular-nums;
   font-size:11px;
   font-weight:800;
   line-height:1;
@@ -72,15 +89,76 @@
   border:1px solid color-mix(in srgb,var(--lb-red,#BF2E15) 30%,transparent);
 }
 .lb-price__save{
-  margin:0;
+  margin:2px 0 0;
   font-family:var(--lb-body,inherit);
   font-size:11.5px;
   font-weight:800;
   line-height:1.35;
   letter-spacing:.01em;
   color:var(--lb-red,#BF2E15);
-  text-align:start;
+  /* PHYSICAL left, not `start`. This line belongs to the price block, and the
+     price ROW is locked to `direction:ltr` by lbass-stamp, so it sits flush
+     left even on the RTL storefront. With `text-align:start` the saving flushed
+     RIGHT while the two prices above it flushed left — the block zig-zagged and
+     stopped reading as one statement. Left matches the prices it describes.
+     The Arabic word order inside the line is untouched: only the box moves. */
+  text-align:left;
+  unicode-bidi:isolate;
 }
+
+/* Announced-only label for the struck price and the percentage. `<s>` alone
+   tells a screen reader nothing, so without this the two numbers are
+   indistinguishable by ear. Also defined in lbass-collection-filters; the rules
+   are identical, so either order is fine. */
+.lb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ══════════ MARKDOWN BADGE (card image) ══════════ */
+/* THIS piece's discount. Deliberately ink, not red, and on the opposite corner
+   from the campaign ribbon — the two mean different things and must not read as
+   one family. See snippets/lbass-markdown-badge.liquid. Square corners and the
+   display face match the 1/1 stamp's vocabulary without copying its colour. */
+.lb-md-badge{
+  position:absolute;
+  z-index:3;
+  /* PHYSICAL bottom-right, in both directions, and this is deliberate.
+     The image well already has two occupants and they do not agree:
+
+       .lb-stamp   declares `direction:ltr` on ITSELF, so its
+                   `inset-inline-start` resolves to LEFT whatever the page
+                   does — it is pinned bottom-left and never mirrors.
+       .lb-promo-ribbon  has no direction of its own, so it DOES mirror:
+                   top-left in LTR, top-right in RTL.
+
+     That leaves exactly one corner free in both directions: bottom-right.
+     Measured: a logical `inset-inline-end` put this badge bottom-LEFT in RTL,
+     directly on the stamp, and `inset-block-start` put it under the ribbon in
+     LTR once the ribbon wrapped to two lines. Physical offsets are the only
+     placement that collides with neither, and bottom-right sits immediately
+     above the price block, where the eye is already heading. */
+  bottom:10px;
+  right:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-inline-size:46px;
+  padding:5px 9px;
+  border:1px solid var(--lb-ink,#141416);
+  background:var(--lb-ink,#141416);
+  color:var(--lb-bone,#F4EFE6);
+  font-family:var(--lb-display,inherit);
+  font-size:15px;
+  font-weight:700;
+  line-height:1;
+  letter-spacing:.02em;
+  font-variant-numeric:tabular-nums;
+  pointer-events:none;
+}
+/* The numeral run is isolated with <bdi> in the markup rather than by declaring
+   `direction:ltr` here. Same glyph order, but it leaves the box's axis alone —
+   which is how the stamp ended up unable to mirror in the first place. */
+/* A sold piece keeps its badge but stops shouting: the price is no longer an
+   offer anyone can take. */
+.lb-sold .lb-md-badge{opacity:.45}
 
 /* ══════════ CAMPAIGN RIBBON (card image) ══════════ */
 .lb-promo-ribbon{
@@ -177,6 +255,29 @@
   color:var(--txt3,#5E5A55);
 }
 
+/* Under 750px lbass-stamp drops .card-price to 19px, so the on-sale size steps
+   down with it and keeps the same ratio against the struck price. Explicitly
+   restated rather than left to inherit, because the parent rule is !important
+   and the ratio is the whole point of the hierarchy. */
+@media(max-width:749px){
+  .lb-price.is-sale .lb-price__now{font-size:23px}
+  .lb-md-badge{
+    bottom:8px;
+    right:8px;
+    min-inline-size:42px;
+    padding:4px 7px;
+    font-size:13.5px;
+  }
+}
+/* Very narrow phones: the 2-column grid leaves ~150px of card width, and the
+   price row plus a struck price plus a pill will wrap. Let it wrap, but keep
+   the sale price on its own first line so it is never the thing that gets
+   pushed below the fold. */
+@media(max-width:400px){
+  .lb-price.is-sale .lb-price__now{font-size:21px;flex:1 0 100%}
+  .lb-price{gap:3px 6px}
+  .lb-price__off{padding:2px 6px;font-size:10.5px}
+}
 @media(min-width:750px){
   .lb-price__was{font-size:14px}
   .lb-price__save{font-size:12px}

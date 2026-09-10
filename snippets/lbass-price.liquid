@@ -74,12 +74,23 @@
   assign lb_on_sale = false
   if lb_cap and lb_cap > lb_price
     assign lb_on_sale = true
+    comment
+      Exact, no rounding to get wrong, so it stays inline.
+    endcomment
     assign lb_save = lb_cap | minus: lb_price
     comment
-      Per-mille, then round half-up. 6000/18900 = 31.7% -> 32, not 31.
+      The PERCENTAGE is not computed here. snippets/lbass-sale owns it, because
+      the badge on the card image prints the same number and the two must not be
+      able to disagree. `pct` may be passed in by a caller that already asked
+      (the collection card does, once, instead of 250 nested renders).
     endcomment
-    assign lb_pct_x10 = lb_save | times: 1000 | divided_by: lb_cap
-    assign lb_pct = lb_pct_x10 | plus: 5 | divided_by: 10
+    assign lb_pct = pct
+    if lb_pct == blank
+      capture lb_pct
+        render 'lbass-sale', product: product, variant: lb_v
+      endcapture
+    endif
+    assign lb_pct = lb_pct | strip
   endif
 
   assign lb_micro = microdata
@@ -108,8 +119,24 @@
   <span class="lb-price__now">{{ lb_price | money }}</span>
 
   {%- if lb_on_sale -%}
-    <s class="lb-price__was">{{ lb_cap | money }}</s>
-    <span class="lb-price__off">&minus;{{ lb_pct }}%</span>
+    {%- comment -%}
+      `<s>` is not announced by most screen readers, so without these labels a
+      non-sighted shopper hears "494 dirhams 549 dirhams minus 10 percent" and
+      has no way to tell which number they pay. The labels are the only thing
+      that disambiguates it; they cost nothing visually.
+    {%- endcomment -%}
+    <s class="lb-price__was"><span class="lb-sr">بدل </span>{{ lb_cap | money }}</s>
+    {%- comment -%}
+      A markdown too small to round to 1% is still a real markdown — 1000 -> 999
+      genuinely happened and «وفّر 1 درهم» is true — so the struck price and the
+      saving stay. The PERCENTAGE does not: «‑0%» is not a discount claim, it is
+      a rounding artefact, and it reads as a mistake. Caught by
+      test/render/test_sale_presentation.rb, which asserts no surface can ever
+      print it.
+    {%- endcomment -%}
+    {%- if lb_pct != '0' -%}
+      <span class="lb-price__off"><span class="lb-sr">تخفيض </span>&minus;{{ lb_pct }}%</span>
+    {%- endif -%}
   {%- endif -%}
 </div>
 
