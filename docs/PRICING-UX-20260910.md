@@ -11,7 +11,7 @@ prints a price, and stops those surfaces from disagreeing with each other.
 | Role | `UNPUBLISHED` |
 | Preview | `https://www.lbassoriginal.com/?preview_theme_id=207633219915` |
 | Publish | Shopify Admin → Online Store → Themes → **Publish** |
-| Commit | `ca90c45` on `claude/lbass-theme-audit-vgmu56` |
+| Commit | `dc522b2` on `claude/lbass-theme-audit-vgmu56` |
 
 Eight files, each MD5-verified byte-identical to the repo after upload:
 
@@ -20,10 +20,10 @@ sections/lbass-collection-hero.liquid   92ee782693b0947247ab885eb2b47473
 snippets/lbass-markdown-badge.liquid    cc2941f79163a81337a28249a3fe7ccb
 snippets/lbass-price.liquid             c8e72b43d5ca3e7207107a0d235cc824
 snippets/lbass-product-card.liquid      c7ecdeb086764970e0dea4fcbb58d288
-snippets/lbass-promo-css.liquid         c7ab1b797ebecc6f8839a712bee86f9a
+snippets/lbass-promo-css.liquid         bf05864f1c932e3ed9057cc9fc5f8eb3
 snippets/lbass-sale.liquid              9af000f678b98a1b944d57b088c4d9d4
 templates/index.liquid                  44fe97e21a2922f01a6365f68476b808
-templates/product.liquid                9e6d44a3e3d292e2bf3848218e87de04
+templates/product.liquid                a179512090258265e34310f7018b0c57
 ```
 
 **`themeFilesUpsert` lies.** It returned an empty `upsertedThemeFiles` AND an
@@ -33,19 +33,64 @@ is not evidence. Two of the three needed an individual retry.
 
 ## What a shopper sees
 
+Collection card:
+
 ```
-                        ┌─────────────┐
-  image                 │  ‑33%       │  ink badge, bottom-right
-                        └─────────────┘
+                        ┌──────────┐
+  image                 │  ‑33%    │   ink block, bottom-right, 20px
+                        └──────────┘
   brand
   title
-  299 DH                                 26px, leads the card
-  449 DH   (‑33%)                        14px struck + red pill
-  وفّر 150 DH                             red, aligned with the prices
+  299 DH   449 DH   [‑33%]           price 26px · struck 14px grey
+  وفّر 150 DH                          solid red pill 16px
 ```
 
-Measured ratio of sale price to struck price: **1.6–1.9×** across 360px, 390px
-and 1280px, RTL and LTR.
+Product page:
+
+```
+  السعر الحالي
+  ┌────────┐
+  │ ‑10%   │        solid clay block, 21px desktop / 19px mobile
+  └────────┘
+  674 DH  749 DH    price clamp(22–30px) · struck 15px
+  وفّر 75 DH          14px clay
+```
+
+## The hierarchy, and where it is enforced
+
+    price  >  discount  >  strikethrough  >  saving
+
+| | phone ≤400px | phone | desktop |
+|---|---|---|---|
+| price | 21px | 23px | 26px |
+| discount pill | 14px | 15px | 16px |
+| strikethrough | 13px | 13px | 14px |
+| saving | 11.5px | 11.5px | 12px |
+
+Product page: discount 19px → 21px, price 22px → 30px, struck 14px → 15px.
+
+This is **asserted, not intended**. `measure_sale.js` checks every relationship
+in a real browser at 360/390/1280px in RTL and LTR, and on the product page at
+390/1280px. It caught a tie on the first attempt — the pill was set to 14px
+while the strikethrough steps up to 14px on desktop, so on desktop there was no
+hierarchy at all.
+
+**Why the discount got its own line on the product page.** Not only size:
+`.pdp-prices` is `align-items:baseline`, and a badge large enough to notice
+cannot share a baseline with a `clamp(22px,3vw,30px)` price without one of them
+looking misaligned. That row also wraps on a phone, where a *trailing* badge is
+the element that wraps off — the promotion being the first thing to vanish on
+the surface that matters most.
+
+**`display:inline-flex` defeats `hidden`.** `.pdp-save[hidden]{display:none}` is
+restated for that reason. Without it, choosing a full-price size leaves an empty
+clay block on the page.
+
+**The bigger image badge does not fit beside a SOLD stamp.** Measured at 360px:
+image 156px, SOLD stamp 75px (vs 52px for 1/1), badge 67px — 162px of content in
+156px. It shrinks on sold cards only, where the discount is information rather
+than a live offer, instead of shrinking on every phone card to accommodate the
+one that is already unbuyable.
 
 ## Decisions worth knowing
 
