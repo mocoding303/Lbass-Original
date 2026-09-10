@@ -11,19 +11,19 @@ prints a price, and stops those surfaces from disagreeing with each other.
 | Role | `UNPUBLISHED` |
 | Preview | `https://www.lbassoriginal.com/?preview_theme_id=207633219915` |
 | Publish | Shopify Admin → Online Store → Themes → **Publish** |
-| Commit | `dc522b2` on `claude/lbass-theme-audit-vgmu56` |
+| Commit | `85d55a9` on `claude/lbass-theme-audit-vgmu56` |
 
 Eight files, each MD5-verified byte-identical to the repo after upload:
 
 ```
 sections/lbass-collection-hero.liquid   92ee782693b0947247ab885eb2b47473
 snippets/lbass-markdown-badge.liquid    cc2941f79163a81337a28249a3fe7ccb
-snippets/lbass-price.liquid             c8e72b43d5ca3e7207107a0d235cc824
+snippets/lbass-price.liquid             17eb455def3e943d24f61c784fb2a3fc
 snippets/lbass-product-card.liquid      c7ecdeb086764970e0dea4fcbb58d288
-snippets/lbass-promo-css.liquid         bf05864f1c932e3ed9057cc9fc5f8eb3
+snippets/lbass-promo-css.liquid         484960bccc702dce2c507f5ac16866d8
 snippets/lbass-sale.liquid              9af000f678b98a1b944d57b088c4d9d4
 templates/index.liquid                  44fe97e21a2922f01a6365f68476b808
-templates/product.liquid                a179512090258265e34310f7018b0c57
+templates/product.liquid                b8bdaf9a275e053abdc83d49a2030fa1
 ```
 
 **`themeFilesUpsert` lies.** It returned an empty `upsertedThemeFiles` AND an
@@ -187,3 +187,74 @@ Ten suites. The four that cover this work:
 `run_all.sh` checks exit codes directly. Piping to `grep` made `$?` report
 grep's status, which briefly showed two Chromium suites as PASS while they were
 failing to load at all.
+
+
+---
+
+## The reference price (crossed-out), 2026-09-10 rev 2
+
+Two of the requested changes were measurable defects, not preferences.
+
+### Contrast — the product page strikethrough failed AA
+
+| | colour | on ground | ratio | |
+|---|---|---|---|---|
+| PDP reference **was** | `--txt3` `#5E5A55` | `--ink` | **2.89:1** | fails AA |
+| PDP reference **now** | `--txt2` `#97928A` | `--ink` | 6.40:1 | AA |
+| PDP saving **was** | `--clay` `#B4502A` | `--ink` | **3.88:1** | fails AA |
+| PDP saving **now** | `--clay2` `#D4683E` | `--ink` | 5.51:1 | AA |
+| card reference **was** | `--lb-ink-3` `#6B6B6E` | bone | 5.31:1 | AA, tertiary |
+| card reference **now** | `--lb-ink-2` `#3A3A3C` | bone | 11.35:1 | AA, **secondary** |
+
+White **on** `--clay` — how the discount block uses it — is 5.10:1 and was
+already fine. Only clay-as-text failed.
+
+### An invisible element was splitting the price pair
+
+`snippets/lbass-price.liquid` emitted schema.org availability as an **empty
+`<span>`**. The price container is a flex row with a column gap, and an empty
+span is still a flex item, so it contributed a full gap of invisible width.
+
+Measured at 360px: the pair fits in **128px of a 130px row** — but the phantom
+6px made it 134px, so the reference price wrapped onto a line of its own.
+
+Changed to `<meta>`: identical microdata (the `content` attribute is parsed, not
+the box) and `display:none` in the UA stylesheet, so not a flex item at all.
+
+### Ratio
+
+Requested 1.3–1.5×. Achieved:
+
+| | phone | desktop |
+|---|---|---|
+| collection card | **1.46×** | **1.53×** |
+| product page | **1.47×** | 1.58× |
+
+Reaching it required raising the discount pill **alongside** the reference price
+(16→18px desktop). Raising the reference alone would push it past the discount
+and invert `price > discount > reference`. Both move together or neither can.
+
+Card sizes are now fluid — `clamp(19px,5.4vw,23px)` against
+`clamp(13px,3.7vw,15px)` — so the *pair* keeps fitting on one line as the column
+narrows.
+
+### The limit, stated rather than hidden
+
+A four-digit reference price (1 199 DH) needs ~148px in a 130px phone column. No
+readable type fits that, and shrinking every card for a price the catalogue does
+not carry (the marked-down set tops out at 899/999 DH) is the wrong trade.
+
+So the test asserts **side by side whenever the column can physically hold the
+pair**, and when it cannot, that the wrap is graceful: sale price on the first
+line, never the reference above it.
+
+### Smaller things
+
+- Strikethrough 1px → **2px**. At 1px on a 14px numeral the line was thinner
+  than the strokes it crossed and read as an artefact. `skip-ink:none` keeps it
+  unbroken across every glyph.
+- `text-underline-offset` **removed, not retuned** — it moves underlines and has
+  never affected a line-through.
+- `nowrap` on both prices so a four-digit figure cannot break mid-number.
+- One consistent column gap sets the distance between the two prices at every
+  breakpoint.
