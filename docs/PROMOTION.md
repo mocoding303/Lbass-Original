@@ -165,6 +165,39 @@ Three real bugs were caught this way and fixed:
 - **Real product imagery.** The preview used flat colour placeholders.
 - **Which item Shopify discounts** — see below.
 
+## APPLIED 2026-09-10 — genuine −10% markdown on 31 pieces
+
+`compare_at_price` set to each piece's existing price, price reduced 10%,
+rounded to whole dirhams. **Live now, store-wide** (prices are not theme-scoped).
+
+| | |
+|---|---|
+| Pieces | **31** — available AND not vetoed by `lbass.promo_eligible` |
+| Excluded | 16 sold out · 17 vetoed by `promo_eligible=false` |
+| Catalogue value | 13,100 DH → **11,787 DH** |
+| Margin given up | **1,313 DH** |
+| Badge on every one | reads exactly **−10%**, verified against the theme's own rounding |
+
+Verified by reading all 64 products back: 31 carry a `compareAtPrice`, 33 are
+`null`. The mutation response was not trusted on its own.
+
+**This is compliant.** The struck price is the price genuinely charged for
+months — a real former price, which is what a reference price is supposed to be.
+It is the 28.57% inflation, not the strikethrough, that was the problem.
+
+**Rollback:** `docs/ROLLBACK-markdown-20260910.md` restores all 31 prices and
+clears every `compare_at_price` in two paste-able GraphQL documents.
+
+**Plan of record:** `test/render/markdown_plan_20260910.py` — the eligibility
+rule in code, plus the exact before/after for each piece.
+
+### ⚠ Ordering caveat this was applied under
+
+The theme fix that RENDERS strikethroughs is on the staging theme only. Until
+that theme is published, the collection grid shows the new lower price with **no
+discount indicator at all** — the markdown is invisible and the margin is simply
+gone. Publishing was requested immediately after this was applied.
+
 ## What "promo prices" costs
 
 The campaign shows **no struck-through price**, because no item's price changes.
