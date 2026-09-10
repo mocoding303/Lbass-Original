@@ -738,6 +738,17 @@
         («-30% على الثانية», never a bare «-30%»). The NEW-RETAIL REFERENCE rule
         above stands unchanged: no fabricated compare-at, here or anywhere.
       {%- endcomment -%}
+      {%- comment -%}
+        The stylesheet moved out of layout/theme.liquid (it is card CSS and was
+        loading on cart, blog and every content page). The PDP block needs it
+        too, so this template renders it here — once, immediately before the
+        only element on this page that uses it.
+
+        Ordering still holds: lbass-stamp is rendered in <head> by the layout
+        and this is in the body, so the --lb-* tokens are defined and the source
+        order this sheet relies on is guaranteed.
+      {%- endcomment -%}
+      {% render 'lbass-promo-css' %}
       {% render 'lbass-promo-badge', product: product, format: 'pdp' %}
       <p class="pdp-ship-line">🚚 التوصيل: <b>20 درهم داخل مراكش</b> (اختار «التوصيل المحلي» فالشيكاوت) · <b>40 درهم خارج مراكش</b> · مجاني من 500 درهم</p>
       {% comment %}
