@@ -62,21 +62,35 @@
 
   if hero_image == blank and hero_asset == blank
     case hero_handle
-      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
+      when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes', 'women-sneakers', 'slides'
+        comment
+          `slides` has no artwork of its own. cat-shoes-ed is a lace-up
+          still-life, so it is category-correct but not product-correct —
+          the closest honest stand-in until a slides image exists. Same
+          compromise as men-shorts on cat-pants-ed. See docs/COLLECTION-HEROES.md.
+        endcomment
         assign hero_asset = 'cat-shoes-ed.webp'
       when 'جاكيطات-و-معاطف', 'jackets', 'men-jackets', 'women-jackets'
         assign hero_asset = 'cat-jackets-ed.webp'
-      when 'سراويل-و-كارغو', 'cargo-pants', 'pants'
+      when 'سراويل-و-كارغو', 'cargo-pants', 'pants', 'men-shorts', 'shorts'
         assign hero_asset = 'cat-pants-ed.webp'
-      when 'جينز-مستعمل', 'denim', 'jeans'
+      when 'جينز-مستعمل', 'denim', 'jeans', 'men-jeans'
         assign hero_asset = 'cat-jeans-ed.webp'
       when 'هوديات-و-سويت', 'hoodies', 'sweatshirts'
         assign hero_asset = 'cat-hoodies-ed.webp'
-      when 'تيشرتات-و-بولو', 't-shirts', 'polos'
+      when 'تيشرتات-و-بولو', 't-shirts', 'polos', 'men-tshirts'
         assign hero_asset = 'cat-tshirts-ed.webp'
       when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories'
         assign hero_asset = 'cat-acc-ed.webp'
-      when 'men', 'women', 'kids', 'unisex', 'one-of-one', 'audited-drop-p001-p012', 'all'
+      when 'new-in', 'new', 'all', 'audited-drop-p001-p012'
+        comment
+          Mixed-category surfaces get the wide still-life, not the portrait
+          campaign shot. hero-lifestyle-1 is 1376x768 and holds sneakers,
+          denim and accessories — it survives the hero's ~2:1 crop, which
+          the 896x1200 portrait does not. Reasoning in snippets/lbass-hero-bg.liquid.
+        endcomment
+        assign hero_asset = 'hero-lifestyle-1.webp'
+      when 'men', 'women', 'kids', 'unisex', 'one-of-one'
         assign hero_asset = 'editorial-campaign.webp'
     endcase
   endif
@@ -96,22 +110,48 @@
     assign hero_image = section.settings.fallback_image
   endif
   if hero_image == blank and hero_asset == blank
-    assign hero_asset = 'editorial-campaign.webp'
+    comment
+      Last resort: an unlisted handle with no image and no products. That is
+      still a WIDE box, so it gets the wide still-life rather than the 896x1200
+      portrait, which loses its subject entirely at this crop.
+    endcomment
+    assign hero_asset = 'hero-lifestyle-1.webp'
   endif
 
-  assign hero_asset_width = 1448
-  assign hero_asset_height = 1086
   if hero_handle == 'audited-drop-p001-p012'
     comment
-      Audited Drop is a wide desktop merchandising surface. The old shared
-      896x1200 portrait was enlarged into a 16:9 hero and cropped the model.
-      Force the existing wide product-edit image for this handle only.
+      Audited Drop is a wide desktop merchandising surface. It overrides any
+      collection.image a merchant may have set, so both halves must be
+      reassigned together — blanking hero_image alone would leave nothing
+      to render when a collection.image exists.
     endcomment
     assign hero_image = blank
     assign hero_asset = 'hero-lifestyle-1.webp'
-    assign hero_asset_width = 1376
-    assign hero_asset_height = 768
   endif
+
+  comment
+    Intrinsic size of the chosen theme asset. These drive the <img> width/height
+    attributes, so a wrong pair reserves the wrong box and shifts layout on load.
+    1448x1086 was previously hardcoded for EVERY asset, which mislabelled the
+    896x1200 portrait campaign shot on every collection that fell through to it.
+    Keep this table in step with the artwork in assets/.
+  endcomment
+  assign hero_asset_width = 1448
+  assign hero_asset_height = 1086
+  case hero_asset
+    when 'hero-lifestyle-1.webp', 'hero-frame-1.webp'
+      assign hero_asset_width = 1376
+      assign hero_asset_height = 768
+    when 'hero-lifestyle-2.webp', 'hero-frame-2.webp'
+      assign hero_asset_width = 1200
+      assign hero_asset_height = 670
+    when 'hero-lifestyle-3b.webp', 'hero-frame-4.webp'
+      assign hero_asset_width = 1264
+      assign hero_asset_height = 848
+    when 'editorial-campaign.webp', 'hero-frame-3.webp', 'hero-lifestyle-3.webp'
+      assign hero_asset_width = 896
+      assign hero_asset_height = 1200
+  endcase
 
   assign mobile_hero_image = blank
   assign mobile_hero_asset = blank
