@@ -38,7 +38,9 @@ puts "  %-20s %-10s %-10s %-12s %s" % %w[price/compare pdp-pct card-pct saving v
   card, e2 = render_snippet('lbass-price', { 'product' => p, 'variant' => v })
   errs = e1 + e2
 
-  pdp_pct  = pdp[/pdp-save[^>]*>−(\d+)%/, 1]
+  # The template writes &minus;; a variant switch writes whatever data-pct holds.
+  # Accept either spelling so the test checks the NUMBER, not the encoding.
+  pdp_pct  = pdp[/pdp-save[^>]*>(?:&minus;|−)(\d+)%/, 1]
   card_pct = card[/lb-price__off.*?&minus;(\d+)%/m, 1]
   pdp_save = pdp[/data-savesum[^>]*>([^<]*)</, 1].to_s.strip
   card_save = card[/lb-price__save.*?<span dir="ltr">([^<]*)</m, 1].to_s.strip
@@ -63,7 +65,7 @@ problems = []
 problems << 'old price VISIBLE'  unless pdp[/<span class="pdp-old"[^>]*hidden/]
 problems << 'percentage VISIBLE' unless pdp[/<span class="pdp-save"[^>]*hidden/]
 problems << 'saving VISIBLE'     unless pdp[/<p class="pdp-saved"[^>]*hidden/]
-problems << 'a percentage was printed' if pdp =~ /−\d+%/
+problems << 'a percentage was printed' if pdp =~ /(?:&minus;|−)\d+%/
 problems << 'a compare-at was printed' if pdp[/pdp-old[^>]*>\s*\d/]
 problems << 'current price missing'    unless pdp.include?('pdp-price')
 problems << "render errors #{errs}"    unless errs.empty?

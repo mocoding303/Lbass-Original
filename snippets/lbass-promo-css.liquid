@@ -76,17 +76,24 @@
   text-decoration-thickness:1px;
   text-underline-offset:2px;
 }
+/* The discount, second in the hierarchy behind the price itself.
+   Was 11px red-on-10%-tint — SMALLER and softer than the 13-14px grey
+   strikethrough it is supposed to outrank, so the eye reached the old price
+   first. Now a solid red block: bigger than the strikethrough, still well under
+   the 26px price, and legible at a glance rather than on inspection.
+   Solid rather than merely larger, because a tint that size starts to look like
+   a disabled control. */
 .lb-price__off{
   font-family:var(--lb-body,inherit);
   font-variant-numeric:tabular-nums;
-  font-size:11px;
-  font-weight:800;
+  font-size:15px;
+  font-weight:900;
   line-height:1;
-  padding:3px 7px;
-  border-radius:999px;
-  color:var(--lb-red,#BF2E15);
-  background:color-mix(in srgb,var(--lb-red,#BF2E15) 10%,transparent);
-  border:1px solid color-mix(in srgb,var(--lb-red,#BF2E15) 30%,transparent);
+  padding:5px 10px;
+  border-radius:7px;
+  color:var(--lb-bone,#F4EFE6);
+  background:var(--lb-red,#BF2E15);
+  border:1px solid var(--lb-red,#BF2E15);
 }
 .lb-price__save{
   margin:2px 0 0;
@@ -140,13 +147,13 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-inline-size:46px;
-  padding:5px 9px;
+  min-inline-size:58px;
+  padding:7px 11px;
   border:1px solid var(--lb-ink,#141416);
   background:var(--lb-ink,#141416);
   color:var(--lb-bone,#F4EFE6);
   font-family:var(--lb-display,inherit);
-  font-size:15px;
+  font-size:20px;
   font-weight:700;
   line-height:1;
   letter-spacing:.02em;
@@ -157,8 +164,19 @@
    `direction:ltr` here. Same glyph order, but it leaves the box's axis alone —
    which is how the stamp ended up unable to mirror in the first place. */
 /* A sold piece keeps its badge but stops shouting: the price is no longer an
-   offer anyone can take. */
-.lb-sold .lb-md-badge{opacity:.45}
+   offer anyone can take, so the discount is information rather than promotion.
+   It is also the only case where the badge does not fit. Measured at 360px:
+   the image is 156px, the SOLD stamp is 75px against 52px for 1/1, and the
+   full-size badge is 67px — 162px of content in 156px, so the two collide.
+   Shrinking it here fixes the overlap exactly where it occurs, instead of
+   shrinking the badge on every phone card to accommodate the one that is
+   already unbuyable. */
+.lb-sold .lb-md-badge{
+  opacity:.45;
+  font-size:14px;
+  min-inline-size:44px;
+  padding:5px 8px;
+}
 
 /* ══════════ CAMPAIGN RIBBON (card image) ══════════ */
 .lb-promo-ribbon{
@@ -264,9 +282,9 @@
   .lb-md-badge{
     bottom:8px;
     right:8px;
-    min-inline-size:42px;
-    padding:4px 7px;
-    font-size:13.5px;
+    min-inline-size:50px;
+    padding:6px 9px;
+    font-size:17.5px;
   }
 }
 /* Very narrow phones: the 2-column grid leaves ~150px of card width, and the
@@ -276,10 +294,13 @@
 @media(max-width:400px){
   .lb-price.is-sale .lb-price__now{font-size:21px;flex:1 0 100%}
   .lb-price{gap:3px 6px}
-  .lb-price__off{padding:2px 6px;font-size:10.5px}
+  .lb-price__off{padding:4px 8px;font-size:14px}
 }
 @media(min-width:750px){
   .lb-price__was{font-size:14px}
+  /* Must stay ahead of .lb-price__was, which also steps up here. Ties are what
+     measure_sale.js caught: 14px against 14px is not a hierarchy. */
+  .lb-price__off{font-size:16px;padding:6px 11px}
   .lb-price__save{font-size:12px}
   .lb-promo-ribbon{font-size:10px;padding:6px 10px}
   .lb-promo-ribbon__rate{font-size:12px}

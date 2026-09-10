@@ -285,12 +285,33 @@
 .pdp-prices{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:4px}
 .pdp-price{font-family:var(--lt);font-weight:700;font-size:clamp(22px,3vw,30px);color:var(--gold);direction:ltr;white-space:nowrap;line-height:1.1}
 .pdp-old{font-family:var(--lt);font-size:15px;color:var(--txt3);text-decoration:line-through;direction:ltr}
-.pdp-save{background:var(--clay);color:#fff;font-weight:900;font-size:11px;padding:4px 10px;border-radius:30px;direction:ltr}
+/* THE DISCOUNT. Was 11px in a pill at the end of the price row, which is
+   smaller than the 15px strikethrough it is supposed to outrank and easy to
+   miss entirely. Now a solid clay block on its own line above the price:
+   second in the hierarchy behind the price itself, ahead of everything else.
+
+   `display:inline-flex` would defeat the `hidden` attribute the size-switch
+   handler toggles, so [hidden] is restated below. Without it, choosing a
+   full-price size would leave an empty clay block on the page. */
+.pdp-save{display:inline-flex;align-items:center;
+  margin:0 0 9px;padding:7px 15px;border-radius:10px;
+  background:var(--clay);color:#fff;
+  font-family:var(--lt);font-weight:900;font-size:21px;line-height:1;
+  letter-spacing:.01em;font-variant-numeric:tabular-nums;direction:ltr}
+.pdp-save[hidden]{display:none}
 /* The dirham saving. Clay, matching the .pdp-save pill, so the two read as one
    statement; smaller than both prices so it never competes with the number the
    customer actually pays. */
-.pdp-saved{margin:2px 0 0;font-size:13px;font-weight:900;color:var(--clay);text-align:start;letter-spacing:.01em}
+.pdp-saved{margin:4px 0 0;font-size:14px;font-weight:900;color:var(--clay);text-align:start;letter-spacing:.01em}
 .pdp-saved [dir=ltr]{font-variant-numeric:tabular-nums}
+/* Mobile keeps the discount large. It shrinks less than the price does
+   (21 -> 19 against 30 -> 22), because a phone is where it has to be caught in
+   about a second and where the price row is narrowest. */
+@media(max-width:600px){
+  .pdp-save{font-size:19px;padding:6px 13px;margin-bottom:8px}
+  .pdp-old{font-size:14px}
+  .pdp-saved{font-size:13.5px}
+}
 .pdp-price-helper{margin:6px 0 0;color:var(--txt3);font-size:12px;font-weight:750;line-height:1.65}
 .pdp-price-helper strong{color:var(--txt2)}
 .pdp-condition-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}
@@ -698,7 +719,31 @@
     </div>
 
     <div class="pdp-price-wrap">
+      {%- comment -%}
+        The discount sits ABOVE the price, on its own line, rather than trailing
+        the row. Two reasons beyond "make it bigger":
+
+          1. .pdp-prices is align-items:baseline. A badge large enough to be
+             noticed cannot share a baseline with a clamp(22px,3vw,30px) price
+             without one of them looking misaligned.
+          2. On a phone that row wraps. A trailing badge is the element that
+             wraps off, i.e. the promotion is what disappears first on the
+             surface that matters most. On its own line it cannot.
+
+        Same element, same data-savepct hook, so applySale() is untouched.
+      {%- endcomment -%}
+      {%- assign pdp_pct = '' -%}
+      {%- capture pdp_pct %}{% render 'lbass-sale', product: product, variant: product.selected_or_first_available_variant %}{% endcapture -%}
+      {%- assign pdp_pct = pdp_pct | strip -%}
+      {%- assign pdp_on_sale = false -%}
+      {%- if product.selected_or_first_available_variant.compare_at_price and product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price and pdp_pct != '0' -%}{%- assign pdp_on_sale = true -%}{%- endif -%}
       <p class="pdp-price-kicker">السعر الحالي</p>
+      {%- comment -%}
+        Below the kicker, not above it. With the kicker in between, «السعر
+        الحالي» separated the discount from the number it describes; directly
+        above the price the two read as one statement.
+      {%- endcomment -%}
+      <span class="pdp-save" data-savepct{% unless pdp_on_sale %} hidden{% endunless %}>{% if pdp_on_sale %}&minus;{{ pdp_pct }}%{% endif %}</span>
       <div class="pdp-prices">
         <span class="pdp-price" data-price>{{ product.selected_or_first_available_variant.price | money }}</span>
       {%- comment -%}
@@ -744,7 +789,6 @@
         {% assign pct = pct | strip %}
         {% assign diff = selv.compare_at_price | minus: selv.price %}
         <span class="pdp-old" data-old{% unless on_sale %} hidden{% endunless %}>{% if on_sale %}{{ selv.compare_at_price | money }}{% endif %}</span>
-        <span class="pdp-save" data-savepct{% unless on_sale %} hidden{% endunless %}>{% if on_sale %}−{{ pct }}%{% endif %}</span>
       </div>
       {%- comment -%}
         The monetary saving. The percentage answers "how good is this deal", the
@@ -844,7 +888,7 @@
             {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign vsale = true -%}{%- endif -%}
             <button class="sz" type="button" data-vid="{{ variant.id }}" data-price="{{ variant.price | money }}" data-title="{{ variant.title | escape }}"
               data-cap="{% if vsale %}{{ variant.compare_at_price | money }}{% endif %}"
-              data-pct="{% if vsale %}−{{ vpct }}%{% endif %}"
+              data-pct="{% if vsale %}&minus;{{ vpct }}%{% endif %}"
               data-save="{% if vsale %}{{ variant.compare_at_price | minus: variant.price | money }}{% endif %}"
               {% unless variant.available %}disabled aria-disabled="true"{% endunless %} aria-pressed="false">{{ variant.title }}</button>
           {% endfor %}

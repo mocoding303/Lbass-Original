@@ -65,6 +65,11 @@ const { chromium } = require('playwright-core');
         if (c.badgeHitsStamp)  problems.push('BADGE OVERLAPS STAMP');
         if (c.overflowsCard)   problems.push('CHILD OVERFLOWS CARD');
         if (c.nowPx && c.wasPx && c.nowPx <= c.wasPx) problems.push('SALE PRICE NOT LARGER');
+        // Requested hierarchy: price strongest, discount second, struck price
+        // third. The discount used to be 11px against a 13-14px strikethrough,
+        // i.e. ranked BELOW the thing it is supposed to outrank.
+        if (c.offPx && c.wasPx && c.offPx <= c.wasPx) problems.push(`DISCOUNT NOT LARGER THAN STRUCK (${c.offPx} <= ${c.wasPx})`);
+        if (c.offPx && c.nowPx && c.offPx >= c.nowPx) problems.push(`DISCOUNT OUTRANKS PRICE (${c.offPx} >= ${c.nowPx})`);
         if (c.offText && /−\s*0%|-\s*0%/.test(c.offText)) problems.push('-0% PRINTED');
         if (c.badge && !c.wasText) problems.push('BADGE WITHOUT STRIKETHROUGH');
         // The badge is pinned bottom-RIGHT in both directions on purpose: it is
@@ -80,6 +85,50 @@ const { chromium } = require('playwright-core');
     }
     await page.close();
   }
+  // ── Product page ────────────────────────────────────────────────────────
+  const pdpFile = __dirname + '/pdp-preview.html';
+  if (require('fs').existsSync(pdpFile)) {
+    for (const [name, width] of [['mobile', 390], ['desktop', 1280]]) {
+      const page = await b.newPage({ viewport:{width,height:900} });
+      await page.goto('file://' + pdpFile, {waitUntil:'networkidle'});
+      const m = await page.evaluate(() => ({
+        overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        cols: [...document.querySelectorAll('.pdp-col')].map((c,i) => {
+          const g = s => { const e = c.querySelector(s); if (!e || e.hidden) return null;
+            const r = e.getBoundingClientRect();
+            return { px: parseFloat(getComputedStyle(e).fontSize), top: Math.round(r.top), t: e.textContent.trim() }; };
+          return { i, save:g('.pdp-save'), price:g('.pdp-price'), old:g('.pdp-old'), saved:g('.pdp-saved') };
+        }),
+      }));
+      console.log('\n' + '='.repeat(96));
+      console.log(`PRODUCT PAGE ${name.toUpperCase()} @${width}px   page overflow-x: ${m.overflowX ? 'YES (BAD)' : 'none'}`);
+      console.log('='.repeat(96));
+      if (m.overflowX) fails++;
+      m.cols.forEach(c => {
+        const problems = [];
+        if (c.save) {
+          if (!c.old)                       problems.push('DISCOUNT WITHOUT STRIKETHROUGH');
+          else if (c.save.px <= c.old.px)   problems.push(`DISCOUNT NOT LARGER THAN STRUCK (${c.save.px} <= ${c.old.px})`);
+          if (c.price && c.save.px > c.price.px) problems.push(`DISCOUNT OUTRANKS PRICE (${c.save.px} > ${c.price.px})`);
+          // The discount must sit ABOVE the price and be adjacent to it.
+          if (c.price && c.save.top >= c.price.top) problems.push('DISCOUNT NOT ABOVE THE PRICE');
+          if (/−\s*0%|-\s*0%/.test(c.save.t)) problems.push('-0% PRINTED');
+        } else {
+          if (c.old)   problems.push('STRUCK PRICE WITH NO DISCOUNT');
+          if (c.saved) problems.push('SAVING WITH NO DISCOUNT');
+        }
+        if (!c.price) problems.push('PRICE MISSING');
+        if (problems.length) fails++;
+        console.log(`  case ${c.i}  discount:${c.save ? c.save.px + 'px ' + c.save.t : '-'}  price:${c.price ? c.price.px + 'px' : '-'}` +
+          `  struck:${c.old ? c.old.px + 'px' : '-'}  saved:${c.saved ? c.saved.px + 'px' : '-'}  ${problems.length ? '!! ' + problems.join(' | ') : 'ok'}`);
+      });
+      await page.close();
+    }
+  } else {
+    console.log('\n(no pdp-preview.html — run build_pdp_preview.rb first)');
+    fails++;
+  }
+
   await b.close();
   console.log('\n' + (fails ? `${fails} PROBLEMS` : 'GEOMETRY OK'));
   process.exit(fails ? 1 : 0);

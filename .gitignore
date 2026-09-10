@@ -6,4 +6,5 @@ node_modules/
 # so a real markup change shows up as a reviewable diff.
 test/render/preview.html
 test/render/variant-switch.html
+test/render/pdp-preview.html
 test/render/*.png

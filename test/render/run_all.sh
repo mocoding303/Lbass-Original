@@ -11,6 +11,7 @@ for t in parse_all test_collection_hero test_eligibility_and_price test_card_mat
   else printf '%-30s FAIL\n' "$t"; echo "$out" | grep -v DEPRECATION | tail -8; fail=$((fail+1)); fi
 done
 ruby test/render/build_preview.rb >/dev/null 2>&1
+ruby test/render/build_pdp_preview.rb >/dev/null 2>&1
 for j in test_variant_switch measure_sale; do
   out=$(node "test/render/$j.js" 2>&1); rc=$?
   if [ $rc -eq 0 ]; then printf '%-30s PASS  %s\n' "$j" "$(echo "$out" | grep -v agent-proxy | tail -1)"; pass=$((pass+1))
