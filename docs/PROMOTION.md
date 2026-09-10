@@ -65,22 +65,19 @@ match. They are two halves of one switch.
 |---|---|
 | Staging theme | `STAGING — promo 2nd item + shared card 20260909` · `OnlineStoreTheme/207582658891` · prefix `/t/99` · **UNPUBLISHED** |
 | Preview | `https://www.lbassoriginal.com/?preview_theme_id=207582658891` |
-| Files | 8, each **MD5-verified byte-identical** to commit `61fc4f3` |
+| Files | 9, each **MD5-verified byte-identical** to commit `8a7172d` |
 
 ```
 config/settings_schema.json          snippets/lbass-promo.liquid
 templates/collection.liquid          snippets/lbass-price.liquid
 templates/search.liquid              snippets/lbass-promo-badge.liquid
-                                     snippets/lbass-promo-css.liquid
+templates/product.liquid             snippets/lbass-promo-css.liquid
                                      snippets/lbass-product-card.liquid
 ```
 
-**Not deployed, deliberately:** `templates/product.liquid` (the PDP campaign
-block). It is a 159 KB file whose only change is a 10-line render call, and the
-Admin API takes file bodies inline. Collection and search carry the campaign;
-the PDP can follow in a separate push. `layout/theme.liquid` and
-`templates/index.liquid` need no change at all since the stylesheet moved to the
-card templates.
+`layout/theme.liquid` and `templates/index.liquid` were verified **unchanged
+from the live theme** (`6ee793c8…` / `76c41057…`) — the stylesheet moved to the
+card templates, so neither needed touching and neither was touched.
 
 ### Publishing is a manual step, on purpose
 
