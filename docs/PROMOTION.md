@@ -59,6 +59,45 @@ match. They are two halves of one switch.
 
 ---
 
+## Deployed
+
+| | |
+|---|---|
+| Staging theme | `STAGING — promo 2nd item + shared card 20260909` · `OnlineStoreTheme/207582658891` · prefix `/t/99` · **UNPUBLISHED** |
+| Preview | `https://www.lbassoriginal.com/?preview_theme_id=207582658891` |
+| Files | 8, each **MD5-verified byte-identical** to commit `61fc4f3` |
+
+```
+config/settings_schema.json          snippets/lbass-promo.liquid
+templates/collection.liquid          snippets/lbass-price.liquid
+templates/search.liquid              snippets/lbass-promo-badge.liquid
+                                     snippets/lbass-promo-css.liquid
+                                     snippets/lbass-product-card.liquid
+```
+
+**Not deployed, deliberately:** `templates/product.liquid` (the PDP campaign
+block). It is a 159 KB file whose only change is a 10-line render call, and the
+Admin API takes file bodies inline. Collection and search carry the campaign;
+the PDP can follow in a separate push. `layout/theme.liquid` and
+`templates/index.liquid` need no change at all since the stylesheet moved to the
+card templates.
+
+### Publishing is a manual step, on purpose
+
+The Shopify MCP blocks writes to the live/MAIN theme, and blocks theme
+publishing outright. That is the right constraint here anyway: **cart and
+checkout have never been exercised**. Preview the staging theme, run the 2-item
+cart test below, then publish from Shopify Admin → Themes.
+
+### One transcription failure worth knowing about
+
+Five files went up as hand-copied base64. Four were byte-perfect; `search.liquid`
+came out the **same size but a different MD5** — one character had flipped in
+transit. It was caught only because every file was checksummed against the repo
+afterwards, and fixed by having Shopify fetch the raw bytes from GitHub instead.
+If you ever push theme files this way, verify checksums; the upload response
+reports success either way.
+
 ## Shopify objects (already created)
 
 | Object | ID | State |
@@ -128,6 +167,37 @@ Three real bugs were caught this way and fixed:
   collection is empty, so nothing could be tested end to end.
 - **Real product imagery.** The preview used flat colour placeholders.
 - **Which item Shopify discounts** — see below.
+
+## What "promo prices" costs
+
+The campaign shows **no struck-through price**, because no item's price changes.
+If the goal is the reference-screenshot look — struck price, percentage,
+«وفّر …» on every card — that requires a genuine markdown, and
+`snippets/lbass-price.liquid` already renders it the moment `compare_at_price`
+is set. Measured on real store prices:
+
+| piece | now | −10% | −20% | −30% |
+|---|--:|--:|--:|--:|
+| Vans Old Skool Black | 349 | 314 | 279 | 244 |
+| Zara Khaki Jacket | 449 | 404 | 359 | 314 |
+| Nike Air Max Black/Green | 599 | 539 | 479 | 419 |
+| The North Face Puffer | 749 | 674 | 599 | 524 |
+| HOKA Red Running | 999 | 899 | 799 | 699 |
+| Adidas Originals Shorts | 230 | 207 | 184 | 161 |
+| **margin given up** | **3375** | **338** | **675** | **1012** |
+
+Setting `compare_at_price` to today's actual price is **fully compliant** — that
+price has genuinely been charged for months, which is exactly what a reference
+price is supposed to be. The 28.57% inflation was the only part that was not.
+
+So the choice is real and it is a business one, not an engineering one:
+
+- **−30% struck prices** → costs a true 30%
+- **−10% struck prices** → costs 10%, badge reads −10%
+- **−30% headline at ~10% cost** → the 2nd-item campaign, no struck prices
+
+There is no fourth option. A −30% struck price at 10% cost requires a fake
+reference, which is where this started.
 
 ## The one open question
 
