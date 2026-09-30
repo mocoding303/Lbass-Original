@@ -1,29 +1,33 @@
 # Taste Skill (third-party skills)
 
-The skill directories next to this file are unmodified copies of the skills in
-https://github.com/Leonxlnx/taste-skill (commit ce26fc25c0e5e8cab638f883de62d9a86ee5e45b, 2026-09-26),
-the repository whose README links to https://tasteskill.dev. Installed 2026-09-30.
-Each directory is named after the skill's `name:` frontmatter field, which is how
-`npx skills add` names them.
+Source: https://github.com/Leonxlnx/taste-skill (MIT), commit
+ce26fc25c0e5e8cab638f883de62d9a86ee5e45b (2026-09-26), the repository whose
+README links to https://tasteskill.dev.
 
-| Installed directory | Upstream folder |
-| --- | --- |
-| `brandkit` | `skills/brandkit/` |
-| `industrial-brutalist-ui` | `skills/brutalist-skill/` |
-| `gpt-taste` | `skills/gpt-tasteskill/` |
-| `image-to-code` | `skills/image-to-code-skill/` |
-| `imagegen-frontend-mobile` | `skills/imagegen-frontend-mobile/` |
-| `imagegen-frontend-web` | `skills/imagegen-frontend-web/` |
-| `minimalist-ui` | `skills/minimalist-skill/` |
-| `full-output-enforcement` | `skills/output-skill/` |
-| `redesign-existing-projects` | `skills/redesign-skill/` |
-| `high-end-visual-design` | `skills/soft-skill/` |
-| `stitch-design-taste` | `skills/stitch-skill/` |
-| `design-taste-frontend-v1` | `skills/taste-skill-v1/` |
-| `design-taste-frontend` | `skills/taste-skill/` |
+All 13 skills were installed on 2026-09-30 and 12 were removed the same day.
+Only `redesign-existing-projects` remains: an unmodified copy of
+`skills/redesign-skill/`.
 
-To update, re-copy the upstream folder over the matching directory, or run
-`npx skills add https://github.com/Leonxlnx/taste-skill`.
+## Why only one
+
+This is a live, Arabic (`<html lang="ar-MA" dir="rtl">`), dark, vanilla-Liquid
+storefront whose trust promise is real photos of every item. None of the 13
+skills mentions RTL or Arabic, and most assume a greenfield React/Tailwind site.
+
+| Removed directory | Upstream folder | Reason |
+| --- | --- | --- |
+| `design-taste-frontend` | `taste-skill` | Defaults to React/Next/Tailwind/Motion, and section 4.8 requires AI-generated hero and product imagery whenever an image tool is available. |
+| `design-taste-frontend-v1` | `taste-skill-v1` | Superseded by the default skill; same assumptions. |
+| `gpt-taste` | `gpt-tasteskill` | Needs GSAP/React/Tailwind and randomizes the layout per prompt, the opposite of a fixed brand system. |
+| `full-output-enforcement` | `output-skill` | Written for chat output; pushes whole-file rewrites, which is wrong for targeted edits in 40-250 KB templates. |
+| `high-end-visual-design` | `soft-skill` | Prescribes its own palette and fonts; the store already has an identity. |
+| `minimalist-ui` | `minimalist-skill` | Same: warm monochrome, muted pastels. |
+| `industrial-brutalist-ui` | `brutalist-skill` | Same: its own palette and type system (beta upstream). |
+| `image-to-code`, `imagegen-frontend-web`, `imagegen-frontend-mobile`, `brandkit` | same names | Need an image generator and trigger on broad design tasks; the store sells on real photos. |
+| `stitch-design-taste` | `stitch-skill` | Only for Google Stitch `DESIGN.md` files. |
+
+To restore one: `git checkout a1e7ad4 -- .claude/skills/<directory>`, or
+`npx skills add https://github.com/Leonxlnx/taste-skill --skill "<directory>"`.
 
 Upstream license (MIT), reproduced as that license requires:
 
