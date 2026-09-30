@@ -129,6 +129,7 @@ input,select{font-family:inherit}
 .lbx-hero h1.lbx-h1{margin:0;font-size:clamp(31px,5.4vw,66px)!important;line-height:1.16!important;letter-spacing:normal!important;color:var(--lb-ink,#0B0B0C)!important;text-wrap:balance}
 .lbx-h1-brand{display:block;font-size:.52em;line-height:1.35;margin-bottom:.12em}
 .lbx-h1-main{display:block;color:var(--lb-red,#BF2E15)}
+.lbx-nb{white-space:nowrap}
 .lbx-lead{margin:14px 0 0;max-width:48ch;font-size:clamp(14.5px,1.45vw,17px);line-height:1.8;color:var(--lb-ink-2,#3A3A3C)}
 .lbx-latin{margin:6px 0 0;max-width:48ch;font-family:var(--lb-body,'Epilogue',sans-serif);font-size:12px;line-height:1.6;color:var(--lb-ink-3,#6B6B6E);text-align:end}
 .lbx-ctas{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px;margin-top:20px}
@@ -176,12 +177,6 @@ input,select{font-family:inherit}
 .lbx-more{margin:22px 0 0;text-align:center}
 @media(max-width:899px){.lbx-grid > .lbqa-wrap:nth-child(n+7){display:none}}
 @media(min-width:900px){.real-grid.lbx-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}}
-
-/* ════════════════ MARQUEE ════════════════ */
-.mq{border-block:1px solid var(--line);background:var(--ink2);overflow:hidden;white-space:nowrap;padding:15px 0}
-.mq-track{display:inline-flex}
-.mq span{display:inline-flex;align-items:center;gap:14px;padding:0 30px;font-family:var(--lt);font-weight:500;letter-spacing:.12em;font-size:13.5px;color:var(--txt2);direction:ltr}
-.mq .s{color:var(--gold)}
 
 /* ════════════════ SECTION SHELL ════════════════ */
 .sec{padding:clamp(64px,10vw,120px) var(--pad)}
@@ -293,43 +288,6 @@ input,select{font-family:inherit}
   .real-title{font-size:13.5px;min-height:38px}
   .real-price{font-size:15px}
   .real-size{max-width:58%;font-size:10px}
-}
-
-/* ════════════════ CATEGORY MOSAIC ════════════════ */
-/* ════════════════ Editorial Category Mosaic (v2) ════════════════ */
-.cats{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(210px,24vh);gap:14px;max-width:var(--max);margin:0 auto}
-.cat{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;padding:22px;isolation:isolate;text-decoration:none;color:inherit;transition:border-color .35s ease,box-shadow .35s ease,transform .35s ease;min-height:180px}
-.cat:hover,.cat:focus-visible{border-color:var(--gold-br);box-shadow:0 24px 60px -16px rgba(0,0,0,.55);transform:translateY(-3px)}
-.cat:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.cat-bg{position:absolute;inset:0;z-index:-2;background-size:cover;background-position:center;background-repeat:no-repeat;transition:transform .9s cubic-bezier(.2,.7,.2,1);will-change:transform}
-.cat:hover .cat-bg{transform:scale(1.04) translateY(-6px)}
-.cat::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(10,10,11,.15) 0%,rgba(10,10,11,.55) 55%,rgba(10,10,11,.92) 100%);transition:opacity .3s ease}
-.cat:hover::before{opacity:.95}
-.cat::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:2px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold2) 50%,transparent 100%);opacity:0;transform:translateY(2px);transition:opacity .35s ease,transform .35s ease}
-.cat:hover::after,.cat:focus-visible::after{opacity:1;transform:translateY(0)}
-.cat-idx{position:absolute;top:18px;right:18px;font-family:var(--lt);font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--gold2);direction:ltr;opacity:.85}
-.cat-t{font-weight:900;font-size:clamp(20px,2.4vw,28px);color:var(--cream);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
-.cat-c{font-family:var(--lt);font-size:11.5px;color:var(--gold2);letter-spacing:.18em;direction:ltr;text-align:right;font-weight:700;margin:0 0 4px;text-transform:uppercase}
-.cat-d{font-size:13.5px;color:var(--txt);font-weight:600;margin:6px 0 0;line-height:1.5;max-width:36ch;display:none}
-.cat.big .cat-d,.cat.wide .cat-d{display:block}
-.cat-cta{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-family:var(--ar);font-size:13.5px;font-weight:800;color:var(--cream);opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s ease}
-.cat:hover .cat-cta,.cat:focus-visible .cat-cta{opacity:1;transform:translateY(0)}
-.cat.big{grid-column:span 3;grid-row:span 2}
-.cat.wide{grid-column:span 3}
-.cat:not(.big):not(.wide){grid-column:span 2}
-@media(max-width:900px){
-  /* horizontal swipe carousel — show full + peek of next */
-  .cats{display:flex;grid-template-columns:none;grid-auto-rows:auto;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:0 20px 14px;margin:0 -20px;scrollbar-width:none}
-  .cats::-webkit-scrollbar{display:none}
-  .cat{flex:0 0 78%;min-height:0;aspect-ratio:4/5;scroll-snap-align:start;padding:18px;grid-column:auto !important;grid-row:auto !important;min-height:380px}
-  .cat-cta{opacity:1;transform:none} /* always visible on touch */
-  .cat-d{display:block;font-size:13px}
-  .cat:hover{transform:none} /* avoid lift on touch */
-  .cat:active .cat-bg{transform:scale(1.02)} /* tap feedback */
-}
-@media(prefers-reduced-motion:reduce){
-  .cat,.cat *,.cat::before,.cat::after,.cat-bg{transition:none !important;animation:none !important;transform:none !important}
-  .cat-cta{opacity:1;transform:none}
 }
 
 /* ════════════════ STORY (sand block) ════════════════ */
@@ -673,12 +631,8 @@ input,select{font-family:inherit}
 .lbo-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;background:var(--gold);color:var(--ink);font-weight:900;font-size:15px;text-decoration:none;transition:background .25s,transform .2s;align-self:flex-start}
 .lbo-cta:hover{background:var(--gold2);transform:translateY(-1px)}
 @media(max-width:640px){.lbo-step{padding:12px 14px}.lbo-step-icon{font-size:22px;width:34px}}
-.size-chips,.brand-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.size-chip,.brand-chip{display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--cream);font-weight:800;font-size:14px;transition:var(--tr);text-decoration:none}
-.size-chip{font-family:var(--lt);min-width:52px}
-.size-chip:hover,.brand-chip:hover{border-color:var(--gold-br);background:var(--gold-dim);color:var(--gold2)}
 .size-sep{width:1px;height:32px;background:var(--line2);align-self:center;margin:0 4px}
-@media(max-width:640px){.proof-stats{grid-template-columns:repeat(2,1fr)}.size-chips,.brand-chips{gap:8px}.size-chip,.brand-chip{padding:10px 16px;font-size:13px}}
+@media(max-width:640px){.proof-stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.proof-stats{gap:8px}.ps-card{padding:14px 10px}.ps-num{font-size:24px}}
 .auth-panel{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:stretch;background:linear-gradient(135deg,rgba(200,154,14,.12),rgba(18,18,20,.95));border:1px solid rgba(200,154,14,.24);border-radius:var(--r-lg);padding:clamp(20px,4vw,36px);box-shadow:0 24px 70px rgba(0,0,0,.32)}
 .auth-steps{display:grid;gap:10px}
@@ -959,7 +913,7 @@ input,select{font-family:inherit}
       <p class="lbx-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p>
       <h1 class="lbx-h1" id="home-h1">
         <span class="lbx-h1-brand"><bdi>Lbass Original</bdi> —</span>
-        <span class="lbx-h1-main">حوايج Second-Hand أصلية فالمغرب</span>
+        <span class="lbx-h1-main">حوايج <span class="lbx-nb" dir="ltr">Second-Hand</span> أصلية فالمغرب</span>
       </h1>
       <p class="lbx-lead">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p>
       <p class="lbx-latin" lang="fr" dir="ltr">Friperie en ligne — vêtements de marque second hand, partout au Maroc</p>
@@ -1179,62 +1133,6 @@ input,select{font-family:inherit}
 </section>
 
 {% render 'lbass-home-collections' %}
-
-<!-- ═══ CATEGORIES ═══ -->
-<section class="sec" id="cats" aria-labelledby="cats-h" style="padding-block:clamp(48px,7vw,84px)">
-  <div class="sec-in">
-    <div class="sec-head rev" style="margin-bottom:clamp(20px,3vw,36px)">
-      <div>
-        <p class="kick">تسوّق حسب الفئة</p>
-        <h2 class="h2" id="cats-h">شنو باغي <em>تلبس؟</em></h2>
-      </div>
-    </div>
-    <div class="cats rev" id="catsGrid"></div>
-  </div>
-</section>
-
-<!-- ═══ SHOP BY SIZE ═══ -->
-<section class="sec shop-by" aria-labelledby="sz-h">
-  <div class="sec-in">
-    <p class="kick">SHOP BY SIZE</p>
-    <h2 class="h2" id="sz-h">عرف القياس ديالك؟ <em>سير ديركت.</em></h2>
-    <div class="size-chips">
-      <a class="size-chip" href="/collections/all?filter.v.option.size=S">S</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=M">M</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=L">L</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=XL">XL</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=41">41</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=42">42</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=43">43</a>
-      <a class="size-chip" href="/collections/all?filter.v.option.size=44">44</a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SHOP BY BRAND ═══ -->
-<section class="sec shop-by" aria-labelledby="br-h">
-  <div class="sec-in">
-    <p class="kick">SHOP BY BRAND</p>
-    <h2 class="h2" id="br-h">البراند اللي <em>كتقلّب عليه</em></h2>
-    <div class="brand-chips">
-      {% assign home_brand_handles = 'nike,adidas-originals,brand-jordan,brand-new-balance,brand-vans,brand-converse,brand-carhartt,brand-karl-kani,brand-tommy-hilfiger' | split: ',' %}
-      {% for home_brand_handle in home_brand_handles %}
-        {% assign home_brand_collection = collections[home_brand_handle] %}
-        {% assign home_brand_product_count = home_brand_collection.products_count | default: 0 | plus: 0 %}
-        {% if home_brand_collection != blank and home_brand_product_count > 0 %}
-          <a class="brand-chip" href="{{ home_brand_collection.url }}">{{ home_brand_collection.title }}</a>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ═══ MARQUEE ═══ -->
-<div class="mq" aria-hidden="true">
-  <div class="mq-track" id="mqTrack">
-    <span>NIKE <i class="s">✦</i></span><span>ADIDAS <i class="s">✦</i></span><span>JORDAN <i class="s">✦</i></span><span>LEVI'S <i class="s">✦</i></span><span>THE NORTH FACE <i class="s">✦</i></span><span>VANS <i class="s">✦</i></span><span>CONVERSE <i class="s">✦</i></span><span>RALPH LAUREN <i class="s">✦</i></span><span>LACOSTE <i class="s">✦</i></span><span>TOMMY HILFIGER <i class="s">✦</i></span><span>NEW BALANCE <i class="s">✦</i></span><span>PUMA <i class="s">✦</i></span><span>REEBOK <i class="s">✦</i></span><span>CARHARTT <i class="s">✦</i></span><span>CHAMPION <i class="s">✦</i></span><span>DICKIES <i class="s">✦</i></span><span>FILA <i class="s">✦</i></span><span>SALOMON <i class="s">✦</i></span><span>ON RUNNING <i class="s">✦</i></span><span>KARL KANI <i class="s">✦</i></span><span>ELLESSE <i class="s">✦</i></span><span>CALVIN KLEIN <i class="s">✦</i></span><span>H&M <i class="s">✦</i></span><span>UNIQLO <i class="s">✦</i></span><span>ZARA <i class="s">✦</i></span><span>RAY-BAN <i class="s">✦</i></span>
-  </div>
-</div>
 
 <!-- ═══ INSPECTION CHECKLIST ═══ -->
 <section class="sec inspect" id="inspection" aria-labelledby="inspect-h">
@@ -2357,59 +2255,6 @@ function renderGrid(){
   if (counter) counter.textContent = list.length + ' قطعة';
   if (window.gsap) gsap.fromTo('#pgrid .pcard', {opacity:0, y:24}, {opacity:1, y:0, duration:.5, stagger:.05, ease:'power2.out', overwrite:true});
 }
-function renderCats(){
-  const counts = {}; PRODUCTS.forEach(p => counts[p.cat] = (counts[p.cat]||0)+1);
-  /* asymmetric layout: 1 dominant + 2 wide + 4 regular = 7 cards, 23 products covered */
-  const ASSET = {
-    jacket:'{{ 'cat-jackets-ed.webp' | asset_url }}',
-    shoes :'{{ 'cat-shoes-ed.webp'   | asset_url }}',
-    jeans :'{{ 'cat-jeans-ed.webp'   | asset_url }}',
-    pants :'{{ 'cat-pants-ed.webp'   | asset_url }}',
-    hoodie:'{{ 'cat-hoodies-ed.webp' | asset_url }}',
-    tshirt:'{{ 'cat-tshirts-ed.webp' | asset_url }}',
-    acc   :'{{ 'cat-acc-ed.webp'     | asset_url }}'
-  };
-  /* per-category focal point so the subject stays visible no matter how the cell crops */
-  const FOCUS = {
-    jacket:'72% 40%',  /* model right-of-center */
-    shoes :'30% 55%',  /* shoes on the left ledge */
-    jeans :'62% 62%',  /* denim across lower half */
-    pants :'55% 45%',  /* leaning model, center */
-    hoodie:'68% 40%',  /* hooded model right side */
-    tshirt:'60% 38%',  /* model right-of-center, face area */
-    acc   :'42% 60%'   /* flat-lay weighted left-bottom */
-  };
-  const DESC = {
-    jacket:'قطع مميزة للبرد والستايل',
-    shoes :'سنيكرز كلاسيك و موديلات راقية',
-    jeans :'دنيم أصلي بقصات متنوعة',
-    pants :'كارغو و سراويل عصرية',
-    hoodie:'هوديات دافية بستايل الشارع',
-    tshirt:'تيشرتات يومية و بولو أنيقة',
-    acc   :'إكسسوارات كتكمّل اللوك'
-  };
-  const order = [['jacket','big'],['shoes','wide'],['hoodie','wide'],['pants',''],['jeans',''],['tshirt',''],['acc','']]
-    /* never render a tile for an empty category: هوديات-و-سويت holds 0 products and its
-       collection URL returns a hard 404. Filtering on the live count means any category
-       that sells out drops off by itself instead of becoming a dead link. */
-    .filter(([c]) => (counts[c] || 0) > 0);
-  $('#catsGrid').innerHTML = order.map(([c,cls], i) => {
-    const m = CAT_META[c];
-    const n = counts[c] || 0;
-    const href = m.col ? '/collections/' + encodeURI(m.col) : '#shop';
-    const idx = String(i+1).padStart(2,'0');
-    const countTxt = n + ' قطعة متوفرة';
-    const fp = FOCUS[c] || 'center';
-    return `<a class="cat ${cls}" href="${href}" aria-label="${esc(m.t)} — ${esc(countTxt)}">
-      <span class="cat-bg" style="background-image:url('${ASSET[c]}');background-position:${fp}" role="presentation"></span>
-      <span class="cat-idx">${idx} — ${esc(c).toUpperCase()}</span>
-      <p class="cat-c">${esc(countTxt)}</p>
-      <h3 class="cat-t">${esc(m.t)}</h3>
-      <p class="cat-d">${esc(DESC[c]||'')}</p>
-      <span class="cat-cta">تسوّق دابا ←</span>
-    </a>`;
-  }).join('');
-}
 function renderSocial(){
   const posts = [
     '{{ 'social-1.webp' | asset_url }}','{{ 'editorial-campaign.webp' | asset_url }}','{{ 'social-2.webp' | asset_url }}',
@@ -2769,7 +2614,7 @@ const mainWa = waLink('سلام، بغيت نطلب من Lbass Original');
 ['navWa','mmenuWa','footWa','waFloat'].forEach(id => { const el = document.getElementById(id); if (el) el.href = mainWa; });
 
 /* ════════════════ INIT + GSAP ════════════════ */
-renderCats(); renderSocial(); renderCart();
+renderSocial(); renderCart();
 $('#wishBub').textContent = wish.length; $('#wishBub').hidden = !wish.length;
 
 
