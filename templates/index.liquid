@@ -228,6 +228,25 @@ input,select{font-family:inherit}
 .lb-answer p{max-width:760px;margin:0 auto!important}
 .lbx-rev-note{margin:14px 0 0;font-size:13.5px;font-weight:700;color:var(--lb-ink-2,#3A3A3C);text-align:center}
 
+/* ════════════════ VAULT (2026-09-30): the one ink band, gold as its accent ════════════════
+   Gold's single job on this page: rarity. #E0B52A on #0A0A0B is ~10:1. Literal colours:
+   this page inverts the legacy tokens (--gold is red, --ink is white). */
+.sec.vault-section{background:#0A0A0B!important;border-block:0!important}
+.vault-section .sec-in,.vault-section .sec-head{background:transparent!important}
+.vault-section .kick{color:#E0B52A!important}
+.vault-section .kick::before{background:#E0B52A!important}
+.vault-section .h2,.vault-section h2{color:#F4EFE6!important}
+.vault-section .h2 em{color:#E0B52A!important}
+.vault-section .sec-sub,.vault-section .vault-aeo,.vault-section .vlt-foot p{color:rgba(244,239,230,.80)!important}
+.vault-section .vault-aeo strong,.vault-section .vlt-foot p b{color:#F4EFE6!important}
+.vault-section .vault-urgency{background:transparent!important;border-color:rgba(224,181,42,.5)!important;color:#E0B52A!important}
+.vault-section .vault-urgency::before{background:#E0B52A!important}
+.vault-section .vault-primary-cta,.vault-section .vlt-foot .btn-gold{background:#E0B52A!important;color:#0A0A0B!important;border:1px solid #E0B52A!important;border-radius:0!important;box-shadow:none!important}
+.vault-section .vault-primary-cta:hover,.vault-section .vlt-foot .btn-gold:hover{background:#C89A0E!important;border-color:#C89A0E!important}
+.vault-section .vault-card{border-color:rgba(244,239,230,.22)!important;background:#1A1A1E!important}
+/* (0,4,x): lbass-cards-fix loads after this sheet with (0,2,x) !important rules */
+.sec.vault-section .vault-card .vault-card-content small,.sec.vault-section .vault-card .vlt-live{color:#E0B52A!important}
+
 /* ════════════════ SECTION SHELL ════════════════ */
 .sec{padding:clamp(64px,10vw,120px) var(--pad)}
 .sec-in{max-width:1500px;margin:0 auto}
@@ -1382,23 +1401,25 @@ input,select{font-family:inherit}
       </div>
       <a class="vault-primary-cta" href="/pages/vault" data-vault-main-cta data-vault-placement="headline">دخل للـ VAULT <span aria-hidden="true">←</span></a>
     </div>
-    <div class="vault-trust-row rev" aria-label="معلومات الثقة ديال Vault">
-      <span>صور حقيقية لنفس القطعة</span>
-      <span>الحالة والعيوب واضحة</span>
-      <span>الدفع عند الاستلام</span>
-      <span>توصيل لكل المغرب</span>
-    </div>
-    {% comment %} Live Vault stats — same pool logic as page.vault (vault-tagged + top-14 priced, available only) {% endcomment %}
+    {% comment %} Live Vault stats — page.vault's pool logic (vault-tagged + top-14 priced, available only),
+       minus fragrance and cosmetics: on 2026-09-30 the two most expensive in-stock products were
+       3,990 MAD perfumes, which would have filled "rare second-hand finds" slots. {% endcomment %}
     {% assign v_avail = collections.all.products | where: 'available', true %}
-    {% capture v_pool %},{% for p in v_avail %}{% if p.tags contains 'vault' %}{{ p.id }},{% endif %}{% endfor %}{% endcapture %}
+    {% capture v_pool %},{% for p in v_avail %}{% assign pt = p.type | downcase %}{% if p.tags contains 'vault' and pt != 'fragrance' and pt != 'cosmetics' %}{{ p.id }},{% endif %}{% endfor %}{% endcapture %}
     {% assign v_sorted = v_avail | sort: 'price' | reverse %}
-    {% for p in v_sorted limit: 14 %}
+    {% assign v_added = 0 %}
+    {% for p in v_sorted %}
+      {% if v_added >= 14 %}{% break %}{% endif %}
+      {% assign pt = p.type | downcase %}
+      {% if pt == 'fragrance' or pt == 'cosmetics' %}{% continue %}{% endif %}
+      {% assign v_added = v_added | plus: 1 %}
       {% capture v_pid %},{{ p.id }},{% endcapture %}
       {% unless v_pool contains v_pid %}{% assign v_pool = v_pool | append: p.id | append: ',' %}{% endunless %}
     {% endfor %}
     {% assign vn_shoes = 0 %}{% assign vn_street = 0 %}{% assign vn_denim = 0 %}
     {% assign vm_shoes = 999999900 %}{% assign vm_street = 999999900 %}{% assign vm_denim = 999999900 %}
     {% assign vt_shoes = '' %}{% assign vt_street = '' %}{% assign vt_denim = '' %}
+    {% assign vi_shoes = '' %}{% assign vi_street = '' %}{% assign vi_denim = '' %}
     {% for p in v_avail %}
       {% capture v_pid %},{{ p.id }},{% endcapture %}
       {% unless v_pool contains v_pid %}{% continue %}{% endunless %}
@@ -1415,14 +1436,17 @@ input,select{font-family:inherit}
       {% if v_cat == 'shoes' %}
         {% assign vn_shoes = vn_shoes | plus: 1 %}
         {% if p.price < vm_shoes %}{% assign vm_shoes = p.price %}{% endif %}
+        {% if vi_shoes == '' and p.featured_image %}{% assign vi_shoes = p.featured_image | image_url: width: 700 %}{% endif %}
         {% if vn_shoes <= 3 and p.featured_image %}{% capture vt_shoes %}{{ vt_shoes }}<img src="{{ p.featured_image | image_url: width: 80 }}" alt="" loading="lazy" width="30" height="30">{% endcapture %}{% endif %}
       {% elsif v_cat == 'denim' %}
         {% assign vn_denim = vn_denim | plus: 1 %}
         {% if p.price < vm_denim %}{% assign vm_denim = p.price %}{% endif %}
+        {% if vi_denim == '' and p.featured_image %}{% assign vi_denim = p.featured_image | image_url: width: 700 %}{% endif %}
         {% if vn_denim <= 3 and p.featured_image %}{% capture vt_denim %}{{ vt_denim }}<img src="{{ p.featured_image | image_url: width: 80 }}" alt="" loading="lazy" width="30" height="30">{% endcapture %}{% endif %}
       {% elsif v_cat == 'street' %}
         {% assign vn_street = vn_street | plus: 1 %}
         {% if p.price < vm_street %}{% assign vm_street = p.price %}{% endif %}
+        {% if vi_street == '' and p.featured_image %}{% assign vi_street = p.featured_image | image_url: width: 700 %}{% endif %}
         {% if vn_street <= 3 and p.featured_image %}{% capture vt_street %}{{ vt_street }}<img src="{{ p.featured_image | image_url: width: 80 }}" alt="" loading="lazy" width="30" height="30">{% endcapture %}{% endif %}
       {% endif %}
     {% endfor %}
@@ -1431,8 +1455,9 @@ input,select{font-family:inherit}
     {% assign v_street_url = collections['audited-drop-p001-p012'].url | default: '/pages/vault?cat=streetwear' %}
     {% assign v_denim_url = collections['جاكيطات-و-معاطف'].url | default: '/pages/vault?cat=denim' %}
     <div class="vault-grid" data-vault-total="{{ v_total }}">
+      {% if vn_shoes > 0 %}
       <a class="vault-card rev" href="{{ v_shoes_url }}" data-vault-card data-vault-category="sneakers" data-vault-destination="{{ v_shoes_url }}">
-        <img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" alt="سنيكرز وصبابط أصلية متوفرة فـ Lbass Original" loading="lazy" decoding="async" width="1376" height="768">
+        {% if vi_shoes != blank %}<img src="{{ vi_shoes }}" alt="سنيكرز وصبابط أصلية متوفرة فـ Lbass Original" loading="lazy" decoding="async" width="700" height="875">{% endif %}
         <div class="vault-card-content">
           <small>SNEAKERS{% if vn_shoes > 0 %} · {{ vn_shoes }} متوفرة دابا{% endif %}</small>
           <b>Sneakers</b>
@@ -1444,8 +1469,10 @@ input,select{font-family:inherit}
           {% else %}<span class="vlt-live">حالياً ما كايناش قطعة متوفرة</span><span class="vlt-cta vlt-out">شوف الكاتيجوري ←</span>{% endif %}
         </div>
       </a>
+      {% endif %}
+      {% if vn_street > 0 %}
       <a class="vault-card rev" href="{{ v_street_url }}" data-vault-card data-vault-category="streetwear" data-vault-destination="{{ v_street_url }}">
-        <img src="{{ 'editorial-campaign.webp' | asset_url }}" alt="قطع streetwear أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="896" height="1200">
+        {% if vi_street != blank %}<img src="{{ vi_street }}" alt="قطع streetwear أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="700" height="875">{% endif %}
         <div class="vault-card-content">
           <small>STREETWEAR{% if vn_street > 0 %} · {{ vn_street }} متوفرة دابا{% endif %}</small>
           <b>Streetwear</b>
@@ -1457,8 +1484,10 @@ input,select{font-family:inherit}
           {% else %}<span class="vlt-live">حالياً ما كايناش قطعة متوفرة</span><span class="vlt-cta vlt-out">شوف آخر الـ drops ←</span>{% endif %}
         </div>
       </a>
+      {% endif %}
+      {% if vn_denim > 0 %}
       <a class="vault-card rev" href="{{ v_denim_url }}" data-vault-card data-vault-category="denim-jackets" data-vault-destination="{{ v_denim_url }}">
-        <img src="{{ 'hero-lifestyle-3b.webp' | asset_url }}" alt="جينز وجاكيتات أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="1264" height="848">
+        {% if vi_denim != blank %}<img src="{{ vi_denim }}" alt="جينز وجاكيتات أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="700" height="875">{% endif %}
         <div class="vault-card-content">
           <small>DENIM &amp; JACKETS{% if vn_denim > 0 %} · {{ vn_denim }} متوفرة دابا{% endif %}</small>
           <b>Denim &amp; Jackets</b>
@@ -1470,6 +1499,7 @@ input,select{font-family:inherit}
           {% else %}<span class="vlt-live">حالياً ما كايناش قطعة متوفرة</span><span class="vlt-cta vlt-out">شوف الجاكيطات ←</span>{% endif %}
         </div>
       </a>
+      {% endif %}
     </div>
     <p class="vault-aeo rev"><strong>Vault ديال Lbass Original</strong> هو اختيار مركز من قطع streetwear أصلية second-hand فالمغرب: سنيكرز، جاكيتات، دنيم وقطع محدودة. كل منتج كيبان بصورو الحقيقية، وحالتو ومخزونو حسب المعلومات المؤكدة.</p>
     <div class="vlt-foot rev">
@@ -1541,121 +1571,6 @@ input,select{font-family:inherit}
   });
 })();
 </script>
-
-<!-- ═══ BEST FINDS — متوفرين دابا ═══ -->
-{% assign bf_avail = collections.all.products | where: 'available', true %}
-{% assign bf_count = 0 %}
-<section class="sec" id="bestfinds" aria-labelledby="bf-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
-      <div>
-        <p class="kick">BEST FINDS — متوفرين دابا</p>
-        <h2 class="h2" id="bf-h">أحسن اللقطات <em>اللي بقاو</em></h2>
-        <p class="sec-sub">قطع مختارة عندها قيمة أكثر — المخزون وشارة 1/1 كيبانو حسب Shopify.</p>
-      </div>
-      <a class="see-all" href="/pages/vault">شوف الـ VAULT كامل →</a>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px">
-      {% for bp in bf_avail %}
-        {% if bp.tags contains 'vault' and bf_count < 4 %}
-          {% assign bf_count = bf_count | plus: 1 %}
-          {% render 'lbass-look-card', rp: bp %}
-        {% endif %}
-      {% endfor %}
-      {% if bf_count < 4 %}
-        {% assign bf_by_price = bf_avail | sort: 'price' | reverse %}
-        {% for bp in bf_by_price %}
-          {% if bf_count >= 4 %}{% break %}{% endif %}
-          {% unless bp.tags contains 'vault' %}
-            {% assign bf_count = bf_count | plus: 1 %}
-            {% render 'lbass-look-card', rp: bp %}
-          {% endunless %}
-        {% endfor %}
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SHOP THE LOOK — لوك كامل من القطع المتوفرة ═══ -->
-{% assign stl_avail = collections.all.products | where: 'available', true %}
-{% assign stl_picked = ',' %}
-{% assign stl_count = 0 %}
-{% capture stl_slots %}top,bottom,shoes{% endcapture %}
-{% assign stl_slot_arr = stl_slots | split: ',' %}
-<section class="sec" id="shoplook" aria-labelledby="stl-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
-      <div>
-        <p class="kick">SHOP THE LOOK</p>
-        <h2 class="h2" id="stl-h">لوك كامل، <em>واجد فدقيقة</em></h2>
-        <p class="sec-sub">قطع مختارة كيركبو مع بعضهم — وكلهم متوفرين دابا حسب مخزون Shopify.</p>
-      </div>
-    </div>
-    <div id="lookGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px">
-      {% for slot_cat in stl_slot_arr %}
-        {% for cp in stl_avail %}
-          {% capture cpid %},{{ cp.id }},{% endcapture %}
-          {% if stl_picked contains cpid %}{% continue %}{% endif %}
-          {% assign cp_tags = cp.tags | join: ',' | downcase %}
-          {% assign cp_type = cp.type | downcase %}
-          {% assign cp_cat = 'top' %}
-          {% if cp_type contains 'shoe' or cp_tags contains 'shoes' or cp_tags contains 'slides' or cp_tags contains 'sneaker' or cp_tags contains 'flip' %}
-            {% assign cp_cat = 'shoes' %}
-          {% elsif cp_type contains 'pant' or cp_type contains 'jean' or cp_type contains 'sets' or cp_tags contains 'pants' or cp_tags contains 'cargo' or cp_tags contains 'jeans' or cp_tags contains 'shorts' %}
-            {% assign cp_cat = 'bottom' %}
-          {% elsif cp_type contains 'accessor' or cp_tags contains 'cap' or cp_tags contains 'bag' or cp_tags contains 'accessor' %}
-            {% assign cp_cat = 'acc' %}
-          {% endif %}
-          {% if cp_cat == slot_cat %}
-            {% assign stl_picked = stl_picked | append: cp.id | append: ',' %}
-            {% assign stl_count = stl_count | plus: 1 %}
-            {% render 'lbass-look-card', rp: cp %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-      {% endfor %}
-    </div>
-    {% if stl_count > 1 %}
-    <div class="look-all" style="margin-top:20px;text-align:center">
-      <button type="button" id="lookAddAll" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 28px;min-height:52px;border-radius:12px;border:1px solid var(--gold);background:var(--gold);color:var(--ink);font-family:inherit;font-weight:900;font-size:15.5px;cursor:pointer;max-width:100%">🛍 زيد القطع المؤكدة من هاد اللوك للسلة</button>
-      <p style="margin:10px 0 0;color:var(--txt3);font-size:12.5px;font-weight:800">💵 كتخلّص غير ملي توصلك · 🚚 توصيل مجاني من 500 درهم</p>
-    </div>
-    {% endif %}
-  </div>
-</section>
-
-<!-- ═══ LOOKBOOK ═══ -->
-<section class="sec" id="lookbook" aria-labelledby="look-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
-      <div>
-        <p class="kick">LOOKBOOK 2026</p>
-        <h2 class="h2" id="look-h">ستايل الشارع، <em>بلمسة مغربية</em></h2>
-      </div>
-      <a class="see-all" href="#shop">SHOP THE LOOK →</a>
-    </div>
-    <div class="look">
-      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" alt="لوك سنيكرز Nike Air Max" loading="lazy" decoding="async" width="1376" height="768"><span class="look-cap">سنيكر هيد<small>LOOK 01 — AIR MAX</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'social-2.webp' | asset_url }}" alt="لوك ستريت ستايل فكازا" loading="lazy" decoding="async" width="800" height="800"><span class="look-cap">ستريت كازا<small>LOOK 02 — STREET</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-3b.webp' | asset_url }}" alt="لوك دنيم Levi's كلاسيكي" loading="lazy" decoding="async" width="1264" height="848"><span class="look-cap">دنيم كلاسيك<small>LOOK 03 — 501</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'look-rooftop.webp' | asset_url }}" alt="لوك هودي على سطح كازا" loading="lazy" decoding="async" width="896" height="1200"><span class="look-cap">هودي موود<small>LOOK 04 — ROOFTOP</small></span></a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ SOCIAL ═══ -->
-<section class="sec" style="padding-top:0" aria-labelledby="soc-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
-      <div>
-        <p class="kick ltr" style="direction:ltr">@LBASS.ORIGINAL</p>
-        <h2 class="h2" id="soc-h">تبعنا فـ <em>الإنستا</em></h2>
-      </div>
-      <a class="see-all" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener">FOLLOW →</a>
-    </div>
-    <div class="social-grid rev" id="socGrid"></div>
-  </div>
-</section>
 
 <section class="sec" id="sell-clothes" aria-labelledby="sell-h">
   <div class="sec-in">
@@ -2287,18 +2202,6 @@ function renderGrid(){
   if (counter) counter.textContent = list.length + ' قطعة';
   if (window.gsap) gsap.fromTo('#pgrid .pcard', {opacity:0, y:24}, {opacity:1, y:0, duration:.5, stagger:.05, ease:'power2.out', overwrite:true});
 }
-function renderSocial(){
-  const posts = [
-    '{{ 'social-1.webp' | asset_url }}','{{ 'editorial-campaign.webp' | asset_url }}','{{ 'social-2.webp' | asset_url }}',
-    '{{ 'look-rooftop.webp' | asset_url }}','{{ 'social-3.webp' | asset_url }}','{{ 'hero-lifestyle-1.webp' | asset_url }}'
-  ];
-  $('#socGrid').innerHTML = posts.map(src =>
-    `<a class="sg-it" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener" aria-label="منشور إنستغرام Lbass Original">
-       <img src="${src}" alt="" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
-       <span class="hov">شوف المنشور ↗</span>
-     </a>`).join('');
-}
-
 /* ════════════════ CART — bridged to the real Shopify cart (snippets/lbass-cart-drawer.liquid) ════════════════ */
 /* The old localStorage demo cart is gone: items now go to Shopify via the Ajax Cart API,
    so the drawer, the /cart page and checkout always agree. These shims keep every legacy
@@ -2646,7 +2549,7 @@ const mainWa = waLink('سلام، بغيت نطلب من Lbass Original');
 ['navWa','mmenuWa','footWa','waFloat'].forEach(id => { const el = document.getElementById(id); if (el) el.href = mainWa; });
 
 /* ════════════════ INIT + GSAP ════════════════ */
-renderSocial(); renderCart();
+renderCart();
 $('#wishBub').textContent = wish.length; $('#wishBub').hidden = !wish.length;
 
 
