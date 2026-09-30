@@ -1,0 +1,37 @@
+{%- comment -%}
+  ═══ LBASS — "ADD TO BUNDLE" BLOCK ON PRODUCT PAGES (2026-09-28) ═══
+  Usage: {% render 'lbass-bundle-pdp', product: product, dept: 'fragrance'|'beauty' %}
+  Rendered in product.fragrance / product.beauty above .pdp-buy-note, only for
+  products that can be bought. The button is handled by the delegated
+  [data-lbb-add] listener in snippets/lbass-bundle-core.liquid. It saves the
+  item to the department bundle, and a second tap opens the bundle page.
+  Styles (.lbb-pdp*) live in lbass-bundle-core.
+{%- endcomment -%}
+{%- if product.available -%}
+{%- liquid
+  assign bv = product.selected_or_first_available_variant
+  assign bmax = bv.inventory_quantity | default: 1
+  if bv.inventory_management == blank
+    assign bmax = 9
+  endif
+  if dept == 'beauty'
+    assign bt = 'ركّب روتين ووفّر'
+    assign bs = 'زيد هاد المنتوج للباك: جوج منتوجات K-beauty = ⁦−5%⁩، و3 ولفوق = ⁦−10%⁩، أوتوماتيكياً فالسلة.'
+    assign bq = '/pages/k-beauty-consultation'
+    assign bql = 'شنو يناسب بشرتي؟'
+  else
+    assign bt = 'ركّب باك ووفّر'
+    assign bs = 'زيد هاد العطر للباك: جوج عطور = ⁦−10%⁩، و3 ولفوق = ⁦−15%⁩، أوتوماتيكياً فالسلة.'
+    assign bq = '/pages/find-your-fragrance'
+    assign bql = 'ماعرفتيش؟ الاستشارة'
+  endif
+-%}
+<div class="lbb-pdp">
+  <p class="lbb-pdp__t">{{ bt }}</p>
+  <p class="lbb-pdp__s">{{ bs }}</p>
+  <div class="lbb-pdp__row">
+    <button type="button" class="lbb-pdp__btn" data-lbb-add data-dept="{{ dept }}" data-variant="{{ bv.id }}" data-handle="{{ product.handle }}" data-max="{{ bmax }}" data-source="pdp" data-label="زيدو للباك">زيدو للباك</button>
+    <a class="lbb-pdp__lnk" href="{{ bq }}" data-cro-event="consultation_entry_click" data-cro-label="{{ dept }}_pdp">{{ bql }}</a>
+  </div>
+</div>
+{%- endif -%}

@@ -1,0 +1,414 @@
+{%- comment -%}
+  ═══ LBASS — CONSULTATION + RECOMMENDATIONS (2026-09-28) ═══
+  Usage: {% render 'lbass-consult', dept: 'fragrance' %} or dept: 'beauty'
+  Rendered by templates/page.consult.liquid. Two SEPARATE consultations: fragrance
+  and K-beauty are never mixed.
+
+  Adapted from NUR's /pages/find-my-scent: 5 one-tap questions, and product data
+  rendered by Liquid as JSON (no extra API calls). Unlike NUR, which maps answers
+  to 4 profiles with fixed hand-picked lists, this scores EVERY in-stock product
+  with a transparent weighted formula and shows the match % and the reasons.
+
+  Product attributes (Shopify metafields, filled 2026-09-28):
+    fragrance.accords (list) · sweetness/freshness/warmth/intensity (1-5)
+    fragrance.occasions · seasons · style (lists) · wearer · notes_top/heart/base
+    beauty.goals (list, strongest first) · beauty.skin_fit (list)
+    beauty.routine_time · product_form · key_ingredients · cautions
+  To add a product to the consultation, fill the same fields in Admin.
+
+  Weights (out of 100):
+    fragrance: accord 30 · occasion 20 · impression 20 · intensity 20 · budget 10
+               (×0.6 when the wearer clearly clashes with a masculine/feminine answer)
+    beauty:    goal 45 · skin 25 · time of day 15 · budget 15
+  Sold-out products are never recommended.
+
+  State lives in the URL hash (#a=2.0.1), so refresh and back/forward keep the
+  place in the quiz. Results hand off to the department bundle via
+  window.LbassBundle.
+{%- endcomment -%}
+{%- liquid
+  assign lbc_dept = dept | default: 'fragrance'
+  if lbc_dept == 'beauty'
+    assign lbc_coll = collections['cosmetics']
+    assign lbc_kick = 'K-BEAUTY · SKIN CONSULTATION'
+    assign lbc_bundle = '/pages/k-beauty-bundle'
+  else
+    assign lbc_dept = 'fragrance'
+    assign lbc_coll = collections['fragrances']
+    assign lbc_kick = 'FRAGRANCE · PRIVATE CONSULTATION'
+    assign lbc_bundle = '/pages/fragrance-bundle'
+  endif
+-%}
+<style>
+.lbc{max-width:960px;margin:0 auto;padding:clamp(14px,3vw,28px) clamp(16px,4vw,32px) 40px;direction:rtl;text-align:right}
+.lbc *{box-sizing:border-box}
+.lbc-kick{margin:0 0 6px!important;font-size:11px;font-weight:900;letter-spacing:.16em;color:var(--gold,#BF2E15);direction:ltr;text-align:right}
+.lbc .lbc-h1{margin:0 0 8px!important;font-size:clamp(28px,6vw,46px)!important;line-height:1.08!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbc-lead{max-width:680px;margin:0 0 14px;color:var(--txt2,#57534E);font-size:15px;line-height:1.75}
+.lbc-lead p{margin:0 0 6px}
+.lbc-trust{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:0;list-style:none}
+.lbc-trust li{border:1px solid var(--line,rgba(11,11,12,.16));border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:800;color:var(--cream,#0B0B0C)}
+.lbc-start,.lbc-next,.lbc-cta{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 24px;border:0;border-radius:14px;background:var(--cream,#0B0B0C);color:var(--ink,#fff);font:inherit;font-weight:900;font-size:16px;cursor:pointer;text-decoration:none}
+.lbc-start{width:100%;max-width:420px}
+.lbc-panel{margin:6px 0 0;padding:clamp(16px,3vw,24px);border:1px solid var(--line,rgba(11,11,12,.16));border-radius:18px;background:var(--ink,#fff)}
+.lbc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.lbc-step{font-size:12.5px;font-weight:900;color:var(--txt2,#57534E)}
+.lbc-back{min-height:44px;padding:0 12px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:12px;background:transparent;font:inherit;font-weight:900;color:var(--cream,#0B0B0C);cursor:pointer}
+.lbc-back[disabled]{visibility:hidden}
+.lbc-bar{height:6px;border-radius:999px;background:var(--ink2,#F4F2ED);overflow:hidden;margin:0 0 16px}
+.lbc-bar i{display:block;height:100%;width:0;background:var(--cream,#0B0B0C);transition:width .25s}
+.lbc .lbc-q{margin:0 0 14px!important;font-size:clamp(20px,4.6vw,26px)!important;line-height:1.3!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbc-opts{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){ .lbc-opts{grid-template-columns:1fr 1fr} }
+.lbc-opt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:60px;padding:12px 14px;border:1.5px solid var(--line,rgba(11,11,12,.16));border-radius:14px;background:var(--ink,#fff);font:inherit;text-align:right;cursor:pointer;color:var(--cream,#0B0B0C)}
+.lbc-opt strong{font-size:15.5px;font-weight:900}
+.lbc-opt span{font-size:12.5px;color:var(--txt2,#57534E);line-height:1.5}
+.lbc-opt[aria-pressed="true"]{border-color:var(--cream,#0B0B0C);box-shadow:0 0 0 1.5px var(--cream,#0B0B0C) inset}
+.lbc-opt:focus-visible{outline:3px solid var(--gold,#BF2E15);outline-offset:2px}
+.lbc-res-h{margin:0 0 6px!important;font-size:clamp(24px,5vw,34px)!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbc-res-sum{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.lbc-res-sum span{font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--ink2,#F4F2ED);color:var(--cream,#0B0B0C)}
+.lbc-recs{display:grid;grid-template-columns:1fr;gap:12px}
+@media (min-width:760px){ .lbc-recs{grid-template-columns:1fr 1fr} }
+.lbc-rec{display:grid;grid-template-columns:108px 1fr;gap:12px;padding:12px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:16px;background:var(--ink,#fff)}
+.lbc-rec.is-top{border-color:var(--cream,#0B0B0C)}
+.lbc-rec__img{display:block;width:108px;height:108px;border-radius:12px;background:var(--ink2,#F4F2ED);overflow:hidden}
+.lbc-rec__img img{width:100%;height:100%;object-fit:contain}
+.lbc-rec__b{margin:0!important;font-size:10.5px;font-weight:900;letter-spacing:.08em;color:var(--gold,#BF2E15);direction:ltr;text-align:right;text-transform:uppercase}
+.lbc-rec__t{margin:2px 0!important;font-size:15px!important;line-height:1.3!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbc-rec__t a{color:inherit;text-decoration:none}
+.lbc-rec__row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
+.lbc-rec__p{font-weight:900;font-size:15px;direction:ltr;color:var(--cream,#0B0B0C)}
+.lbc-match{font-size:12.5px;font-weight:900;padding:4px 9px;border-radius:999px;background:var(--cream,#0B0B0C);color:var(--ink,#fff);direction:ltr}
+.lbc-chips{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.lbc-chips span{font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;background:var(--ink2,#F4F2ED);color:var(--cream,#0B0B0C)}
+.lbc-why{margin:0 0 8px;padding:0 16px 0 0;font-size:12.5px;line-height:1.6;color:var(--txt2,#57534E)}
+.lbc-warn{margin:0 0 8px!important;font-size:12px;font-weight:800;color:var(--gold,#BF2E15)}
+.lbc-act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.lbc-act a,.lbc-act button{flex:1 1 130px;display:inline-flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;font:inherit;font-weight:900;font-size:13.5px;cursor:pointer;text-decoration:none}
+.lbc-act a{border:1px solid var(--line,rgba(11,11,12,.16));color:var(--cream,#0B0B0C);background:transparent}
+.lbc-act button{border:1px solid var(--cream,#0B0B0C);background:var(--cream,#0B0B0C);color:var(--ink,#fff)}
+.lbc-pick{grid-column:1/-1;display:flex;align-items:center;gap:10px;min-height:44px;font-size:13.5px;font-weight:900;color:var(--cream,#0B0B0C);cursor:pointer}
+.lbc-pick input{width:22px;height:22px;accent-color:#0B0B0C}
+.lbc-bundle{margin:16px 0 0;padding:16px;border-radius:16px;background:var(--ink2,#F4F2ED)}
+.lbc-bundle p{margin:0 0 10px!important;font-weight:900;color:var(--cream,#0B0B0C)}
+.lbc-bundle .lbc-cta{width:100%}
+.lbc-bundle .lbc-cta[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.lbc-retake{display:inline-flex;align-items:center;min-height:44px;margin-top:12px;background:none;border:0;padding:0;font:inherit;font-weight:900;color:var(--cream,#0B0B0C);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.lbc-none{padding:14px;border-radius:14px;background:var(--ink2,#F4F2ED);font-weight:800}
+[data-lbc-view][hidden]{display:none!important}
+</style>
+
+<section class="lbc" data-lbc-root data-dept="{{ lbc_dept }}" data-bundle="{{ lbc_bundle }}" aria-labelledby="lbcH1">
+  <div data-lbc-view="intro">
+    <p class="lbc-kick">{{ lbc_kick }}</p>
+    <h1 class="lbc-h1" id="lbcH1">{{ page.title }}</h1>
+    <div class="lbc-lead">{{ page.content }}</div>
+    <ul class="lbc-trust">
+      <li>⏱ 5 أسئلة · ≈ 60 ثانية</li>
+      <li>بلا إيميل وبلا حساب</li>
+      <li>نتيجة بنسبة التطابق وعلاش</li>
+    </ul>
+    <button type="button" class="lbc-start" data-lbc-start>بدا الاستشارة ↓</button>
+  </div>
+
+  <div class="lbc-panel" data-lbc-view="quiz" hidden>
+    <div class="lbc-top">
+      <span class="lbc-step" data-lbc-step>السؤال 1 من 5</span>
+      <button type="button" class="lbc-back" data-lbc-back>→ رجع</button>
+    </div>
+    <div class="lbc-bar" aria-hidden="true"><i data-lbc-bar></i></div>
+    <h2 class="lbc-q" data-lbc-q tabindex="-1"></h2>
+    <div class="lbc-opts" data-lbc-opts role="group"></div>
+  </div>
+
+  <div data-lbc-view="result" hidden>
+    <p class="lbc-kick">{{ lbc_kick }}</p>
+    <h2 class="lbc-res-h" data-lbc-res-h tabindex="-1">لقينا ليك اللي يناسبك</h2>
+    <div class="lbc-res-sum" data-lbc-res-sum></div>
+    <div class="lbc-recs" data-lbc-recs></div>
+    <div class="lbc-bundle" data-lbc-bundle-box>
+      <p data-lbc-bundle-txt></p>
+      <a class="lbc-cta" href="{{ lbc_bundle }}" data-lbc-bundle>ركّب باك بهادو ←</a>
+    </div>
+    <button type="button" class="lbc-retake" data-lbc-retake>↺ عاود الاستشارة</button>
+  </div>
+</section>
+
+<script type="application/json" data-lbc-products>
+[
+{%- assign lbc_first = true -%}
+{%- for p in lbc_coll.products -%}
+  {%- assign v = p.selected_or_first_available_variant -%}
+  {%- assign vmax = v.inventory_quantity | default: 0 -%}
+  {%- if v.inventory_management == blank -%}{%- assign vmax = 9 -%}{%- endif -%}
+  {%- unless lbc_first -%},{%- endunless -%}{%- assign lbc_first = false -%}
+  {"v":{{ v.id | json }},"h":{{ p.handle | json }},"t":{{ p.title | split: ' | ' | first | remove_first: p.vendor | strip | json }},"ar":{{ p.title | split: ' | ' | last | json }},"b":{{ p.vendor | json }},"url":{{ p.url | json }},"img":{{ p.featured_image | image_url: width: 300 | json }},"price":{{ v.price | json }},"avail":{{ p.available | json }},"max":{{ vmax | json }}
+  {%- if lbc_dept == 'beauty' -%}
+   ,"goals":{{ p.metafields.beauty.goals.value | json }},"fit":{{ p.metafields.beauty.skin_fit.value | json }},"time":{{ p.metafields.beauty.routine_time.value | json }},"form":{{ p.metafields.beauty.product_form.value | json }},"ing":{{ p.metafields.beauty.key_ingredients.value | json }},"ml":{{ p.metafields.beauty.volume_ml.value | json }},"shade":{{ p.metafields.beauty.shade.value | json }}
+  {%- else -%}
+   ,"acc":{{ p.metafields.fragrance.accords.value | json }},"sw":{{ p.metafields.fragrance.sweetness.value | json }},"fr":{{ p.metafields.fragrance.freshness.value | json }},"wa":{{ p.metafields.fragrance.warmth.value | json }},"in":{{ p.metafields.fragrance.intensity.value | json }},"occ":{{ p.metafields.fragrance.occasions.value | json }},"sty":{{ p.metafields.fragrance.style.value | json }},"wear":{{ p.metafields.fragrance.wearer.value | json }},"top":{{ p.metafields.fragrance.notes_top.value | json }},"base":{{ p.metafields.fragrance.notes_base.value | json }},"ml":{{ p.metafields.fragrance.volume_ml.value | json }},"conc":{{ p.metafields.fragrance.concentration.value | json }}
+  {%- endif -%}}
+{%- endfor -%}
+]
+</script>
+
+<script>
+(function(){
+  'use strict';
+  /* Boot after DOMContentLoaded: window.LbassBundle / window.LbassCart are defined by
+     snippets rendered at the END of the layout (lbass-cart-drawer → lbass-bundle-core). */
+  function boot(){
+  var root = document.querySelector('[data-lbc-root]');
+  if (!root || root.dataset.ready) return;
+  root.dataset.ready = '1';
+  var dept = root.getAttribute('data-dept');
+  var P = [];
+  try { P = JSON.parse(root.parentNode.querySelector('[data-lbc-products]').textContent || '[]'); } catch (e) { P = []; }
+  var B = window.LbassBundle || null;
+  var track = function(n, p){ p = p || {}; p.department = dept; (window.lbTrack || function(){})(n, p); };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(ch){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
+  function fmt(c){ return B ? B.fmt(c) : (Math.round(c / 100) + ' درهم'); }
+  function has(list, x){ return Array.isArray(list) && list.indexOf(x) !== -1; }
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+  /* ───────── question sets (Darija first) ───────── */
+  var FRAG = [
+    { k: 'acc', q: 'شنو نوع الريحة اللي كتعجبك أكثر؟', o: [
+      ['fresh', 'فريش ونقية', 'بحال الصابون، البحر والنقاء'], ['sweet', 'حلوة', 'كراميل، برالين، فواكه'],
+      ['vanilla', 'فانيلا ودافية', 'فانيلا، تونكا، عنبر'], ['woody', 'خشبية', 'خشب، سيدر، عنبر'],
+      ['spicy', 'حارة (épicée)', 'قرفة، فلفل، هيل'], ['floral', 'وردية', 'ورد، ياسمين، زهر'],
+      ['oud', 'العود', 'عود، بخور، جلد — عربية بزاف'], ['citrus', 'حامض ومنعشة', 'ليمون، برتقال، بيرغاموت'],
+      ['unsure', 'ماعرفتش — بغيت نكتاشف', 'غادي نعطيوك اختيارات متنوعة'] ] },
+    { k: 'occ', q: 'فين غادي تديرو أكثر؟', o: [
+      ['daily', 'كل نهار', 'حاجة ساهلة تلبسها ديما'], ['work', 'الخدمة ولا القراية', 'نقي وما كيزعجش'],
+      ['date', 'موعد (rendez-vous)', 'دافي وكيتفكر'], ['evening', 'العشية والسهرات', 'حضور أكثر'],
+      ['special', 'المناسبات والأعراس', 'فخامة ونهار خاص'] ] },
+    { k: 'sty', q: 'شنو الانطباع اللي بغيتي تخلي؟', o: [
+      ['fresh', 'نقي وفريش', ''], ['elegant', 'أنيق وراقي', ''], ['masculine', 'رجولي', ''], ['feminine', 'أنثوي', ''],
+      ['mysterious', 'غامض', ''], ['powerful', 'قوي وكيبان', ''], ['seductive', 'دافي ومغري', ''], ['relaxed', 'مرتاح وخفيف', ''] ] },
+    { k: 'int', q: 'شحال بغيتيه يكون قوي؟', o: [
+      ['2', 'خفيف', 'قريب للبشرة، ما كيزعج حتى واحد'], ['3', 'متوسط', 'كيبان بلا ما يزعج'], ['5', 'قوي', 'كيفوح وكيبقى ساعات'] ] },
+    { k: 'bud', q: 'شحال الميزانية ديالك لقرعة كاملة؟', o: [
+      ['30000', 'حتى 300 درهم', ''], ['65000', 'حتى 650 درهم', ''], ['130000', 'حتى 1,300 درهم', ''], ['0', 'ماشي مشكل — بغيت الأحسن', ''] ] }
+  ];
+  var BEAUTY = [
+    { k: 'goal', q: 'شنو أكثر حاجة بغيتي تصلح فبشرتك؟', o: [
+      ['antiage', 'التجاعيد والشد', 'خطوط خفيفة، بشرة مرخية'], ['spots', 'البقع وآثار الحبوب', 'تصبغات، لون ماشي موحد'],
+      ['hydration', 'النشوفية والترطيب', 'بشرة عطشانة ولا خشينة'], ['sensitive', 'الحساسية والاحمرار', 'بشرة كتقلق بسهولة'],
+      ['pores', 'المسام والملمس', 'مسام واسعة، ملمس ماشي ناعم'], ['tone', 'توحيد اللون + واقي الشمس', 'تغطية خفيفة للنهار'],
+      ['cleansing', 'تحياد الماكياج والتنظيف', 'واقي الشمس، الماكياج، الرؤوس السوداء'] ] },
+    { k: 'skin', q: 'نوع البشرة ديالك؟', o: [
+      ['dry', 'ناشفة', ''], ['oily', 'دهنية', ''], ['combination', 'مختلطة', ''], ['sensitive', 'حساسة', ''], ['normal', 'عادية', ''], ['unsure', 'ماعرفتش', ''] ] },
+    { k: 'time', q: 'إمتى بغيتي تستعمل الروتين؟', o: [
+      ['day', 'الصباح', ''], ['night', 'الليل', ''], ['both', 'الصباح والليل', ''] ] },
+    { k: 'steps', q: 'شحال من خطوة بغيتي فالروتين؟', o: [
+      ['1', 'خطوة وحدة سهلة', 'منتوج واحد كيدير الشغل'], ['3', '2 حتى 3 خطوات', 'تنظيف · علاج · ترطيب'], ['4', 'روتين كامل', 'كل خطوة فبلاصتها'] ] },
+    { k: 'bud', q: 'الميزانية للمنتوج الواحد؟', o: [
+      ['26000', 'حتى 260 درهم', ''], ['32000', 'حتى 320 درهم', ''], ['0', 'ماشي مشكل', ''] ] }
+  ];
+  var Q = dept === 'beauty' ? BEAUTY : FRAG;
+  var L = {
+    acc: { fresh: 'فريش', sweet: 'حلو', woody: 'خشبي', spicy: 'حار', floral: 'وردي', oud: 'عود', vanilla: 'فانيلا', citrus: 'حامض', amber: 'عنبر', fruity: 'فواكه', leather: 'جلد', musk: 'مسك' },
+    accF: { fresh: 'ريحة فريش ونقية', sweet: 'ريحة حلوة', woody: 'ريحة خشبية', spicy: 'ريحة حارة (épicée)', floral: 'ريحة وردية', oud: 'ريحة ديال العود', vanilla: 'ريحة فانيلا دافية', citrus: 'ريحة حامضة ومنعشة' },
+    occ: { daily: 'مزيان للاستعمال ديال كل نهار', work: 'مزيان للخدمة والقراية', date: 'مزيان للمواعيد', evening: 'مزيان للعشية والسهرات', special: 'مزيان للمناسبات والأعراس' },
+    sty: { fresh: 'نقي وفريش', elegant: 'أنيق', masculine: 'رجولي', feminine: 'أنثوي', mysterious: 'غامض', powerful: 'قوي', seductive: 'دافي ومغري', relaxed: 'مرتاح' },
+    goal: { antiage: 'التجاعيد والشد', spots: 'البقع والتصبغات', hydration: 'الترطيب', sensitive: 'الحساسية والاحمرار', pores: 'المسام والملمس', tone: 'توحيد اللون', sun: 'الحماية من الشمس', cleansing: 'التنظيف والديماكياج', dull: 'البشرة الباهتة' },
+    skin: { dry: 'مناسب للبشرة الناشفة', oily: 'مناسب للبشرة الدهنية', combination: 'مناسب للبشرة المختلطة', sensitive: 'مناسب للبشرة الحساسة', normal: 'مناسب للبشرة العادية', unsure: 'مناسب لأغلب أنواع البشرة' }
+  };
+  var REL = { fresh: ['citrus', 'musk'], citrus: ['fresh', 'fruity'], sweet: ['vanilla', 'fruity', 'amber'], vanilla: ['sweet', 'amber'], woody: ['oud', 'amber', 'leather'], oud: ['woody', 'leather', 'amber'], spicy: ['amber', 'oud'], floral: ['fruity', 'musk'] };
+  var OCC_REL = { daily: ['work'], work: ['daily'], date: ['evening'], evening: ['date', 'special'], special: ['evening'] };
+
+  /* ───────── scoring ───────── */
+  function scoreFrag(p, a){
+    var parts = [], acc = p.acc || [], sw = p.sw || 3, fr = p.fr || 3, wa = p.wa || 3, it = p.in || 3;
+    /* 1. accord (30) */
+    var s1;
+    if (a.acc === 'unsure') s1 = 0.7;
+    else {
+      var idx = acc.indexOf(a.acc);
+      var list = idx === -1 ? ((REL[a.acc] || []).some(function(r){ return has(acc, r); }) ? 0.55 : 0.1) : (idx < 2 ? 1 : 0.85);
+      var scale = a.acc === 'sweet' ? sw / 5 : a.acc === 'fresh' ? fr / 5 : a.acc === 'vanilla' ? (sw + wa) / 10 : 0;
+      s1 = Math.max(list, scale);
+    }
+    parts.push({ w: 30, s: s1, why: s1 >= 0.8 && a.acc !== 'unsure' ? ((L.accF[a.acc] || '') + (p.top ? ' — النوطات: ' + String(p.top).split(',').slice(0, 2).join('، ') + (p.base ? ' … ' + String(p.base).split(',').slice(0, 2).join('، ') : '') : '')) : null });
+    /* 2. occasion (20) */
+    var s2 = has(p.occ, a.occ) ? 1 : ((OCC_REL[a.occ] || []).some(function(o){ return has(p.occ, o); }) ? 0.6 : 0.2);
+    parts.push({ w: 20, s: s2, why: s2 === 1 ? L.occ[a.occ] : null });
+    /* 3. impression (20) */
+    var derived = { fresh: fr / 5, seductive: (sw + wa) / 10, powerful: it / 5, relaxed: clamp01((6 - it) / 4) * (fr / 5 + 0.2),
+      masculine: p.wear === 'Men' ? 1 : (p.wear === 'Unisex' ? 0.6 : 0.1), feminine: p.wear === 'Women' ? 1 : (p.wear === 'Unisex' ? 0.6 : 0.1),
+      elegant: 0.4, mysterious: has(acc, 'oud') || has(acc, 'leather') ? 0.8 : 0.2 }[a.sty] || 0.3;
+    var s3 = has(p.sty, a.sty) ? 1 : clamp01(derived);
+    parts.push({ w: 20, s: s3, why: s3 >= 0.8 ? ('كيعطي انطباع ' + L.sty[a.sty]) : null });
+    /* 4. intensity (20) */
+    var target = parseInt(a.int, 10) || 3, s4 = 1 - Math.abs(it - target) / 4;
+    parts.push({ w: 20, s: s4, why: s4 >= 0.75 ? (it >= 4 ? 'قوي وكيبقى ساعات' : (it <= 2 ? 'خفيف وقريب للبشرة' : 'قوة متوسطة، كيبان بلا ما يزعج')) : null });
+    /* 5. budget (10) */
+    var max = parseInt(a.bud, 10) || 0, s5 = !max || p.price <= max ? 1 : (p.price <= max * 1.25 ? 0.5 : 0);
+    parts.push({ w: 10, s: s5, why: max && s5 === 1 ? 'داخل فالميزانية ديالك' : null });
+    var total = parts.reduce(function(t, x){ return t + x.w * x.s; }, 0);
+    if ((a.sty === 'masculine' && p.wear === 'Women') || (a.sty === 'feminine' && p.wear === 'Men')) total *= 0.6;
+    if (max && p.price > max * 1.25) total *= 0.7;
+    return { total: total, parts: parts };
+  }
+  function scoreBeauty(p, a){
+    var parts = [], goals = p.goals || [], fit = p.fit || [];
+    var gi = goals.indexOf(a.goal);
+    var s1 = gi === 0 ? 1 : gi === 1 ? 0.75 : gi > 1 ? 0.55 : ((a.goal === 'tone' && has(goals, 'sun')) ? 0.7 : 0);
+    parts.push({ w: 45, s: s1, why: s1 >= 0.75 ? ('كيخدم على ' + L.goal[a.goal]) : (s1 > 0 ? ('حتى هو كيعاون على ' + L.goal[a.goal]) : null) });
+    var retinal = (p.ing || []).some(function(x){ return /retinal/i.test(x); });
+    var s2 = a.skin === 'unsure' ? 0.9 : has(fit, a.skin) ? 1 : has(fit, 'all') ? 0.9 : 0.4;
+    if (a.skin === 'sensitive' && retinal) s2 = Math.min(s2, 0.5);
+    parts.push({ w: 25, s: s2, why: s2 >= 0.9 ? L.skin[a.skin] : null });
+    var t = String(p.time || '').toLowerCase(), both = t.indexOf('day and night') !== -1;
+    var s3 = a.time === 'both' ? (both ? 1 : 0.7) : (both ? 1 : ((a.time === 'day' && t === 'day') || (a.time === 'night' && t === 'night') ? 1 : 0.3));
+    parts.push({ w: 15, s: s3, why: s3 === 1 ? (both ? 'كيتستعمل الصباح والليل' : (t === 'night' ? 'للروتين ديال الليل' : 'للروتين ديال الصباح')) : null });
+    var max = parseInt(a.bud, 10) || 0, s4 = !max || p.price <= max ? 1 : 0.4;
+    parts.push({ w: 15, s: s4, why: max && s4 === 1 ? 'داخل فالميزانية ديالك' : null });
+    return { total: parts.reduce(function(x, y){ return x + y.w * y.s; }, 0), parts: parts, retinal: retinal };
+  }
+  /* Beauty routine steps: cleanse → treat → moisturise → protect */
+  function stepOf(p){ var f = String(p.form || '').toLowerCase(); if (/cleans/.test(f)) return 1; if (/cream/.test(f) && !/bb/.test(f)) return 3; if (/bb|spf|sun/.test(f)) return 4; return 2; }
+  var STEP_L = { 1: '1 · تنظيف', 2: '2 · علاج', 3: '3 · ترطيب', 4: '4 · حماية النهار' };
+
+  function recommend(a){
+    var live = P.filter(function(p){ return p.avail && p.price > 0; });
+    var scored = live.map(function(p){ var r = dept === 'beauty' ? scoreBeauty(p, a) : scoreFrag(p, a); r.p = p; r.pct = Math.round(Math.max(0, Math.min(100, r.total))); return r; })
+      .sort(function(x, y){ return y.pct - x.pct || x.p.price - y.p.price; });
+    if (dept !== 'beauty') return scored.slice(0, 4);
+    var steps = parseInt(a.steps, 10) || 1;
+    if (steps <= 1) return scored.slice(0, 3);
+    /* best product per routine step, then fill with the next best */
+    var byStep = {}, out = [];
+    scored.forEach(function(r){ var s = stepOf(r.p); if (!byStep[s] && r.pct >= 40) byStep[s] = r; });
+    var wanted = steps >= 4 ? [1, 2, 3, 4] : [1, 2, 3];
+    wanted.forEach(function(s){ if (byStep[s]) { byStep[s].step = s; out.push(byStep[s]); } });
+    scored.forEach(function(r){ if (out.length < Math.max(3, wanted.length) && out.indexOf(r) === -1) out.push(r); });
+    return out.sort(function(x, y){ return (x.step || 9) - (y.step || 9); });
+  }
+
+  /* ───────── state in the URL hash ───────── */
+  function answersFromHash(){
+    var m = location.hash.match(/a=([0-9.]*)/); if (!m || !m[1]) return [];
+    return m[1].split('.').map(function(x){ return parseInt(x, 10); }).filter(function(x, i){ return !isNaN(x) && Q[i] && x >= 0 && x < Q[i].o.length; });
+  }
+  function setHash(arr, push){
+    var h = '#a=' + arr.join('.');
+    try { if (push) history.pushState(null, '', h); else history.replaceState(null, '', h); } catch (e) { location.hash = h; }
+  }
+  function asObj(arr){ var o = {}; arr.forEach(function(i, qi){ o[Q[qi].k] = Q[qi].o[i][0]; }); return o; }
+
+  var views = {}; root.querySelectorAll('[data-lbc-view]').forEach(function(v){ views[v.getAttribute('data-lbc-view')] = v; });
+  function show(name){ Object.keys(views).forEach(function(k){ views[k].hidden = k !== name; }); }
+  var ans = [];
+
+  function renderQ(focus){
+    show('quiz');
+    var i = ans.length, q = Q[i];
+    root.querySelector('[data-lbc-step]').textContent = 'السؤال ' + (i + 1) + ' من ' + Q.length;
+    root.querySelector('[data-lbc-bar]').style.width = ((i + 1) / Q.length * 100) + '%';
+    root.querySelector('[data-lbc-back]').disabled = i === 0;
+    var qe = root.querySelector('[data-lbc-q]'); qe.textContent = q.q;
+    root.querySelector('[data-lbc-opts]').innerHTML = q.o.map(function(o, oi){
+      return '<button type="button" class="lbc-opt" data-lbc-opt="' + oi + '" aria-pressed="false"><strong>' + esc(o[1]) + '</strong>' + (o[2] ? '<span>' + esc(o[2]) + '</span>' : '') + '</button>';
+    }).join('');
+    if (focus) { try { qe.focus({ preventScroll: true }); } catch (e) {} views.quiz.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
+  function renderResult(){
+    show('result');
+    var a = asObj(ans), recs = recommend(a);
+    var sum = root.querySelector('[data-lbc-res-sum]');
+    sum.innerHTML = ans.map(function(i, qi){ return '<span>' + esc(Q[qi].o[i][1]) + '</span>'; }).join('');
+    var box = root.querySelector('[data-lbc-recs]');
+    if (!recs.length) {
+      box.innerHTML = '<div class="lbc-none">حالياً ما بقا حتى منتوج متوفر. سولنا فالواتساب ونعاونوك نختارو.</div>';
+      root.querySelector('[data-lbc-bundle-box]').hidden = true;
+      return;
+    }
+    root.querySelector('[data-lbc-bundle-box]').hidden = false;
+    box.innerHTML = recs.map(function(r, ri){
+      var p = r.p, why = r.parts.slice().sort(function(x, y){ return y.w * y.s - x.w * x.s; }).map(function(x){ return x.why; }).filter(Boolean).slice(0, 3);
+      var chips = dept === 'beauty'
+        ? (p.ing || []).slice(0, 2).concat(p.form ? [p.form] : [])
+        : (p.acc || []).slice(0, 3).map(function(x){ return L.acc[x] || x; });
+      var warn = dept === 'beauty' && r.retinal ? '⚠ فيه الريتينال: فالليل برك، واقي الشمس فالنهار، وماشي للحوامل ولا المرضعات.' : (dept === 'beauty' && p.shade ? 'اللون: ' + p.shade : '');
+      return '<article class="lbc-rec' + (ri === 0 ? ' is-top' : '') + '" data-lbc-rec="' + esc(p.v) + '">'
+        + '<a class="lbc-rec__img" href="' + esc(p.url) + '" data-lbc-view-p="' + esc(p.h) + '">' + (p.img ? '<img src="' + esc(p.img) + '" alt="' + esc(p.t) + '" width="108" height="108" loading="lazy">' : '') + '</a>'
+        + '<div><p class="lbc-rec__b">' + (r.step ? esc(STEP_L[r.step]) + ' · ' : '') + esc(p.b) + '</p>'
+        + '<h3 class="lbc-rec__t"><a href="' + esc(p.url) + '" data-lbc-view-p="' + esc(p.h) + '">' + esc(p.t) + '</a></h3>'
+        + '<div class="lbc-rec__row"><span class="lbc-rec__p">' + esc(fmt(p.price)) + '</span><span class="lbc-match">' + r.pct + '% match</span></div>'
+        + '<div class="lbc-chips">' + chips.map(function(c){ return '<span>' + esc(c) + '</span>'; }).join('') + '</div>'
+        + (why.length ? '<ul class="lbc-why">' + why.map(function(w){ return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' : '')
+        + (warn ? '<p class="lbc-warn">' + esc(warn) + '</p>' : '')
+        + '</div>'
+        + '<div class="lbc-act"><a href="' + esc(p.url) + '" data-lbc-view-p="' + esc(p.h) + '">شوف المنتوج</a><button type="button" data-lbc-cart="' + esc(p.v) + '">زيد للسلة</button></div>'
+        + '<label class="lbc-pick"><input type="checkbox" data-lbc-pick="' + esc(p.v) + '"' + (ri < 3 ? ' checked' : '') + '> ختار هادا للباك</label>'
+        + '</article>';
+    }).join('');
+    updateBundleBox();
+    track('consultation_completed', { answers: ans.join('.'), top_product: recs[0].p.h, top_match: recs[0].pct, results_count: recs.length });
+    recs.forEach(function(r, ri){ track('recommendation_viewed', { product_handle: r.p.h, position: ri + 1, match: r.pct }); });
+    try { root.querySelector('[data-lbc-res-h]').focus({ preventScroll: true }); } catch (e) {}
+    views.result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function picked(){ return Array.prototype.slice.call(root.querySelectorAll('[data-lbc-pick]:checked')).map(function(c){ return c.getAttribute('data-lbc-pick'); }); }
+  function updateBundleBox(){
+    var ids = picked(), n = ids.length, txt = root.querySelector('[data-lbc-bundle-txt]'), cta = root.querySelector('[data-lbc-bundle]');
+    var C = B && B.cfg[dept], pct = B ? B.tier(dept, n) : 0, nx = B ? B.next(dept, n) : null;
+    txt.textContent = n === 0 ? 'ختار منتوج ولا أكثر باش تركّب باك.' : (pct ? ('باك ديال ' + n + ' ' + (C ? C.unit : '') + ' = خصم ' + B.pct(pct) + ' أوتوماتيكياً.') : (nx ? ('زيد ' + nx.need + ' ووفّر ' + B.pct(nx.pct) + ' على الباك.') : ''));
+    cta.textContent = n ? ('ركّب باك بهادو (' + n + ')' + (pct ? ' · ' + B.pct(pct) : '') + ' ←') : 'ركّب باك بهادو ←';
+    cta.setAttribute('aria-disabled', n ? 'false' : 'true');
+  }
+
+  function start(){ ans = []; setHash(ans, true); track('consultation_started', { source: document.referrer ? 'referral' : 'direct' }); renderQ(true); }
+  function fromHash(){
+    if (!/a=/.test(location.hash)) { ans = []; return show('intro'); }
+    ans = answersFromHash();
+    if (!ans.length) return renderQ(false);
+    if (ans.length >= Q.length) { ans = ans.slice(0, Q.length); return renderResult(); }
+    renderQ(false);
+  }
+
+  root.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('button, a, input') : null;
+    if (!t || !root.contains(t)) return;
+    if (t.hasAttribute('data-lbc-start')) return start();
+    if (t.hasAttribute('data-lbc-opt')) {
+      var i = ans.length, oi = parseInt(t.getAttribute('data-lbc-opt'), 10);
+      t.setAttribute('aria-pressed', 'true');
+      track('consultation_question_answered', { question: Q[i].k, answer: Q[i].o[oi][0], step: i + 1 });
+      ans.push(oi); setHash(ans, true);
+      setTimeout(function(){ if (ans.length >= Q.length) renderResult(); else renderQ(true); }, 160);
+      return;
+    }
+    if (t.hasAttribute('data-lbc-back')) { if (ans.length) { history.back(); } return; }
+    if (t.hasAttribute('data-lbc-retake')) { return start(); }
+    if (t.hasAttribute('data-lbc-view-p')) { track('recommendation_product_clicked', { product_handle: t.getAttribute('data-lbc-view-p') }); return; }
+    if (t.hasAttribute('data-lbc-cart')) {
+      var v = t.getAttribute('data-lbc-cart'), p = P.filter(function(x){ return String(x.v) === v; })[0];
+      if (window.LbassCart && typeof window.LbassCart.add === 'function') {
+        window.LbassCart.add(parseInt(v, 10), { btn: t, source: 'consult_' + dept }).then(function(ok){ if (ok) track('recommendation_added_to_cart', { product_handle: p ? p.h : '', variant_id: v, value: p ? p.price / 100 : 0, currency: 'MAD' }); });
+      }
+      return;
+    }
+    if (t.hasAttribute('data-lbc-pick')) { return updateBundleBox(); }
+    if (t.hasAttribute('data-lbc-bundle')) {
+      var ids = picked();
+      if (!ids.length || !B) { e.preventDefault(); return; }
+      e.preventDefault();
+      ids.forEach(function(v){ var p = P.filter(function(x){ return String(x.v) === v; })[0]; if (p && !B.has(dept, v)) B.add(dept, { v: v, h: p.h, q: 1, max: p.max }, 'consultation'); });
+      track('consultation_bundle_clicked', { items_count: ids.length });
+      location.href = t.getAttribute('href') + '?from=consult';
+    }
+  });
+  root.addEventListener('change', function(e){ if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-lbc-pick')) updateBundleBox(); });
+  window.addEventListener('popstate', fromHash);
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>

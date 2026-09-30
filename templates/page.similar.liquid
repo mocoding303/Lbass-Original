@@ -1,0 +1,35 @@
+{%- comment -%}
+  ═══ LBASS — FIND YOUR SIMILAR SCENT PAGE (2026-09-28) ═══
+  Page: /pages/similar-scent (template suffix "similar"). The page record carries
+  seo.hidden = 1, so Shopify adds noindex and leaves it out of the sitemap
+  (owner decision: designer names are for describing a scent direction to
+  visitors, not for search traffic). The tool renders the page's only H1.
+{%- endcomment -%}
+<style>
+.lbx-bc{max-width:1100px;margin:0 auto;padding:14px clamp(16px,4vw,32px) 0;font-size:12.5px;color:var(--txt2,#57534E);direction:rtl;text-align:right}
+.lbx-bc a{color:var(--txt2,#57534E)}
+.lbx{max-width:960px;margin:0 auto;padding:0 clamp(16px,4vw,32px) 48px;direction:rtl;text-align:right;color:var(--cream,#0B0B0C)}
+.lbx h2{margin:22px 0 10px!important;font-size:clamp(19px,3.6vw,24px)!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbx p{font-size:14.5px;line-height:1.8;color:var(--txt2,#57534E)}
+.lbx-links{display:flex;flex-wrap:wrap;gap:6px;padding:0;list-style:none}
+.lbx-links a{display:inline-block;padding:9px 13px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:999px;font-size:13px;font-weight:800;color:var(--cream,#0B0B0C);text-decoration:none}
+</style>
+
+<nav class="lbx-bc" aria-label="مسار التنقل">
+  <a href="{{ routes.root_url }}">الرئيسية</a> ›
+  <a href="/collections/fragrances">عطور · Fragrances</a> ›
+  <span aria-current="page">{{ page.title }}</span>
+</nav>
+
+{% render 'lbass-similar-scent', place: 'page', heading: 'h1' %}
+
+<div class="lbx">
+  {%- if page.content != blank -%}<div>{{ page.content }}</div>{%- endif -%}
+  <h2>ما لقيتيش العطر ديالك؟</h2>
+  <p>جاوب على 5 أسئلة على الريحة اللي كتعجبك، ولا شوف كل العطور العربية اللي عندنا مع النوطات ديالها.</p>
+  <ul class="lbx-links">
+    <li><a href="/pages/find-your-fragrance">الاستشارة · لقى العطر ديالك</a></li>
+    <li><a href="/pages/fragrance-bundle">ركّب باك العطور</a></li>
+    <li><a href="/collections/fragrances">كل العطور</a></li>
+  </ul>
+</div>

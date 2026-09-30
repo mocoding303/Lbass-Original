@@ -31,11 +31,29 @@
   if collection.handle == 'audited-drop-p001-p012'
     assign collection_source_handle = 'all'
     assign collection_display_count = collection.products_count
-    if current_tags == blank
-      assign collection_display_count = collections.all.products_count
-    endif
     assign collection_display_title = 'Audited Drop'
     assign collection_display_description = 'كل قطع Lbass Original فبلاصة وحدة: صور حقيقية، حالة وتوفر واضحين، والقطع المتوفرة كيبانو أولاً.'
+  endif
+
+  comment
+    FRAGRANCE GUARD (2026-09-26). The two catalogue-wide views — /collections/all
+    and the audited drop, which renders collections.all — stay clothing: every
+    line of copy on this template is second-hand. Perfume has its own
+    department at /collections/fragrances (templates/collection.fragrance.liquid).
+    No-op until a fragrance is published.
+  endcomment
+  assign lb_hide_frag = false
+  if collection.handle == 'all' or collection.handle == 'audited-drop-p001-p012'
+    assign lb_hide_frag = true
+    if current_tags == blank and collection.handle == 'all'
+      assign lb_frag_n = collections['fragrances'].products_count | default: 0 | plus: 0
+      assign collection_display_count = collection_display_count | minus: lb_frag_n | at_least: 0
+      comment
+        2026-09-26: cosmetics (K-beauty) are their own department too
+      endcomment
+      assign lb_beauty_n = collections['cosmetics'].products_count | default: 0 | plus: 0
+      assign collection_display_count = collection_display_count | minus: lb_beauty_n | at_least: 0
+    endif
   endif
 
   assign collection_answer_title = 'شنو خاصك تعرف على هاد الكوليكشن؟'
@@ -163,11 +181,14 @@
     {%- if f.max_value.value -%}{%- assign lb_any_filter = true -%}{%- endif -%}
   {%- endif -%}
 {%- endfor -%}
-{% if collection.handle == 'audited-drop-p001-p012' and lb_any_filter == false %}
-  {% assign collection_product_source = collections.all.products %}
-{% else %}
-  {% assign collection_product_source = collection.products %}
-{% endif %}
+{%- comment -%}
+  2026-09-26: collections.all.products is capped at 50 outside its own paginate
+  block. With 12 perfumes published, 6 of those 50 slots went to bottles that
+  the fragrance guard then hides, so the page dropped to 44 clothing pieces. The
+  audited drop now shows its own members (54, paginated, all clothing) — more
+  than the 50 it could ever show before. /collections/all is the full catalogue.
+{%- endcomment -%}
+{% assign collection_product_source = collection.products %}
 {%- comment -%}
   ═══ IN-STOCK FIRST (2026-08-26) ═══
   Sold-out pieces used to take the opening slots of the grid purely on their
@@ -295,6 +316,7 @@
 
   <div class="grid" id="lbfGrid">
     {% for product in collection_product_source %}
+      {% if lb_hide_frag and product.type == 'Fragrance' %}{% continue %}{% endif %}{% if lb_hide_frag and product.type == 'Cosmetics' %}{% continue %}{% endif %}
       {%- comment -%}
         Card markup lives in snippets/lbass-product-card.liquid as of 2026-09-09.
         The ~100 lines that used to sit here were one of seven near-identical
@@ -503,10 +525,15 @@
   "@type": "ItemList",
   "name": {{ collection_display_title | json }},
   "itemListElement": [
-    {% for product in collection_product_source limit: 48 %}
+    {%- assign il_pos = 0 -%}
+    {% for product in collection_product_source %}
+      {%- if lb_hide_frag and product.type == 'Fragrance' -%}{%- continue -%}{%- endif -%}{%- if lb_hide_frag and product.type == 'Cosmetics' -%}{%- continue -%}{%- endif -%}
+      {%- if il_pos >= 48 -%}{%- break -%}{%- endif -%}
+      {%- if il_pos > 0 -%},{%- endif -%}
+      {%- assign il_pos = il_pos | plus: 1 %}
       {
         "@type": "ListItem",
-        "position": {{ forloop.index }},
+        "position": {{ il_pos }},
         "item": {
           "@type": "Product",
           "name": {{ product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | json }},
@@ -520,7 +547,7 @@
             "availability": "{% if product.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
           }
         }
-      }{% unless forloop.last %},{% endunless %}
+      }
     {% endfor %}
   ]
 }

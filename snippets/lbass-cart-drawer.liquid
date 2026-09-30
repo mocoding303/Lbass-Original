@@ -91,6 +91,23 @@
 .lbdr-sg img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .lbdr-sg-n{display:block;padding:8px 10px 0;color:var(--cream,#F4EFE6);font-size:12px;font-weight:800;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lbdr-sg-p{display:block;padding:2px 10px 10px;color:var(--gold,#C89A0E);font-size:12.5px;font-weight:900;direction:ltr;text-align:right}
+/* «كمّل اللوك · Parfums» cart upsell (2026-09-30) — same tokens as the cart lines above */
+.lbdr-up{margin:14px 0 2px;padding:12px;border:1px solid var(--line,#26262B);border-radius:12px;background:var(--ink,#0A0A0B)}
+.lbdr-up-k{margin:0;color:var(--gold,#C89A0E);font-size:10.5px;font-weight:800;letter-spacing:.16em;text-align:right}
+.lbdr-up-h{margin:3px 0 2px;color:var(--cream,#F4EFE6);font-size:15px;font-weight:900;line-height:1.4}
+.lbdr-up-s{margin:0 0 8px;color:var(--txt2,#97928A);font-size:12px;font-weight:700;line-height:1.6}
+.lbdr-up-it{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line,#26262B)}
+.lbdr-up-img{width:52px;height:52px;flex:none;border-radius:10px;object-fit:cover;background:#FFFFFF;border:1px solid var(--line,#26262B)}
+.lbdr-up-main{flex:1;min-width:0}
+.lbdr-up-n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--cream,#F4EFE6);font-size:13px;font-weight:800;line-height:1.45;text-decoration:none}
+.lbdr-up-n:hover{color:var(--gold,#C89A0E)}
+.lbdr-up-p{display:inline-block;margin-top:2px;color:var(--gold,#C89A0E);font-size:13px;font-weight:900;direction:ltr;white-space:nowrap}
+.lbdr-up-fs{display:inline-block;margin-inline-start:6px;padding:1px 7px;border-radius:999px;background:rgba(31,168,85,.14);color:var(--green,#1FA855);font-size:10.5px;font-weight:900;white-space:nowrap}
+.lbdr-up-add{flex:none;min-width:64px;min-height:40px;padding:8px 12px;border-radius:10px;border:1px solid var(--gold,#C89A0E);background:transparent;color:var(--cream,#F4EFE6);font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;transition:background .2s,color .2s}
+.lbdr-up-add:hover{background:var(--gold,#C89A0E);color:var(--ink,#0A0A0B)}
+.lbdr-up-add:focus-visible{outline:2px solid var(--gold,#C89A0E);outline-offset:2px}
+.lbdr-up-add.busy{opacity:.7;pointer-events:none}
+.lbdr-up-add.busy .lbqa-txt::after{content:"…"}
 .lbdr-foot{flex:none;border-top:1px solid var(--line,#26262B);padding:14px 18px calc(14px + env(safe-area-inset-bottom));background:var(--ink2,#121214)}
 .lbdr-total{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .lbdr-total span{font-weight:800;color:var(--txt2,#97928A);font-size:14px}
@@ -141,7 +158,13 @@
       {%- if lbdr_sugg.size > 0 -%}
         <p class="lbdr-sugg-h">بغيتي تكمل اللوك؟ هادو قطع متوفرة دابا 👇</p>
         <div class="lbdr-sugg">
-          {%- for sp in lbdr_sugg limit: 4 -%}
+          {%- assign lbdr_shown = 0 -%}
+          {%- for sp in lbdr_sugg -%}
+            {%- comment -%} fragrance guard 2026-09-26: perfume has its own department (the heading says «كمّل اللوك») {%- endcomment -%}
+            {%- if sp.type == 'Fragrance' -%}{%- continue -%}{%- endif -%}
+            {%- if sp.type == 'Cosmetics' -%}{%- continue -%}{%- endif -%}{%- comment -%} cosmetics guard 2026-09-26 {%- endcomment -%}
+            {%- if lbdr_shown >= 4 -%}{%- break -%}{%- endif -%}
+            {%- assign lbdr_shown = lbdr_shown | plus: 1 -%}
             {%- assign sp_title = sp.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first -%}
             <a class="lbdr-sg" href="{{ sp.url }}">
               {%- if sp.featured_image -%}
@@ -155,6 +178,7 @@
       {%- endif -%}
     </div>
     <div id="lbdrItems" aria-live="polite"></div>
+    <div class="lbdr-up" id="lbdrUp" hidden></div>
   </div>
   <div class="lbdr-foot" id="lbdrFoot" hidden>
     <div class="lbdr-total"><span>المجموع</span><b id="lbdrTotal"></b></div>
@@ -180,6 +204,26 @@
 </div>
 
 <div class="lbdr-toast" id="lbdrToast" role="status" aria-live="polite"></div>
+
+{%- comment -%}
+  2026-09-30 cart upsell data: the in-stock bottles of lattafa-best-sellers, in the
+  collection's manual order (= lattafa.ma's Moroccan units-sold ranking). "w" comes
+  from the wear:* tags so the script can prefer unisex bottles.
+{%- endcomment -%}
+{%- assign lbup_c = collections['lattafa-best-sellers'] -%}
+{%- capture lbup_json -%}
+  {%- assign lbup_sep = '' -%}
+  {%- for lbup_p in lbup_c.products -%}
+    {%- if lbup_p.available -%}
+      {%- assign lbup_v = lbup_p.selected_or_first_available_variant -%}
+      {%- assign lbup_w = 'unisex' -%}
+      {%- if lbup_p.tags contains 'wear:men' -%}{%- assign lbup_w = 'men' -%}{%- elsif lbup_p.tags contains 'wear:women' -%}{%- assign lbup_w = 'women' -%}{%- endif -%}
+      {{ lbup_sep }}{"id":{{ lbup_v.id }},"t":{{ lbup_p.title | json }},"p":{{ lbup_v.price }},"u":{{ lbup_p.url | json }},"img":{% if lbup_p.featured_image %}{{ lbup_p.featured_image | image_url: width: 120 | json }}{% else %}""{% endif %},"w":"{{ lbup_w }}"}
+      {%- assign lbup_sep = ',' -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+<script type="application/json" id="lbdrUpData">[{{ lbup_json }}]</script>
 
 <script>
 (function(){
@@ -212,6 +256,72 @@
     var c = q('lbdrCount'); if (c) c.textContent = n ? '(' + n + ')' : '';
   }
 
+  /* ── «كمّل اللوك · Parfums» cart upsell (2026-09-30, owner choice: cart drawer only) ──
+     Shown only when the cart holds clothing and no perfume yet. Bottles = the in-stock
+     Lattafa best sellers from #lbdrUpData (collection order = lattafa.ma's Moroccan
+     units-sold ranking); unisex bottles are used whenever at least two are in stock, so a
+     men's or women's piece never gets an off-gender pick. Pick 1 = the best-ranked bottle
+     that takes the order to the real 500 MAD free-delivery threshold (checkout rate
+     «توصيل مجاني» ≥ 500 MAD), pick 2 = the best-ranked remaining bottle. Never K-beauty,
+     never a timer. Adds go through add() like every other quick-add. */
+  var UP_FREE = 50000; /* cents — same threshold as the free-shipping bar in render() */
+  var upList = null, upSeen = false;
+  function upData(){
+    if (upList) return upList;
+    try { upList = JSON.parse((q('lbdrUpData') || {}).textContent || '[]') || []; } catch(e){ upList = []; }
+    return upList;
+  }
+  function upName(t){
+    /* "Lattafa Khamrah Qahwa Eau de Parfum 100ml | عطر خمرة قهوة" → «خمرة قهوة · Khamrah Qahwa» */
+    var parts = String(t || '').split(' | ');
+    var lat = parts[0].replace(/^Lattafa\s+/, '').split(' Eau de')[0].trim();
+    var ar = parts.length > 1 ? parts[parts.length - 1].replace(/^عطر\s+/, '').trim() : '';
+    return (ar ? esc(ar) + ' · ' : '') + '<span dir="ltr">' + esc(lat) + '</span>';
+  }
+  function upTrack(name, params){
+    try { if (typeof window.lbTrack === 'function'){ window.lbTrack(name, params); return; } } catch(e){}
+    track('lbass_' + name, params);
+  }
+  function upViewed(){
+    var box = q('lbdrUp');
+    if (upSeen || !state.open || !box || box.hidden) return;
+    upSeen = true;
+    upTrack('cart_upsell_view', { department: 'fragrance', place: 'cart_drawer', shown: box.getAttribute('data-shown') || '', free_ship_gap: parseFloat(box.getAttribute('data-gap') || '0') });
+  }
+  function upsell(cart){
+    var box = q('lbdrUp'); if (!box) return;
+    var hasCloth = false, hasFrag = false, inCart = [];
+    (cart.items || []).forEach(function(it){
+      inCart.push(it.variant_id);
+      if (it.product_type === 'Fragrance') hasFrag = true;
+      else if (it.product_type !== 'Cosmetics') hasCloth = true;
+    });
+    var pool = upData().filter(function(b){ return inCart.indexOf(b.id) === -1; });
+    var uni = pool.filter(function(b){ return b.w === 'unisex'; });
+    if (uni.length >= 2) pool = uni;
+    if (!hasCloth || hasFrag || !pool.length){ box.hidden = true; box.innerHTML = ''; return; }
+    var gap = UP_FREE - cart.total_price, pick = [], i;
+    if (gap > 0){ for (i = 0; i < pool.length; i++){ if (pool[i].p >= gap){ pick.push(pool[i]); break; } } }
+    for (i = 0; i < pool.length && pick.length < 2; i++){ if (pick.indexOf(pool[i]) === -1) pick.push(pool[i]); }
+    var unlocks = gap > 0 && pick.some(function(b){ return b.p >= gap; });
+    box.setAttribute('data-gap', String(Math.max(0, gap) / 100));
+    box.setAttribute('data-shown', pick.map(function(b){ return b.id; }).join(','));
+    box.innerHTML = '<p class="lbdr-up-k">كمّل اللوك · PARFUMS</p>'
+      + '<p class="lbdr-up-h">' + (unlocks ? 'زيد عطر والتوصيل يولي مجاني' : 'كمّل اللوك بعطر') + '</p>'
+      + '<p class="lbdr-up-s">Lattafa الأكثر مبيعاً فالمغرب — قرعة كاملة جديدة فالكرطونة.</p>'
+      + pick.map(function(b){
+          var fs = gap > 0 && b.p >= gap;
+          return '<div class="lbdr-up-it">'
+            + (b.img ? '<img class="lbdr-up-img" src="' + esc(b.img) + '" alt="" width="52" height="52" loading="lazy">' : '')
+            + '<div class="lbdr-up-main"><a class="lbdr-up-n" href="' + esc(b.u) + '" data-lbdr-up-link="' + b.id + '">' + upName(b.t) + '</a>'
+            + '<span class="lbdr-up-p">' + fmt(b.p) + '</span>' + (fs ? '<span class="lbdr-up-fs">+ توصيل مجاني</span>' : '') + '</div>'
+            + '<button type="button" class="lbdr-up-add" data-lbdr-up="' + b.id + '" data-fs="' + (fs ? 1 : 0) + '" aria-label="زيد للسلة — ' + esc(b.t) + '"><span class="lbqa-txt">+ زيد</span></button>'
+            + '</div>';
+        }).join('');
+    box.hidden = false;
+    upViewed();
+  }
+
   function render(){
     var cart = state.cart; if (!cart) return;
     counts(cart.item_count);
@@ -236,10 +346,17 @@
     }
     if (!cart.item_count){
       items.innerHTML = ''; empty.hidden = false; foot.hidden = true;
+      var upBox = q('lbdrUp'); if (upBox){ upBox.hidden = true; upBox.innerHTML = ''; }
       return;
     }
     empty.hidden = true; foot.hidden = false;
     q('lbdrTotal').textContent = fmt(cart.total_price);
+    (function(){ /* savings line (2026-09-28): automatic bundle discounts are already in total_price */
+      var sv = q('lbdrSave');
+      if (!sv) { sv = D.createElement('p'); sv.id = 'lbdrSave'; sv.style.cssText = 'margin:-2px 0 10px;font-size:12.5px;font-weight:900;color:var(--gold,#BF2E15)'; var tot = q('lbdrTotal').parentNode; tot.parentNode.insertBefore(sv, tot.nextSibling); }
+      sv.hidden = !(cart.total_discount > 0);
+      sv.textContent = cart.total_discount > 0 ? ('🎁 وفّرتي ' + fmt(cart.total_discount) + ' بخصم الباك') : '';
+    })();
     items.innerHTML = cart.items.map(function(it){
       var cond = it.properties && (it.properties['الحالة'] || it.properties.condition);
       var meta = [];
@@ -252,10 +369,17 @@
         + (it.vendor ? '<p class="lbdr-it-v">' + esc(it.vendor) + '</p>' : '')
         + '<a class="lbdr-it-n" href="' + esc(it.url) + '">' + esc(stripCode(it.product_title)) + '</a>'
         + '<p class="lbdr-it-m">' + meta.join(' · ') + '</p>'
-        + '<div class="lbdr-it-row"><span class="lbdr-it-q">الكمية: ' + it.quantity + '</span><b class="lbdr-it-p">' + fmt(it.final_line_price) + '</b></div>'
+        + '<div class="lbdr-it-row"><span class="lbdr-it-q">الكمية: ' + it.quantity + '</span><b class="lbdr-it-p">' + (it.original_line_price > it.final_line_price ? '<s style="opacity:.55;font-weight:700;margin-inline-end:6px;display:inline-block;white-space:nowrap">' + fmt(it.original_line_price) + '</s>' : '') + '<span style="display:inline-block;white-space:nowrap">' + fmt(it.final_line_price) + '</span></b></div>'
+        + (function(){ /* bundle label + automatic discount title (2026-09-28) */
+            var bits = [];
+            if (it.properties && it.properties._bundle) bits.push('📦 ' + esc(it.properties._bundle));
+            (it.line_level_discount_allocations || []).forEach(function(a){ if (a && a.discount_application && a.discount_application.title) bits.push('🎁 ' + esc(a.discount_application.title).replace(/(^|[^\u2066])([−-]\d+(?:[.,]\d+)?%)/g, '$1\u2066$2\u2069')); });
+            return bits.length ? '<p class="lbdr-it-m" style="color:var(--gold,#BF2E15);font-weight:800">' + bits.join(' · ') + '</p>' : '';
+          })()
         + '<button type="button" class="lbdr-rm" data-lbdr-rm="' + esc(it.key) + '">✕ حيّدها من السلة</button>'
         + '</div></div>';
     }).join('');
+    upsell(cart);
   }
 
   function refresh(){
@@ -301,6 +425,7 @@
     D.body.style.overflow = 'hidden';
     D.addEventListener('keydown', keyHandler);
     var x = q('lbdrX'); if (x) x.focus();
+    upViewed();
   }
   function close(){
     if (!state.open) return;
@@ -458,6 +583,46 @@
     .then(function(result){ state.busy = false; btnBusy(opts.btn, false); return result; });
   }
 
+  /* ── bundle add (2026-09-28): ONE request with quantities + hidden line-item
+     properties (_bundle, _bundle_id, _bundle_size). Used by snippets/lbass-bundle.liquid.
+     If Shopify rejects the batch (a line just sold, or asks for more than is in
+     stock), it retries line by line, then with quantity 1, and reports what landed. ── */
+  function addItems(list, opts){
+    opts = opts || {};
+    var items = (list || []).filter(function(i){ return i && i.id && i.quantity > 0; });
+    if (!items.length || state.busy) return Promise.resolve({ added: 0 });
+    state.busy = true;
+    btnBusy(opts.btn, true);
+    function post(arr){
+      return fetch('/cart/add.js', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ items: arr }) })
+        .then(function(r){ if (!r.ok) throw new Error('add_failed'); return r.json(); });
+    }
+    var added = [];
+    return post(items).then(function(){ added = items.slice(); })
+    .catch(function(){
+      return items.reduce(function(p, it){
+        return p.then(function(){
+          return post([it]).then(function(){ added.push(it); }).catch(function(){
+            if (it.quantity > 1) { var one = { id: it.id, quantity: 1, properties: it.properties }; return post([one]).then(function(){ added.push(one); }).catch(function(){}); }
+          });
+        });
+      }, Promise.resolve());
+    })
+    .then(function(){ return refresh(); })
+    .then(function(){
+      var ids = added.map(function(i){ return i.id; });
+      var n = added.reduce(function(t, i){ return t + i.quantity; }, 0), want = items.reduce(function(t, i){ return t + i.quantity; }, 0), value = 0;
+      if (n && state.cart) state.cart.items.forEach(function(i){ if (ids.indexOf(i.variant_id) !== -1) value += i.final_line_price / 100; });
+      if (n && n === want) toast('✓ ' + (opts.label || 'الباك') + ' تزاد للسلة');
+      else if (n) toast('تزادو ' + n + ' من ' + want + '؛ شي حاجة ما بقاتش متوفرة.');
+      else toast('⚠ حتى حاجة ما تزادت؛ راجع المخزون أو سولنا فالواتساب.');
+      if (n) { btnDone(opts.btn); trackAddToCart(ids, opts.source || 'bundle'); open(opts.btn); }
+      return { added: n, requested: want, value: value };
+    })
+    .catch(function(){ toast('⚠ وقع مشكل فالإضافة. عاود جرّب أو سولنا فالواتساب.'); return { added: 0 }; })
+    .then(function(res){ state.busy = false; btnBusy(opts.btn, false); return res; });
+  }
+
   function removeItem(key){
     fetch('/cart/change.js', {
       method: 'POST',
@@ -562,6 +727,22 @@
       } catch(e){}
       return;
     }
+    var upBtn = e.target.closest('[data-lbdr-up]');
+    if (upBtn){
+      e.preventDefault();
+      var upVid = parseInt(upBtn.getAttribute('data-lbdr-up'), 10);
+      var upFs = upBtn.getAttribute('data-fs') === '1';
+      var upItem = upData().filter(function(b){ return b.id === upVid; })[0] || {};
+      /* also used by the product page's «كمّل اللوك · Parfums» block (data-lbdr-place="pdp_look") */
+      var upPlace = upBtn.getAttribute('data-lbdr-place') || 'cart_drawer';
+      var upDrawer = upPlace === 'cart_drawer';
+      add(upVid, { btn: upBtn, source: upDrawer ? 'cart_upsell_fragrance' : upPlace + '_fragrance' }).then(function(ok){
+        if (ok) upTrack(upDrawer ? 'cart_upsell_add' : 'pdp_upsell_add', { department: 'fragrance', place: upPlace, variant_id: upVid, value: (upItem.p || 0) / 100, currency: 'MAD', unlocks_free_shipping: upFs });
+      });
+      return;
+    }
+    var upLink = e.target.closest('[data-lbdr-up-link]');
+    if (upLink){ upTrack('cart_upsell_click', { department: 'fragrance', place: 'cart_drawer', variant_id: parseInt(upLink.getAttribute('data-lbdr-up-link'), 10), destination: upLink.getAttribute('href') }); /* navigation continues */ }
     var qa = e.target.closest('[data-lbqa]');
     if (qa){ e.preventDefault(); e.stopPropagation(); handleQuickAdd(qa); return; }
     var vz = e.target.closest('[data-lbqa-vid]');
@@ -642,7 +823,7 @@
     });
   }
 
-  window.LbassCart = { add: add, addMany: addMany, open: open, close: close, refresh: refresh, remove: removeItem, waCheckout: waCheckout };
+  window.LbassCart = { add: add, addMany: addMany, addItems: addItems, open: open, close: close, refresh: refresh, remove: removeItem, waCheckout: waCheckout };
 
   /* Look Builder impression — once per PDP view when the section rendered */
   if (D.querySelector('#lookGrid [data-look-item]')){
@@ -653,3 +834,4 @@
   else { refresh(); enhancePdpForm(); }
 })();
 </script>
+{% render 'lbass-bundle-core' %}

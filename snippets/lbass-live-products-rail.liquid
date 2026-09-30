@@ -129,6 +129,9 @@
     {%- if lr_count >= lr_limit -%}{%- break -%}{%- endif -%}
     {%- capture lr_pid -%},{{ lr_product.id }},{%- endcapture -%}
     {%- if lr_exclude contains lr_pid -%}{%- continue -%}{%- endif -%}
+    {%- comment -%} fragrance guard 2026-09-26: perfume has its own department — perfume fills a rail only when the caller asks for it (prefer_type Fragrance) {%- endcomment -%}
+    {%- if lr_product.type == 'Fragrance' and prefer_type != 'Fragrance' -%}{%- continue -%}{%- endif -%}
+    {%- if lr_product.type == 'Cosmetics' and prefer_type != 'Cosmetics' -%}{%- continue -%}{%- endif -%}{%- comment -%} cosmetics guard 2026-09-26, same rule {%- endcomment -%}
     {%- if one_only and lr_one_only_count > 0 and lr_product.total_inventory != 1 -%}{%- continue -%}{%- endif -%}
     {%- if min_price != blank and lr_product.price < min_price -%}{%- continue -%}{%- endif -%}
     {%- if max_price != blank and lr_product.price > max_price -%}{%- continue -%}{%- endif -%}

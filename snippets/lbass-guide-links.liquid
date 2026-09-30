@@ -1,0 +1,70 @@
+{%- comment -%}
+  ═══ LBASS — GUIDE LINKS (2026-09-29) ═══
+  Usage: {% render 'lbass-guide-links', dept: 'fragrance'|'beauty', place: 'collection'|'product', product: product %}
+
+  Links department pages to their published guides, so the topical cluster is linked
+  both ways (guide → collection → product and product/collection → guide).
+  On a product page, guides tagged with one of the product's tags (e.g. dept:fragrance)
+  or with "p:<product handle>" are listed; if none match, the two latest guides are
+  shown. Prints nothing while the department blog has no published article.
+{%- endcomment -%}
+{%- liquid
+  assign gl_blog = blogs['parfums']
+  if dept == 'beauty'
+    assign gl_blog = blogs['k-beauty']
+  endif
+  assign gl_count = gl_blog.articles_count | default: 0 | plus: 0
+-%}
+{%- if gl_count > 0 -%}
+  {%- assign gl_n = 0 -%}
+  {%- capture gl_items -%}
+    {%- for a in gl_blog.articles limit: 20 -%}
+      {%- assign gl_hit = true -%}
+      {%- if product -%}
+        {%- assign gl_hit = false -%}
+        {%- assign gl_ph = 'p:' | append: product.handle -%}
+        {%- for t in a.tags -%}
+          {%- if t == gl_ph or product.tags contains t -%}{%- assign gl_hit = true -%}{%- break -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if gl_hit and gl_n < 3 -%}
+        {%- assign gl_n = gl_n | plus: 1 -%}
+        <li><a href="{{ a.url }}" data-lbgl>{{ a.title }}</a></li>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if gl_n == 0 -%}
+    {%- capture gl_items -%}
+      {%- for a in gl_blog.articles limit: 2 -%}<li><a href="{{ a.url }}" data-lbgl>{{ a.title }}</a></li>{%- endfor -%}
+    {%- endcapture -%}
+  {%- endif -%}
+  <nav class="lbgl lbgl--{{ place }}" data-lbgl-root data-dept="{{ dept }}" data-place="{{ place }}" aria-label="Guides" dir="ltr" lang="fr">
+    <span class="lbgl__h">Guides</span>
+    <ul class="lbgl__list">{{ gl_items }}</ul>
+    <a class="lbgl__all" href="{{ gl_blog.url }}" data-lbgl>Tous les guides →</a>
+  </nav>
+  <style>
+    .lbgl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 16px;text-align:left}
+    .lbgl__h{flex:none;color:var(--gold,#c89a0e);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+    .lbgl__list{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+    .lbgl__list a{display:inline-block;padding:7px 12px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:999px;color:var(--cream,#0B0B0C);font-size:13px;font-weight:800;line-height:1.35;text-decoration:none}
+    .lbgl__all{color:var(--gold,#c89a0e);font-size:13px;font-weight:900;text-decoration:none}
+    @media (hover:hover){.lbgl__list a:hover{border-color:var(--gold,#c89a0e)}}
+  </style>
+  <script>
+  (function(){
+    if (window.__lbglBoot) return;
+    window.__lbglBoot = true;
+    document.addEventListener('click', function(e){
+      var a = e.target && e.target.closest ? e.target.closest('[data-lbgl]') : null;
+      if (!a) return;
+      var r = a.closest('[data-lbgl-root]');
+      var p = { department: r ? r.getAttribute('data-dept') : '', place: r ? r.getAttribute('data-place') : '', destination: a.getAttribute('href') || '' };
+      try {
+        if (typeof window.lbTrack === 'function') window.lbTrack('guide_link_click', p);
+        else if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_guide_link_click', p);
+      } catch (err) {}
+    });
+  })();
+  </script>
+{%- endif -%}

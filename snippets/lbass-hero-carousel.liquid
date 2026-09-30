@@ -1,0 +1,401 @@
+{%- comment -%}
+  ═══ LBASS — HOMEPAGE HERO CAROUSEL (2026-09-26) ═══
+
+  Replaces the old JS hero swap. The clothing hero is now SERVER-RENDERED here,
+  byte-for-byte the markup snippets/lbass-hero-swap.liquid used to inject at
+  DOMContentLoaded (plus an id on the H1 and click tracking on its two CTAs).
+  Measured on the live homepage before this change (desktop 1440×900):
+    · CLS 0.16 — the old <section class="hero"> painted, then got swapped out
+    · the old hero's 1.8 MB film and the 600 KB three.js were downloaded for
+      nothing, and its particle script threw «Cannot read properties of null»
+  Rendering the final hero in the HTML removes all three. lbass-hero-swap now
+  finds .lbh and does nothing (its guard), but still supplies the .lbh CSS,
+  the hero-type / hero-mobile / hero-cta styles, the LCP preload and hero-fx
+  (word reveal + particles), which initialise on DOMContentLoaded as before.
+
+  SLIDES (the existing designs are the source of truth — nothing redesigned):
+    0  LBASS ORIGINAL · Pre-Loved Clothing     the clothing hero, unchanged
+    1  ARABIC FRAGRANCES · Discover Your Signature Scent
+                                               snippets/lbass-frag-hero.liquid
+    +1 K-BEAUTY · Korean Skincare               snippets/lbass-beauty-hero.liquid
+                                               (2026-09-26 night; shown once /collections/cosmetics
+                                               has products, or on an unpublished preview theme)
+    2+ any ACTIVE entry of the metaobject «Hero slide (homepage carousel)»
+       (Shopify admin → Content → Metaobjects), ordered by Position, shown only
+       between «Show from» and «Show until». Cosmetics, accessories, campaigns:
+       no code needed.
+
+  BEHAVIOUR: horizontal slide (RTL-aware, 0.5 s move since 2026-09-28 — owner
+  chose to keep 5 s over 3 s so each slide stays readable), 5 s autoplay (owner request
+  2026-09-26: no visible timer bar, and it must KEEP SLIDING while the mouse is
+  over the hero and after a click — a click just restarts the 5 s from the
+  chosen slide). It pauses only while keyboard focus is inside the carousel,
+  while a finger is dragging it, while it is scrolled out of view, or while the
+  browser tab is hidden. Category tabs (static underline on the active one),
+  arrows (≥768 px), dots, swipe that follows the finger, ← → Home End keys.
+  prefers-reduced-motion: no autoplay, no slide animation. /#fragrances opens
+  on the fragrance slide and stays there.
+  Slides after the first load their images after window.load (or on first
+  visit), so only the clothing hero image is preloaded. All slides share the
+  tallest height, so nothing below the carousel moves.
+{%- endcomment -%}
+{%- liquid
+  assign hc_frag = collections['fragrances']
+  assign hc_frag_n = hc_frag.products_count | default: 0 | plus: 0
+  assign hc_show_frag = false
+  if hc_frag_n > 0 or theme.role == 'unpublished'
+    assign hc_show_frag = true
+  endif
+  assign hc_bt = collections['cosmetics']
+  assign hc_bt_n = hc_bt.products_count | default: 0 | plus: 0
+  assign hc_show_beauty = false
+  if hc_bt_n > 0 or theme.role == 'unpublished'
+    assign hc_show_beauty = true
+  endif
+  # 2026-09-30, strategic assessment approved by the owner: clothing-first homepage.
+  # The hero shows only the clothing slide (plus any active «Hero slide» metaobject
+  # campaign). Fragrance is one row lower on the page (snippets/lbass-home-fragrances,
+  # best sellers only); K-beauty stays in the menu only. Delete these two lines to revert.
+  assign hc_show_frag = false
+  assign hc_show_beauty = false
+  assign hc_bi = 1
+  if hc_show_frag
+    assign hc_bi = 2
+  endif
+
+  assign hc_now = 'now' | date: '%s' | plus: 0
+  assign hc_keys = ''
+  for s in shop.metaobjects.lbass_hero_slide.values
+    assign hc_ok = true
+    if s.heading == blank or s.tab_label == blank
+      assign hc_ok = false
+    endif
+    if s.starts_at.value != blank
+      assign hc_st = s.starts_at.value | date: '%s' | plus: 0
+      if hc_st > hc_now
+        assign hc_ok = false
+      endif
+    endif
+    if s.ends_at.value != blank
+      assign hc_en = s.ends_at.value | date: '%s' | plus: 0
+      if hc_en < hc_now
+        assign hc_ok = false
+      endif
+    endif
+    if hc_ok
+      assign hc_pos = s.position.value | default: 50 | plus: 1000
+      assign hc_keys = hc_keys | append: hc_pos | append: '|' | append: s.system.handle | append: ','
+    endif
+  endfor
+  assign hc_keys = hc_keys | split: ',' | sort
+
+  assign hc_total = 1
+  if hc_show_frag
+    assign hc_total = hc_total | plus: 1
+  endif
+  if hc_show_beauty
+    assign hc_total = hc_total | plus: 1
+  endif
+  assign hc_total = hc_total | plus: hc_keys.size
+-%}
+<style>
+.lbhs{position:relative;width:100%}
+.lbhs-tabs{display:flex;background:#FFFFFF;border-bottom:1px solid rgba(11,11,12,.12);transition:background-color .6s ease,border-color .6s ease}
+.lbhs-tab{-webkit-appearance:none;appearance:none;position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  min-height:52px;margin:0;padding:8px 12px 10px;border:0;border-radius:0;background:transparent;cursor:pointer;color:#6B6B6E;
+  transition:color .25s,background-color .25s}
+.lbhs-tab b{font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:11px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;line-height:1.3;direction:ltr;white-space:nowrap}
+.lbhs-tab small{font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:11.5px;font-weight:500;letter-spacing:.02em;line-height:1.3;direction:ltr;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lbhs-tab + .lbhs-tab{border-inline-start:1px solid rgba(11,11,12,.12)}
+.lbhs-tab:hover{color:#0B0B0C}
+.lbhs-tab[aria-selected="true"]{color:#0B0B0C;background:#FAF7F2}
+.lbhs-tab:focus-visible{outline:2px solid #BF2E15;outline-offset:-3px}
+.lbhs-bar{position:absolute;left:0;right:0;bottom:0;height:2px;overflow:hidden}
+.lbhs-bar i{position:absolute;inset:0;background:#BF2E15;transform:scaleX(0);transform-origin:50% 50%;transition:transform .35s ease}
+.lbhs-tab[aria-selected="true"] .lbhs-bar i{transform:scaleX(1)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-tabs{background:#120E0A;border-bottom-color:rgba(214,164,86,.22)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-tab{color:rgba(244,237,225,.58)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-tab:hover{color:#F4EDE1}
+.lbhs[data-lbhs-tone="dark"] .lbhs-tab + .lbhs-tab{border-inline-start-color:rgba(214,164,86,.18)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-tab[aria-selected="true"]{color:#F2D398;background:#1B140E}
+.lbhs[data-lbhs-tone="dark"] .lbhs-bar i{background:#C8913E}
+
+.lbhs-viewport{position:relative;overflow:hidden;touch-action:pan-y}
+.lbhs-track{display:flex;transform:translate3d(0,0,0);transition:transform .5s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.lbhs-track.is-drag{transition:none}
+.lbhs-slide{position:relative;flex:0 0 100%;min-width:0;display:flex}
+.lbhs-slide > *{flex:1 1 auto;min-width:0;width:100%}
+.lbhs .lbh-cue{display:none}
+
+.lbhs-arrow{position:absolute;top:50%;z-index:6;width:48px;height:48px;margin-top:-24px;display:grid;place-items:center;padding:0;
+  border-radius:50%;border:1px solid rgba(11,11,12,.16);background:rgba(255,255,255,.78);color:#0B0B0C;cursor:pointer;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 8px 22px rgba(11,11,12,.12);
+  transition:background-color .2s,color .2s,border-color .2s,transform .2s,opacity .2s;opacity:.9}
+.lbhs-arrow:hover{opacity:1;transform:scale(1.06)}
+.lbhs-arrow:focus-visible{outline:2px solid #BF2E15;outline-offset:3px}
+.lbhs-prev{inset-inline-start:18px}
+.lbhs-next{inset-inline-end:18px}
+.lbhs-arrow svg{width:18px;height:18px}
+[dir="rtl"] .lbhs-arrow svg{transform:scaleX(-1)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-arrow{background:rgba(20,14,9,.55);border-color:rgba(214,164,86,.38);color:#F2D398;box-shadow:none}
+.lbhs-dots{position:absolute;left:50%;bottom:16px;z-index:6;transform:translateX(-50%);display:flex;align-items:center;gap:7px;
+  padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.lbhs-dot{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:rgba(11,11,12,.28);cursor:pointer;transition:width .3s ease,background-color .3s ease}
+.lbhs-dot[aria-current="true"]{width:22px;background:#BF2E15}
+.lbhs-dot:focus-visible{outline:2px solid #BF2E15;outline-offset:2px}
+.lbhs[data-lbhs-tone="dark"] .lbhs-dots{background:rgba(20,14,9,.5)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-dot{background:rgba(244,237,225,.35)}
+.lbhs[data-lbhs-tone="dark"] .lbhs-dot[aria-current="true"]{background:#D6A456}
+
+/* extra slides (metaobjects) */
+.lbcs{position:relative;display:flex;align-items:center;min-height:82svh;overflow:hidden;isolation:isolate;background:#0E0B08;color:#F4EDE1;
+  font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif)}
+.lbcs-media{position:absolute;inset:0;z-index:-2}
+.lbcs-media img{width:100%;height:100%;object-fit:cover;display:block}
+.lbcs::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(270deg,rgba(10,8,6,.78) 0%,rgba(10,8,6,.45) 45%,rgba(10,8,6,.05) 80%)}
+.lbcs--light{color:#0B0B0C;background:#F4F2ED}
+.lbcs--light::after{background:linear-gradient(270deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.5) 45%,rgba(255,255,255,0) 80%)}
+.lbcs-in{width:100%;max-width:1320px;margin:0 auto;padding:clamp(44px,6vw,92px) clamp(20px,4vw,52px)}
+.lbcs-in > *{max-width:560px}
+.lbcs-eyebrow{margin:0 0 14px;font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:11px;font-weight:700;letter-spacing:.36em;text-transform:uppercase;color:#D6A456}
+.lbcs--light .lbcs-eyebrow{color:#BF2E15}
+.lbcs-h{margin:0;font-weight:900;font-size:clamp(30px,4.4vw,64px);line-height:1.18}
+.lbcs-t{margin:18px 0 0;font-size:clamp(14px,1.2vw,17px);line-height:1.9;opacity:.85}
+.lbcs-btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;margin-top:26px;padding:0 30px;font-weight:900;font-size:15px;text-decoration:none;
+  background:#F4EDE1;color:#0B0B0C}
+.lbcs--light .lbcs-btn{background:#0B0B0C;color:#F4EDE1}
+
+@media(max-width:767px){
+  /* phones: slides take the height of their content (~594 px) instead of 76svh
+     (641 px on a 390×844 phone), so the category strip starts on the first screen */
+  .lbhs .lbh{min-height:0!important}
+  .lbhs .lbfh--slide{min-height:0}
+  .lbhs .lbbh--slide{min-height:0}
+  .lbhs-tab{min-height:50px;padding:7px 8px 9px}
+  .lbhs-tab b{font-size:10px;letter-spacing:.16em}
+  .lbhs-tab small{font-size:10.5px}
+  .lbhs-arrow{display:none}
+  .lbhs-dots{bottom:10px;padding:6px 9px}
+  .lbcs{min-height:76svh;align-items:flex-end}
+  .lbcs::after{background:linear-gradient(0deg,rgba(10,8,6,.85) 0%,rgba(10,8,6,.4) 55%,rgba(10,8,6,0) 85%)}
+  .lbcs--light::after{background:linear-gradient(0deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,.5) 55%,rgba(255,255,255,0) 85%)}
+  .lbcs-in{padding:30px 20px 48px}
+}
+@media(prefers-reduced-motion:reduce){ .lbhs-track{transition:none} .lbhs-dot,.lbhs-tab,.lbhs-arrow,.lbhs-bar i{transition:none} }
+</style>
+
+<div class="lbhs{% if hc_total < 2 %} lbhs--single{% endif %}" id="lbhs" data-lbhs data-lbhs-cur="0" data-lbhs-tone="light"{% if hc_total > 1 %} role="region" aria-roledescription="carousel" aria-label="Lbass Original"{% endif %}>
+  {%- if hc_total > 1 -%}
+  <div class="lbhs-tabs" role="tablist" aria-label="اختار القسم · Choose a category">
+    <button type="button" class="lbhs-tab" role="tab" id="lbhsTab0" aria-controls="lbhsSlide0" aria-selected="true" data-lbhs-go="0" data-cro-event="hero_slide_tab" data-cro-label="clothing"><b>LBASS ORIGINAL</b><small>Pre-Loved Clothing</small><span class="lbhs-bar" aria-hidden="true"><i></i></span></button>
+    {%- if hc_show_frag -%}
+    <button type="button" class="lbhs-tab" role="tab" id="lbhsTab1" aria-controls="lbhsSlide1" aria-selected="false" tabindex="-1" data-lbhs-go="1" data-cro-event="hero_slide_tab" data-cro-label="fragrances"><b>ARABIC FRAGRANCES</b><small>Discover Your Signature Scent</small><span class="lbhs-bar" aria-hidden="true"><i></i></span></button>
+    {%- endif -%}
+    {%- if hc_show_beauty -%}
+    <button type="button" class="lbhs-tab" role="tab" id="lbhsTab{{ hc_bi }}" aria-controls="lbhsSlide{{ hc_bi }}" aria-selected="false" tabindex="-1" data-lbhs-go="{{ hc_bi }}" data-cro-event="hero_slide_tab" data-cro-label="cosmetics"><b>K-BEAUTY</b><small>Korean Skincare</small><span class="lbhs-bar" aria-hidden="true"><i></i></span></button>
+    {%- endif -%}
+    {%- assign hc_i = hc_bi -%}{%- if hc_show_beauty -%}{%- assign hc_i = hc_bi | plus: 1 -%}{%- endif -%}
+    {%- for k in hc_keys -%}
+      {%- assign hc_h = k | split: '|' | last -%}{%- assign s = shop.metaobjects.lbass_hero_slide[hc_h] -%}
+      <button type="button" class="lbhs-tab" role="tab" id="lbhsTab{{ hc_i }}" aria-controls="lbhsSlide{{ hc_i }}" aria-selected="false" tabindex="-1" data-lbhs-go="{{ hc_i }}" data-cro-event="hero_slide_tab" data-cro-label="{{ hc_h }}"><b>{{ s.tab_label }}</b>{% if s.tab_sublabel != blank %}<small>{{ s.tab_sublabel }}</small>{% endif %}<span class="lbhs-bar" aria-hidden="true"><i></i></span></button>
+      {%- assign hc_i = hc_i | plus: 1 -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+
+  <div class="lbhs-viewport">
+    <div class="lbhs-track">
+      <div class="lbhs-slide" id="lbhsSlide0" data-tone="light"{% if hc_total > 1 %} role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab0"{% endif %}>
+        <header class="lbh" id="top" role="banner"><div class="lbh-bg" aria-hidden="true"><img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" width="1264" height="848" alt="" fetchpriority="high" decoding="async"></div><div class="lbh-scrim" aria-hidden="true"></div><canvas id="lbhParticles" class="lbh-fx" aria-hidden="true" data-tint="11,11,12"></canvas><div class="lbh-wrap"><p class="lbh-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p><h1 class="lbh-h" id="home-h1"><span class="lbh-ln" dir="ltr" data-lbh-reveal="Lbass Original —">Lbass Original —</span><span class="lbh-ln lbh-ln--accent" data-lbh-reveal="حوايج Second-Hand أصلية فالمغرب">حوايج Second-Hand أصلية فالمغرب</span></h1><p class="lbh-sub">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p><div class="lbh-divider" aria-hidden="true"></div><div class="lbh-ctas"><a class="lbh-btn lbh-btn-primary" href="{{ routes.all_products_collection_url }}" data-lbh-cta="primary" data-cro-event="hero_cta_click" data-cro-label="clothing_primary"><span class="lbh-d">شوف الدروب دابا ←</span><span class="lbh-m">شوف الدروب</span></a><a class="lbh-btn lbh-btn-ghost" href="/pages/condition-guide" data-lbh-cta="secondary" data-cro-event="hero_cta_click" data-cro-label="clothing_secondary"><span class="lbh-d">كيفاش كنشيّكو القطع؟</span><span class="lbh-m">كيفاش كنشيّكو؟</span></a></div><div class="lbh-trust"><div class="lbh-ht"><b>من ألمانيا</b></div><div class="lbh-ht"><b>صور حقيقية</b></div><div class="lbh-ht"><b>قطعة 1/1</b></div><div class="lbh-ht"><b>COD</b></div><div class="lbh-ht lbh-ht--wide"><b>مراكش</b> 20 درهم</div><div class="lbh-ht lbh-ht--wide"><b>خارج مراكش</b> 40 درهم</div></div><p class="lbh-scarce">ملي كتباع القطعة، كتخرج من الكوليكسيون.</p></div><a class="lbh-cue" href="#drop" data-lbh-cue><span class="lbh-cue-line" aria-hidden="true"></span><span>SCROLL</span></a></header>
+      </div>
+      {%- if hc_show_frag -%}
+      <div class="lbhs-slide" id="lbhsSlide1" data-tone="dark" role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab1" aria-hidden="true" inert>
+        {% render 'lbass-frag-hero', mode: 'slide' %}
+      </div>
+      {%- endif -%}
+      {%- if hc_show_beauty -%}
+      <div class="lbhs-slide" id="lbhsSlide{{ hc_bi }}" data-tone="light" role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab{{ hc_bi }}" aria-hidden="true" inert>
+        {% render 'lbass-beauty-hero', mode: 'slide' %}
+      </div>
+      {%- endif -%}
+      {%- assign hc_i = hc_bi -%}{%- if hc_show_beauty -%}{%- assign hc_i = hc_bi | plus: 1 -%}{%- endif -%}
+      {%- for k in hc_keys -%}
+        {%- assign hc_h = k | split: '|' | last -%}{%- assign s = shop.metaobjects.lbass_hero_slide[hc_h] -%}
+        {%- assign hc_tone = s.tone.value | default: 'dark' -%}
+        <div class="lbhs-slide" id="lbhsSlide{{ hc_i }}" data-tone="{{ hc_tone }}" role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab{{ hc_i }}" aria-hidden="true" inert>
+          <section class="lbcs lbcs--{{ hc_tone }}">
+            {%- if s.image.value != blank -%}
+            <picture class="lbcs-media">
+              {%- if s.image_mobile.value != blank -%}<source media="(max-width: 767px)" data-srcset="{{ s.image_mobile.value | image_url: width: 1080 }}">{%- endif -%}
+              <img data-src="{{ s.image.value | image_url: width: 2000 }}" alt="{{ s.image.value.alt | escape }}" width="2000" height="1100" decoding="async">
+            </picture>
+            {%- endif -%}
+            <div class="lbcs-in">
+              {%- if s.eyebrow != blank -%}<p class="lbcs-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+              <h2 class="lbcs-h">{{ s.heading }}</h2>
+              {%- if s.text != blank -%}<p class="lbcs-t">{{ s.text | newline_to_br }}</p>{%- endif -%}
+              {%- if s.cta_label != blank and s.cta_url != blank -%}<a class="lbcs-btn" href="{{ s.cta_url }}" data-cro-event="hero_cta_click" data-cro-label="slide_{{ hc_h }}">{{ s.cta_label }}</a>{%- endif -%}
+            </div>
+          </section>
+        </div>
+        {%- assign hc_i = hc_i | plus: 1 -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if hc_total > 1 -%}
+    <button type="button" class="lbhs-arrow lbhs-prev" data-lbhs-step="-1" aria-label="السابق · Previous" aria-controls="lbhs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button type="button" class="lbhs-arrow lbhs-next" data-lbhs-step="1" aria-label="التالي · Next" aria-controls="lbhs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
+    <div class="lbhs-dots" role="group" aria-label="Slides">
+      {%- for i in (1..hc_total) -%}
+      <button type="button" class="lbhs-dot" data-lbhs-go="{{ forloop.index0 }}" aria-label="{{ forloop.index }} / {{ hc_total }}"{% if forloop.first %} aria-current="true"{% endif %}></button>
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if hc_total > 1 -%}
+<script>
+(function(){
+  var root = document.getElementById('lbhs');
+  if(!root) return;
+  var track = root.querySelector('.lbhs-track');
+  var vp = root.querySelector('.lbhs-viewport');
+  var slides = Array.prototype.slice.call(track.children);
+  var tabs = Array.prototype.slice.call(root.querySelectorAll('.lbhs-tab'));
+  var dots = Array.prototype.slice.call(root.querySelectorAll('.lbhs-dot'));
+  var n = slides.length;
+  if(n < 2) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DUR = 5000, timer = 0;
+  var auto = !reduce, cur = -1, holds = {}, loaded = {0: true}, dragX = 0, dragging = false, sx = null, sy = 0, justDragged = 0;
+  var rtl = (getComputedStyle(track).direction === 'rtl');
+
+  function publish(name, data){
+    try{ if(window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish(name, data); }catch(e){}
+  }
+  function load(i){
+    if(i < 0 || i >= n || loaded[i]) return;
+    loaded[i] = true;
+    Array.prototype.forEach.call(slides[i].querySelectorAll('[data-src]'), function(el){ el.src = el.getAttribute('data-src'); el.removeAttribute('data-src'); });
+    Array.prototype.forEach.call(slides[i].querySelectorAll('[data-srcset]'), function(el){ el.srcset = el.getAttribute('data-srcset'); el.removeAttribute('data-srcset'); });
+  }
+  function place(px){
+    var base = (rtl ? 1 : -1) * cur * 100;
+    track.style.transform = px ? 'translate3d(calc(' + base + '% + ' + px + 'px),0,0)' : 'translate3d(' + base + '%,0,0)';
+  }
+  /* one timer, restarted on every slide change — so a click or swipe never
+     stops the rotation, it just gives the chosen slide a full 5 s */
+  function schedule(){
+    if(timer){ clearTimeout(timer); timer = 0; }
+    if(!auto || Object.keys(holds).length) return;
+    timer = setTimeout(function(){ timer = 0; go(cur + 1, 'auto'); }, DUR);
+  }
+  function hold(k, v){
+    var had = !!holds[k];
+    if(v) holds[k] = 1; else delete holds[k];
+    root.classList.toggle('is-hold', Object.keys(holds).length > 0);
+    if(had !== !!v) schedule();
+  }
+  function go(i, how){
+    i = ((i % n) + n) % n;
+    if(i === cur) { place(0); schedule(); return; }
+    cur = i;
+    load(i); load(i + 1);
+    place(0);
+    for(var k = 0; k < n; k++){
+      var on = k === i;
+      slides[k].setAttribute('aria-hidden', on ? 'false' : 'true');
+      slides[k].inert = !on;
+      if(tabs[k]){ tabs[k].setAttribute('aria-selected', on ? 'true' : 'false'); tabs[k].tabIndex = on ? 0 : -1; }
+      if(dots[k]){ if(on) dots[k].setAttribute('aria-current', 'true'); else dots[k].removeAttribute('aria-current'); }
+    }
+    root.setAttribute('data-lbhs-cur', String(i));
+    root.setAttribute('data-lbhs-tone', slides[i].getAttribute('data-tone') || 'light');
+    if(how) publish('lbass_hero_slide', {slide: i, label: tabs[i] ? tabs[i].getAttribute('data-cro-label') : String(i), how: how});
+    schedule();
+  }
+
+  root.addEventListener('click', function(e){
+    if(Date.now() - justDragged < 350){ e.preventDefault(); e.stopPropagation(); return; }
+    var g = e.target.closest('[data-lbhs-go]');
+    if(g && root.contains(g)){ go(+g.getAttribute('data-lbhs-go'), 'user'); return; }
+    var st = e.target.closest('[data-lbhs-step]');
+    if(st){ go(cur + (+st.getAttribute('data-lbhs-step')), 'user'); }
+  }, true);
+  root.addEventListener('keydown', function(e){
+    var t = e.target;
+    if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    var step = 0;
+    if(e.key === 'ArrowRight') step = rtl ? -1 : 1;
+    else if(e.key === 'ArrowLeft') step = rtl ? 1 : -1;
+    else if(e.key === 'Home'){ e.preventDefault(); go(0, 'user'); if(tabs[0]) tabs[0].focus(); return; }
+    else if(e.key === 'End'){ e.preventDefault(); go(n - 1, 'user'); if(tabs[n - 1]) tabs[n - 1].focus(); return; }
+    if(!step) return;
+    e.preventDefault();
+    go(cur + step, 'user');
+    if(t && t.classList && t.classList.contains('lbhs-tab') && tabs[cur]) tabs[cur].focus();
+  });
+
+  /* swipe that follows the finger; vertical scrolling stays native (touch-action: pan-y) */
+  vp.addEventListener('pointerdown', function(e){
+    if(e.pointerType === 'mouse') return;
+    sx = e.clientX; sy = e.clientY; dragX = 0; dragging = false;
+  }, {passive: true});
+  vp.addEventListener('pointermove', function(e){
+    if(sx === null) return;
+    var mx = e.clientX - sx, my = e.clientY - sy;
+    if(!dragging){
+      if(Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my) * 1.2){ dragging = true; track.classList.add('is-drag'); hold('drag', 1); }
+      else if(Math.abs(my) > 10){ sx = null; return; }
+    }
+    if(dragging){
+      var atEdge = (cur === 0 && (rtl ? mx < 0 : mx > 0)) || (cur === n - 1 && (rtl ? mx > 0 : mx < 0));
+      dragX = atEdge ? mx * 0.35 : mx;
+      place(dragX);
+    }
+  }, {passive: true});
+  function endDrag(){
+    if(sx === null && !dragging) return;
+    sx = null;
+    if(!dragging) return;
+    dragging = false;
+    hold('drag', 0);
+    track.classList.remove('is-drag');
+    justDragged = Date.now();
+    var thr = Math.min(90, vp.clientWidth * 0.18);
+    if(Math.abs(dragX) > thr){
+      var forward = rtl ? dragX > 0 : dragX < 0;
+      go(cur + (forward ? 1 : -1), 'user');
+    } else {
+      place(0);
+    }
+  }
+  vp.addEventListener('pointerup', endDrag, {passive: true});
+  vp.addEventListener('pointercancel', endDrag, {passive: true});
+
+  /* no pause on hover (owner request). Keyboard focus still pauses it, so a
+     keyboard user is never moved away from the slide they are reading. */
+  root.addEventListener('focusin', function(e){
+    var kb = false;
+    try{ kb = e.target.matches(':focus-visible'); }catch(err){}
+    if(kb) hold('focus', 1);
+  });
+  root.addEventListener('focusout', function(e){ if(!root.contains(e.relatedTarget)) hold('focus', 0); });
+  document.addEventListener('visibilitychange', function(){ hold('hidden', document.hidden); });
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ hold('off', !es[0].isIntersecting); }, {threshold: 0.3}).observe(root);
+  }
+
+  var start = 0;
+  /* deep links: /#fragrances opens the perfume slide, /#k-beauty the K-beauty one (and stays there) */
+  var hashMap = {fragrances: 'fragrances', parfums: 'fragrances', 'k-beauty': 'cosmetics', kbeauty: 'cosmetics', cosmetics: 'cosmetics', beauty: 'cosmetics'};
+  var hashKey = hashMap[(location.hash || '').replace('#', '').toLowerCase()];
+  if(hashKey){ tabs.forEach(function(t, i){ if(t.getAttribute('data-cro-label') === hashKey){ start = i; auto = false; } }); }
+  go(start);
+  if(auto) root.classList.add('is-auto');
+  var later = function(){ setTimeout(function(){ for(var k = 1; k < n; k++) load(k); }, 1200); };
+  if(document.readyState === 'complete') later(); else window.addEventListener('load', later);
+})();
+</script>
+{%- endif -%}

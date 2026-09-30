@@ -625,6 +625,10 @@ input,select{font-family:inherit}
   </script>
 </section>
 
+{%- comment -%} Category strip (snippets/lbass-shop-by-category, 2026-09-26, owner-approved): a
+     one-tap way to pick a department right under the hero. {%- endcomment -%}
+{% render 'lbass-shop-by-category' %}
+
 <!-- ═══ AVAILABLE NOW ═══ -->
 {%- comment -%}
   AVAILABLE NOW (2026-09-30). Replaces "THE DROP" rail and the "القطع اللي
@@ -906,6 +910,12 @@ input,select{font-family:inherit}
     </p>
   </div>
 </section>
+
+{%- comment -%} Fragrance best-sellers row (snippets/lbass-home-fragrances, 2026-09-30,
+     owner-approved "clothing-first" plan): one row, after the clothing pieces,
+     the browse block, and the check and delivery blocks. K-beauty stays in the
+     menu only; to show it here too, add: render 'lbass-home-beauty'. {%- endcomment -%}
+{% render 'lbass-home-fragrances' %}
 
 <!-- ═══ REVIEWS (Judge.me Carousel) ═══ -->
 <section class="sec" id="reviews" aria-labelledby="reviews-carousel-h">
@@ -1289,11 +1299,11 @@ Best friperie en ligne Maroc: كيفاش نختار؟§§“الأفضل” كي
       {% if form.errors %}
         <p class="nl-note" role="alert">وقع مشكل. تأكد من الإيميل وعاود جرب.</p>
       {% endif %}
-      <input type="hidden" name="contact[tags]" value="newsletter,homepage">
+      <style>.nl-g{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;color:#97928A;margin:0 0 10px}.nl-g label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.nl-g input{accent-color:#C89A0E}</style><div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-all' checked>بجوج</label></div>
       <input class="nl-input" type="email" name="contact[email]" placeholder="الإيميل ديالك…" required aria-label="الإيميل">
       <button class="nl-btn" type="submit">عَلمني ←</button>
     {% endform %}
-    <p class="nl-note">ما غاديش نسبّاموك. تلغي التسجيل بضغطة وحدة.</p>
+    <p class="nl-note">غادي توصلك رسالة فالإيميل باش تأكد التسجيل. كنصيفطو غير الDrops الجداد والتخفيضات الحقيقية · <a href="{{ shop.privacy_policy.url }}" style="color:inherit;text-decoration:underline">سياسة الخصوصية</a><br>ما غاديش نسبّاموك. تلغي التسجيل بضغطة وحدة.</p>
   </div>
 </section>
 
@@ -1405,10 +1415,10 @@ Best friperie en ligne Maroc: كيفاش نختار؟§§“الأفضل” كي
     <button class="ei-x" id="eiX" aria-label="سدّ">✕</button>
     <h3>قبل ما تمشي… 👀</h3>
     <p>خلّي الإيميل ديالك ونعلموك ملي يوصل Drop جديد باش تشوف المتوفر من اللول.</p>
-    <form class="ei-form" id="eiForm" action="/contact" method="post">
+    <p class="ei-note" style="font-size:12px;line-height:1.6;margin:0 0 12px;color:#5E5A55">غادي توصلك رسالة فالإيميل باش تأكد التسجيل. كنصيفطو غير الDrops الجداد والتخفيضات الحقيقية، وتلغي فأي وقت · <a href="{{ shop.privacy_policy.url }}" style="color:#97928A;text-decoration:underline">سياسة الخصوصية</a></p><form class="ei-form" id="eiForm" action="/contact" method="post">
       <input type="hidden" name="form_type" value="customer">
       <input type="hidden" name="return_to" value="/pages/newsletter-confirmation">
-      <input type="hidden" name="contact[tags]" value="newsletter,exit-intent">
+      <div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-all' checked>بجوج</label></div>
       <input class="ei-input" type="email" name="contact[email]" placeholder="الإيميل ديالك…" required aria-label="الإيميل">
       <button class="ei-btn" type="submit">عَلمني ←</button>
     </form>

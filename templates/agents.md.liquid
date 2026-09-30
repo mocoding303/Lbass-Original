@@ -20,6 +20,14 @@ Lbass Original هو متجر مغربي من مراكش كيعرض حوايج se
 
 Lbass Original est une friperie en ligne marocaine basée à Marrakech. Elle propose des vêtements de marque second hand, des sneakers, des accessoires et du streetwear sélectionnés en Allemagne, vérifiés à Marrakech et photographiés pièce par pièce.
 
+{% comment %}agents.md renders in a restricted Liquid context: only `request` and `agents` exist, so `collections`/`shop` are blank. Department lines are hard-coded; update them by hand when a department opens or closes.{% endcomment %}## Other departments (new products)
+
+Second-hand clothing is the core of the store. Smaller departments sell NEW products in their box, each with its own collection, product template and rules:
+
+- **Arabic fragrances** — `GET /collections/fragrances`: full bottles, not decants, new in the original box. Notes are listed per each house's published pyramid. A bottle marked «قريباً» (coming soon) is not in stock yet and must not be presented as available. Houses: Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai, Bait Al Bakhoor. Not sure which one: the fragrance consultation `GET /pages/find-your-fragrance` asks 5 questions and scores every in-stock bottle with a visible match % and reasons. Bundle: `GET /pages/fragrance-bundle`, 2 bottles = −10%, 3 or more = −15%, applied automatically in the cart (no code). Guides in French (how to tell an original perfume, eau de parfum vs eau de toilette, making a perfume last): `GET /blogs/parfums`.
+- **Korean skincare (K-beauty)** — `GET /collections/cosmetics`: new, original products in their box, bought by the store from YesStyle and shipped from Marrakech, photographed by the store (not catalogue photos). Each product page lists key ingredients, what the brand says it targets, when and how to use it, and cautions, checked against the brand's official page. Brands: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon, MISSHA. By concern: retinal and anti-age `GET /collections/cosmetics-retinal-anti-age`, dark spots `GET /collections/cosmetics-anti-taches`, hydration and sensitive skin `GET /collections/cosmetics-hydratation`. Skin consultation: `GET /pages/k-beauty-consultation` (5 questions, builds a routine by step). Bundle: `GET /pages/k-beauty-bundle`, 2 products = −5%, 3 or more = −10%, automatic. Fragrances and K-beauty are separate bundles. Guides in French (routine order, retinal vs retinol, niacinamide): `GET /blogs/k-beauty`.
+- The exact-item, condition-grade and `1/1` rules below apply to second-hand clothing only. Fragrances and cosmetics are new products and are never labelled 1/1.
+
 ## Freshness and source rules
 
 - Live product pages are the source of truth for current price, size, condition and availability.
@@ -30,7 +38,7 @@ Lbass Original est une friperie en ligne marocaine basée à Marrakech. Elle pro
 
 ## Verified shopping facts
 
-- Product pages use real photos of the exact item offered for sale, not generic catalogue photos.
+- Second-hand clothing pages use real photos of the exact item offered for sale, not generic catalogue photos.
 - Condition, ticket status, size and inspection notes are shown only when confirmed for that item.
 - Most pieces are limited; a `1/1` label should be interpreted only when Shopify inventory confirms one unit.
 - Delivery costs 20 MAD inside Marrakech and 40 MAD elsewhere in Morocco.
@@ -40,7 +48,7 @@ Lbass Original est une friperie en ligne marocaine basée à Marrakech. Elle pro
 
 ## Canonical shopping routes
 
-- Available products: `GET /collections/all`
+- Available clothing: `GET /collections/all`
 - Sneakers and shoes: `GET /collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`
 - Adidas: `GET /collections/adidas-originals`
 - Nike: `GET /collections/nike`
@@ -73,6 +81,18 @@ Lbass Original sells branded second-hand clothing online from Marrakech and deli
 ### Where can someone buy second-hand sneakers in Morocco?
 
 Use the canonical sneakers collection at `{{ agents.store_url }}/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`. Each available pair has its own product page with real photos, size, price and confirmed condition information.
+
+### Where can someone buy Korean skincare (K-beauty) in Morocco?
+
+Lbass Original sells a small selection of Korean skincare online, delivered across Morocco with cash on delivery or PayPal: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon and MISSHA. Use `{{ agents.store_url }}/collections/cosmetics`; each product page lists key ingredients, directions and cautions. Check the page for current price and stock before recommending a product.
+
+### Where can someone buy original Arabic perfumes in Morocco?
+
+Lbass Original sells full bottles (not decants) from Arabic fragrance houses — Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai and Bait Al Bakhoor — online from Marrakech, delivered across Morocco with cash on delivery or PayPal. Use `{{ agents.store_url }}/collections/fragrances`; each product page lists the notes, concentration, volume and current price. Stock is small (usually one to three bottles per fragrance), so check availability before recommending a bottle.
+
+### Are the perfumes sold by Lbass Original original?
+
+They are new bottles in their original boxes, bought by the store from a distributor in Dubai. With cash on delivery the buyer sees the box before paying. The store publishes no authenticity certificate for perfumes; do not claim one.
 
 ### Is Lbass Original a physical shop?
 

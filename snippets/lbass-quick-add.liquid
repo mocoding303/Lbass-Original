@@ -64,10 +64,31 @@
     {%- if qa_notes != blank or qa_defects != blank -%}{%- assign qa_cond = 'بحالة مزيانة · شوف الملاحظات' -%}{%- assign qa_confirmed = true -%}{%- endif -%}
   {%- endif -%}
 {%- endif -%}
+{%- comment -%}
+  FRAGRANCE (2026-09-26): a new boxed bottle carries no second-hand condition
+  grade, so the inspection gate above does not apply to it. Without this every
+  perfume card showed «غير متوفر للطلب دابا» instead of the cart button.
+{%- endcomment -%}
+{%- assign qa_add = 'زيدها للسلة' -%}
+{%- assign qa_sold = 'تباعت · شوف قطع مشابهة' -%}
+{%- if product.type == 'Fragrance' -%}
+  {%- assign qa_confirmed = true -%}
+  {%- assign qa_add = 'زيدو للسلة' -%}
+  {%- assign qa_sold = 'مابقاش فالستوك · شوف العطر' -%}
+{%- endif -%}
+{%- comment -%} COSMETICS (2026-09-26): same as perfume — a new boxed product has no condition grade. {%- endcomment -%}
+{%- if product.type == 'Cosmetics' -%}
+  {%- assign qa_confirmed = true -%}
+  {%- assign qa_add = 'زيدو للسلة' -%}
+  {%- assign qa_sold = 'مابقاش فالستوك · شوف المنتوج' -%}
+{%- endif -%}
+{%- assign qa_soon = false -%}
+{%- if product.type == 'Fragrance' and product.available == false and product.tags contains 'coming-soon' -%}{%- assign qa_soon = true -%}{%- endif -%}
+{%- if product.type == 'Cosmetics' and product.available == false and product.tags contains 'coming-soon' -%}{%- assign qa_soon = true -%}{%- endif -%}
 {%- capture qa_data -%}{"n":{{ qa_title | json }},"u":{{ product.url | json }},"c":{{ qa_cond | default: '' | json }},"v":[{%- for v in product.variants -%}[{{ v.id }},{% if v.title == 'Default Title' %}"One Size"{% else %}{{ v.title | json }}{% endif %},{% if v.available %}1{% else %}0{% endif %}]{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}{%- endcapture -%}
 {%- if product.available and qa_confirmed -%}
-  <button type="button" class="lbqa-btn" data-lbqa="{{ qa_data | escape }}" aria-label="زيدها للسلة — {{ qa_title | escape }}">
-    <span class="lbqa-txt">🛍 زيدها للسلة</span>
+  <button type="button" class="lbqa-btn" data-lbqa="{{ qa_data | escape }}" aria-label="{{ qa_add }} — {{ qa_title | escape }}">
+    <span class="lbqa-txt">🛍 {{ qa_add }}</span>
     <span class="lbqa-en" aria-hidden="true">ADD TO CART</span>
   </button>
 {%- elsif product.available -%}
@@ -90,7 +111,11 @@
     control should not be the main action. This one still does something useful —
     it opens the product, where the related pieces and WhatsApp route live.
   {%- endcomment -%}
-  <a class="lbqa-btn lbqa-sold" href="{{ product.url }}">تباعت · شوف قطع مشابهة</a>
+  {%- if qa_soon -%}
+  <a class="lbqa-btn lbqa-soon" href="{{ product.url }}" data-cro-event="{% if product.type == 'Cosmetics' %}beauty_soon_card{% else %}fragrance_soon_card{% endif %}" data-cro-label="{{ product.handle }}">قريباً · علمني ملي يوصل</a>
+  {%- else -%}
+  <a class="lbqa-btn lbqa-sold" href="{{ product.url }}">{{ qa_sold }}</a>
+  {%- endif -%}
 {%- endif -%}
 
 {% endif %}

@@ -106,6 +106,13 @@
 {%- capture card_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture -%}
 {%- assign card_one_s = card_one_s | strip -%}
 {%- assign card_one = false -%}{%- if card_one_s == '1' -%}{%- assign card_one = true -%}{%- endif -%}
+{%- comment -%} fragrance (2026-09-26): a bottle that has not arrived yet (tag coming-soon) is «قريباً», not SOLD {%- endcomment -%}
+{%- assign card_soon = false -%}
+{%- if product.type == 'Fragrance' and product.available == false and product.tags contains 'coming-soon' -%}{%- assign card_soon = true -%}{%- endif -%}
+{%- if product.type == 'Cosmetics' and product.available == false and product.tags contains 'coming-soon' -%}{%- assign card_soon = true -%}{%- endif -%}
+{%- comment -%} cosmetics (2026-09-26): card_nw = a NEW-goods department (perfume or K-beauty), not second-hand {%- endcomment -%}
+{%- assign card_nw = false -%}
+{%- if product.type == 'Fragrance' or product.type == 'Cosmetics' -%}{%- assign card_nw = true -%}{%- endif -%}
 
 {%- comment -%}
   Campaign verdict, asked ONCE and reused by both badges below. Shopify's
@@ -129,10 +136,16 @@
 {%- assign card_pct = card_pct | strip -%}
 
 {%- capture card_alt -%}
+{%- if product.type == 'Fragrance' -%}
+{{ card_title }} – {{ product.vendor }} perfume – Lbass Original Morocco
+{%- elsif product.type == 'Cosmetics' -%}
+{{ card_title }} – {{ product.vendor }} K-beauty – Lbass Original Morocco
+{%- else -%}
 {{ product.vendor }} {{ card_title }} second-hand original in Morocco{% unless product.has_only_default_variant %}, size {{ cv.title }}{% endunless %}{% if card_condition != blank %}, {{ card_condition }}{% endif %}, photographed by Lbass Original
+{%- endif -%}
 {%- endcapture -%}
 
-<div class="lbqa-wrap{% unless product.available %} lb-sold{% endunless %}"
+<div class="lbqa-wrap{% unless product.available or card_soon %} lb-sold{% endunless %}"
   {%- if lb_fdata %}
      data-avail="{% if product.available %}1{% else %}0{% endif %}"
      data-brand="{{ product.vendor | escape }}"
@@ -151,6 +164,8 @@
         <span class="lb-stamp" aria-hidden="true">1/1</span>
       {%- elsif product.available -%}
         <span class="lb-stamp" aria-hidden="true">LIVE</span>
+      {%- elsif card_soon -%}
+        <span class="lb-stamp" aria-hidden="true">SOON</span>
       {%- else -%}
         <span class="lb-stamp lb-stamp--sold" aria-hidden="true">SOLD</span>
       {%- endif -%}
@@ -179,7 +194,11 @@
       <div class="card-vendor" itemprop="brand">{{ product.vendor }}</div>
       <div class="card-title" itemprop="name" dir="auto">{{ card_title }}</div>
 
+      {%- if card_nw and product.price == 0 -%}
+        <div class="card-price lb-price"><span class="lb-price__now">الثمن قريباً</span></div>
+      {%- else -%}
       {%- render 'lbass-price', product: product, variant: cv, pct: card_pct -%}
+      {%- endif -%}
       {%- comment -%}
         NO campaign line in the card body — the ribbon on the image already says
         «تخفيضات الصيف −30% على الثانية» and repeating it here caused two
@@ -197,8 +216,8 @@
         exists in lbass-promo-badge for surfaces with no room for a ribbon.
       {%- endcomment -%}
 
-      {%- if product.available -%}
-        <p style="margin:0;color:var(--gold2);font-size:12px;font-weight:900">شوفها قبل ما تتباع ←</p>
+      {%- if product.available or card_soon -%}
+        <p style="margin:0;color:var(--gold2);font-size:12px;font-weight:900">{% if card_soon and product.type == 'Cosmetics' %}قريباً · شوف المكونات ←{% elsif card_soon %}قريباً · شوف النوطات ←{% elsif product.type == 'Fragrance' %}شوف النوطات والثمن ←{% elsif product.type == 'Cosmetics' %}شوف المكونات وطريقة الاستعمال ←{% else %}شوفها قبل ما تتباع ←{% endif %}</p>
       {%- endif -%}
 
       <div style="display:flex;flex-wrap:wrap;gap:5px">
@@ -208,7 +227,18 @@
         {%- if card_confirmed -%}
           <span class="chip chip-cond" style="font-size:11px;padding:3px 8px">{{ card_condition }}</span>
         {%- endif -%}
-        {%- if card_one -%}
+        {%- if product.type == 'Fragrance' -%}
+          {%- comment -%} fragrance (2026-09-26): volume stands where the size chip would be {%- endcomment -%}
+          {%- assign card_ml = product.metafields.fragrance.volume_ml.value -%}
+          {%- if card_ml != blank -%}<span class="chip chip-sz" style="font-size:11px;padding:3px 8px" dir="ltr">{{ card_ml }} ml</span>{%- endif -%}
+          {%- if product.available -%}<span class="chip" style="font-size:11px;padding:3px 8px">متوفر دابا</span>{%- elsif card_soon -%}<span class="chip" style="font-size:11px;padding:3px 8px">قريباً</span>{%- endif -%}
+        {%- elsif product.type == 'Cosmetics' -%}
+          {%- comment -%} cosmetics (2026-09-26): volume + form stand where the size chip would be {%- endcomment -%}
+          {%- assign card_bml = product.metafields.beauty.volume_ml.value -%}
+          {%- assign card_bform = product.metafields.beauty.product_form.value -%}
+          {%- if card_bml != blank -%}<span class="chip chip-sz" style="font-size:11px;padding:3px 8px" dir="ltr">{{ card_bml }} ml{% if card_bform != blank %} · {{ card_bform }}{% endif %}</span>{%- endif -%}
+          {%- if product.available -%}<span class="chip" style="font-size:11px;padding:3px 8px">متوفر دابا</span>{%- elsif card_soon -%}<span class="chip" style="font-size:11px;padding:3px 8px">قريباً</span>{%- endif -%}
+        {%- elsif card_one -%}
           <span class="chip lb-uniq" dir="auto">Pièce unique <i>· قطعة وحدة</i></span>
         {%- elsif product.available -%}
           <span class="chip" style="font-size:11px;padding:3px 8px">متوفرة دابا</span>

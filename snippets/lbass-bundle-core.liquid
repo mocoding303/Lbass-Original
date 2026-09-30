@@ -1,0 +1,145 @@
+{%- comment -%}
+  ═══ LBASS — BUNDLE CORE (2026-09-28) ═══
+  Rendered once per page from the end of snippets/lbass-cart-drawer.liquid, so it
+  exists everywhere the cart exists (standard layout, index, vault).
+
+  What it provides
+  - window.LbassBundle: the saved bundle selections, one per department. Fragrances
+    and K-beauty are NEVER mixed (owner decision 2026-09-28).
+  - window.lbTrack(name, params): sends the event to GA4 via gtag (same route
+    as whatsapp_click) AND to Shopify.analytics as 'lbass_' + name. The older
+    lbass_* events only reach Shopify.analytics, which is why they never
+    showed up in GA4.
+  - Delegated "add to bundle" buttons: any element with
+    data-lbb-add data-dept="fragrance|beauty" data-variant="…" data-handle="…" data-max="…"
+
+  PRICES — the real discounts are four Shopify AUTOMATIC discounts
+  (Admin → Discounts), created 2026-09-28:
+    «باك العطور · −10% (جوج عطور)»          collection fragrances · min qty 2 · 10%
+    «باك العطور · −15% (3 عطور ولفوق)»      collection fragrances · min qty 3 · 15%
+    «باك K-beauty · −5% (جوج منتوجات)»      collection cosmetics  · min qty 2 · 5%
+    «باك K-beauty · −10% (3 منتوجات ولفوق)» collection cosmetics  · min qty 3 · 10%
+  Tested in a real cart: the two tiers of one department do not stack (the best
+  one wins) and each department only counts its own items.
+  The site only DISPLAYS an estimate; Shopify applies the discount in the cart
+  and at checkout, even for items added outside the builder.
+  ► If a discount changes in Admin, change `tiers` below to match.
+
+  Storage: localStorage 'lbass_bundle_v1' = { fragrance:{items:[{v,h,q}],ts}, beauty:{…} }.
+  It is per device, survives refresh and back/forward, and falls back to memory
+  when storage is blocked (private mode).
+{%- endcomment -%}
+<style>
+.lbb-pdp{margin:14px 0 16px;padding:14px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:14px;background:var(--ink2,#F4F2ED)}
+.lbb-pdp__t{margin:0 0 4px!important;font-weight:900;font-size:14px;color:var(--cream,#0B0B0C)}
+.lbb-pdp__s{margin:0 0 10px!important;font-size:12.5px;line-height:1.6;color:var(--txt2,#57534E)}
+.lbb-pdp__row{display:flex;flex-wrap:wrap;gap:8px}
+.lbb-pdp__btn,.lbb-pdp__lnk{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 14px;border-radius:12px;font:inherit;font-weight:900;font-size:13.5px;text-decoration:none;cursor:pointer}
+.lbb-pdp__btn{flex:1 1 180px;border:1px solid var(--cream,#0B0B0C);background:var(--cream,#0B0B0C);color:var(--ink,#FFF)}
+.lbb-pdp__btn[data-added]{background:transparent;color:var(--cream,#0B0B0C)}
+.lbb-pdp__lnk{flex:1 1 150px;border:1px solid var(--line,rgba(11,11,12,.16));background:transparent;color:var(--cream,#0B0B0C)}
+.lbb-toast{position:fixed;inset-inline:16px;bottom:88px;z-index:2147483000;max-width:420px;margin:0 auto;padding:12px 14px;border-radius:12px;background:#0B0B0C;color:#fff;font-weight:800;font-size:13.5px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
+.lbb-toast.is-on{opacity:1;transform:none}
+</style>
+<script>
+(function(){
+  'use strict';
+  if (window.LbassBundle) return;
+  var KEY = 'lbass_bundle_v1';
+  var CFG = {
+    fragrance: { collection: 'fragrances', page: '/pages/fragrance-bundle', consult: '/pages/find-your-fragrance', label: 'باك العطور', unit: 'عطور', one: 'عطر', tiers: [{ min: 2, pct: 10 }, { min: 3, pct: 15 }] },
+    beauty:    { collection: 'cosmetics',  page: '/pages/k-beauty-bundle', consult: '/pages/k-beauty-consultation', label: 'باك K-beauty', unit: 'منتوجات', one: 'منتوج', tiers: [{ min: 2, pct: 5 }, { min: 3, pct: 10 }] }
+  };
+  var mem = null;
+
+  function read(){
+    try { var s = JSON.parse(window.localStorage.getItem(KEY) || 'null'); if (s && typeof s === 'object') return s; } catch (e) {}
+    return mem ? JSON.parse(JSON.stringify(mem)) : {};
+  }
+  function save(s){
+    mem = s;
+    try { window.localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    try { document.dispatchEvent(new CustomEvent('lbass:bundle', { detail: s })); } catch (e) {}
+  }
+  function items(dept){ var s = read(); return (s[dept] && Array.isArray(s[dept].items)) ? s[dept].items.slice() : []; }
+  function setItems(dept, arr){ if (!CFG[dept]) return; var s = read(); s[dept] = { items: arr, ts: Date.now() }; save(s); }
+  function count(dept){ return items(dept).reduce(function(n, i){ return n + (parseInt(i.q, 10) || 1); }, 0); }
+  function tier(dept, n){ var pct = 0; ((CFG[dept] || {}).tiers || []).forEach(function(t){ if (n >= t.min) pct = t.pct; }); return pct; }
+  function next(dept, n){ var t = (CFG[dept] || {}).tiers || []; for (var i = 0; i < t.length; i++) { if (n < t[i].min) return { need: t[i].min - n, pct: t[i].pct }; } return null; }
+  /* LRI…PDI keep '−15%' / '100 ml' reading left-to-right inside Darija text. */
+  function pct(p){ return '\u2066−' + p + '%\u2069'; }
+  function ltr(t){ return t ? '\u2066' + t + '\u2069' : ''; }
+  function fmt(cents){
+    var v = Math.round(cents) / 100;
+    var s = (v % 1 === 0) ? v.toLocaleString('en-US') : v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return s + ' درهم';
+  }
+  /* Same rounding as Shopify: the percentage is taken per line, in cents. */
+  function saving(lines, pct){ return lines.reduce(function(sum, l){ return sum + Math.round(l.price * l.q * pct / 100); }, 0); }
+
+  function track(name, params){
+    params = params || {};
+    try { if (window.LbassAiAttribution && typeof window.LbassAiAttribution.enrich === 'function') params = window.LbassAiAttribution.enrich(params); } catch (e) {}
+    try { if (typeof window.gtag === 'function') window.gtag('event', name, params); } catch (e) {}
+    try { if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_' + name, params); } catch (e) {}
+  }
+
+  function add(dept, it, source){
+    if (!CFG[dept] || !it || !it.v) return;
+    var a = items(dept), before = count(dept), max = parseInt(it.max, 10) || 99, found = false;
+    a.forEach(function(x){ if (String(x.v) === String(it.v)) { found = true; x.q = Math.min(max, (parseInt(x.q, 10) || 1) + (parseInt(it.q, 10) || 1)); } });
+    if (!found) a.push({ v: String(it.v), h: it.h || '', q: Math.min(max, Math.max(1, parseInt(it.q, 10) || 1)) });
+    setItems(dept, a);
+    if (before === 0) track('bundle_started', { department: dept, source: source || 'unknown' });
+    track('bundle_product_added', { department: dept, source: source || 'unknown', product_handle: it.h || '', variant_id: String(it.v), items_count: count(dept) });
+  }
+  function remove(dept, v, source){
+    setItems(dept, items(dept).filter(function(x){ return String(x.v) !== String(v); }));
+    track('bundle_product_removed', { department: dept, source: source || 'unknown', variant_id: String(v), items_count: count(dept) });
+  }
+  function setQty(dept, v, q, max){
+    q = Math.max(0, Math.min(parseInt(max, 10) || 99, parseInt(q, 10) || 0));
+    if (q === 0) return remove(dept, v, 'qty');
+    setItems(dept, items(dept).map(function(x){ if (String(x.v) === String(v)) x.q = q; return x; }));
+  }
+
+  var toastEl, toastT;
+  function toast(msg){
+    if (!toastEl) { toastEl = document.createElement('div'); toastEl.className = 'lbb-toast'; toastEl.setAttribute('role', 'status'); document.body.appendChild(toastEl); }
+    toastEl.textContent = msg; toastEl.classList.add('is-on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('is-on'); }, 2600);
+  }
+
+  window.LbassBundle = {
+    cfg: CFG, items: items, set: setItems, count: count, tier: tier, next: next,
+    has: function(dept, v){ return items(dept).some(function(x){ return String(x.v) === String(v); }); },
+    add: add, remove: remove, setQty: setQty,
+    clear: function(dept){ setItems(dept, []); },
+    fmt: fmt, pct: pct, ltr: ltr, saving: saving, track: track, toast: toast
+  };
+  if (!window.lbTrack) window.lbTrack = track;
+
+  /* "زيدو للباك" buttons anywhere on the site (product pages, cards). */
+  function paint(btn){
+    var dept = btn.getAttribute('data-dept'), v = btn.getAttribute('data-variant');
+    if (!CFG[dept] || !v) return;
+    if (window.LbassBundle.has(dept, v)) { btn.setAttribute('data-added', ''); btn.textContent = '✓ فالباك · كمّل الباك ←'; }
+    else { btn.removeAttribute('data-added'); btn.textContent = btn.getAttribute('data-label') || 'زيدو للباك'; }
+  }
+  function paintAll(){ document.querySelectorAll('[data-lbb-add]').forEach(paint); }
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('[data-lbb-add]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    var dept = btn.getAttribute('data-dept'), v = btn.getAttribute('data-variant');
+    if (!CFG[dept] || !v) return;
+    if (window.LbassBundle.has(dept, v)) { window.location.href = CFG[dept].page; return; }
+    add(dept, { v: v, h: btn.getAttribute('data-handle') || '', q: 1, max: btn.getAttribute('data-max') }, btn.getAttribute('data-source') || 'pdp');
+    var n = count(dept), nx = next(dept, n), pc = tier(dept, n);
+    toast(nx ? ('تزاد للباك ✓ — زيد ' + nx.need + ' وتربح ' + window.LbassBundle.pct(nx.pct)) : ('تزاد للباك ✓ — عندك ' + window.LbassBundle.pct(pc) + ' على الباك'));
+    paintAll();
+  });
+  document.addEventListener('lbass:bundle', paintAll);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paintAll); else paintAll();
+})();
+</script>

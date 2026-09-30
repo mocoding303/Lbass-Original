@@ -27,6 +27,13 @@
   and this returns "0". A "pièce unique" claim on a piece we cannot count is a
   false scarcity claim to the customer — the badge stays off rather than guess.
 
+  FRAGRANCE (2026-09-26). Perfume is a restockable product, never a pièce
+  unique. With one bottle left the unit test below would pass and stamp «1/1»
+  on it — a false scarcity claim — so product type Fragrance always returns "0".
+
+  COSMETICS (2026-09-26). Same rule for K-beauty (product type Cosmetics):
+  new, restockable products, so never a pièce unique.
+
   USAGE — render returns a string, so capture and strip it:
 
       {% capture one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}
@@ -44,7 +51,7 @@
       assign lb_units = lb_units | plus: v.inventory_quantity
     endif
   endfor
-  if product.available and lb_untracked == false and lb_units == 1
+  if product.available and lb_untracked == false and lb_units == 1 and product.type != 'Fragrance' and product.type != 'Cosmetics'
     echo '1'
   else
     echo '0'

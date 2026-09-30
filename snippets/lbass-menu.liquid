@@ -226,6 +226,107 @@
           {%- endif -%}
         {%- endfor -%}
 
+        {%- comment -%} ============ FRAGRANCES (2026-09-26) ============
+          Its own department after the clothing groups (plan 2026-09-25,
+          «Navigation»). Rendered only when /collections/fragrances holds
+          products, so it stays hidden until launch and never opens onto an
+          empty page. On an unpublished (preview) theme it also renders while
+          the collection is still empty, so the placement can be reviewed.
+          House links follow the same count rule as every group above.
+          2026-09-30 clothing-first menu (strategic assessment approved by the
+          owner): block 01 lists ONLY the best sellers — collection
+          lattafa-best-sellers, in stock, in its manual order (lattafa.ma's
+          Moroccan units-sold ranking, 2026-09-28). The house links
+          (brand-lattafa, brand-armaf, …) left the menu; those pages still exist.
+          «شوف كل العطور» stays so the rest of the paid stock remains reachable
+          (sell-through), just not featured. Label «عطور · Parfums» follows the
+          sub-line name «LBASS Original — Parfums».
+        {%- endcomment -%}
+        {%- assign c_frag = collections['fragrances'] -%}
+        {%- assign c_frag_count = c_frag.products_count | default: 0 | plus: 0 -%}
+        {%- assign frag_live = c_frag_count -%}
+        {%- assign frag_url = '/collections/fragrances' -%}{%- if frag_live == 0 and theme.role == 'unpublished' -%}{%- assign frag_url = '/collections/all?view=fragrance' -%}{%- endif -%}
+        {%- if c_frag_count > 0 or theme.role == 'unpublished' -%}
+        {%- assign m_bs = collections['lattafa-best-sellers'] -%}
+        {%- assign m_bs_av = m_bs.products | where: 'available', true -%}
+        <li class="lbm-item">
+          <button type="button" class="lbm-a lbm-toggle lbm-g" aria-expanded="false" aria-controls="lbmGFrag">عطور · Parfums<span class="lbm-chev" aria-hidden="true"></span></button>
+          <div class="lbm-panel" id="lbmGFrag" hidden>
+            {%- if m_bs_av.size > 0 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">01</span> الأكثر مبيعاً · Lattafa</p>
+              <ul class="lbm-zlist">
+                {%- for m_bp in m_bs_av limit: 8 -%}
+                  {%- comment -%} "Lattafa Khamrah Qahwa Eau de Parfum 100ml | عطر خمرة قهوة" → «خمرة قهوة · Khamrah Qahwa» {%- endcomment -%}
+                  {%- assign m_tp = m_bp.title | split: ' | ' -%}
+                  {%- assign m_lat = m_tp.first | remove_first: 'Lattafa ' | split: ' Eau de' | first | strip -%}
+                  {%- assign m_ar = '' -%}{%- if m_tp.size > 1 -%}{%- assign m_ar = m_tp.last | remove_first: 'عطر ' | strip -%}{%- endif -%}
+                  <li><a href="{{ m_bp.url }}">{% if m_ar != blank %}{{ m_ar }} · {% endif %}<span dir="ltr">{{ m_lat }}</span></a></li>
+                {%- endfor -%}
+                <li><a class="lbm-all" href="{{ m_bs.url }}">شوف الأكثر مبيعاً ←</a></li>
+              </ul>
+            </div>
+            {%- endif -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">{% if m_bs_av.size > 0 %}02{% else %}01{% endif %}</span> عاونّي نختار</p>
+              <ul class="lbm-zlist">
+                <li><a href="/pages/find-your-fragrance">الاستشارة · لقى العطر ديالك</a></li>
+                <li><a href="/pages/fragrance-bundle">ركّب باك · حتى ⁦−15%⁩</a></li>
+                <li><a href="/pages/similar-scent">لقى عطر كيقرب للعطر اللي كتلبس</a></li>
+                {%- comment -%} 2026-09-29: guides hub + men / women, each shown only once published and non-empty. {%- endcomment -%}
+                {%- assign m_gb = blogs['parfums'] -%}{%- assign m_gbn = m_gb.articles_count | default: 0 | plus: 0 -%}
+                {%- if m_gbn > 0 -%}<li><a href="{{ m_gb.url }}">دليل العطور · Guides parfums</a></li>{%- endif -%}
+                {%- assign m_wh = collections['parfums-arabes-homme'] -%}{%- assign m_whn = m_wh.products_count | default: 0 | plus: 0 -%}
+                {%- if m_whn > 0 -%}<li><a href="{{ m_wh.url }}">عطور للرجال · Homme</a></li>{%- endif -%}
+                {%- assign m_wf = collections['parfums-arabes-femme'] -%}{%- assign m_wfn = m_wf.products_count | default: 0 | plus: 0 -%}
+                {%- if m_wfn > 0 -%}<li><a href="{{ m_wf.url }}">عطور للنساء · Femme</a></li>{%- endif -%}
+              </ul>
+            </div>
+            <a class="lbm-all lbm-vall" href="{{ frag_url }}">شوف كل العطور</a>
+          </div>
+        </li>
+        {%- endif -%}
+
+        {%- comment -%} ============ K-BEAUTY (2026-09-26) ============
+          Same rules as the fragrance group above: rendered only when
+          /collections/cosmetics holds products (or on an unpublished preview
+          theme), and a concern link only when that collection is non-empty.
+        {%- endcomment -%}
+        {%- assign c_bt = collections['cosmetics'] -%}
+        {%- assign c_bt_count = c_bt.products_count | default: 0 | plus: 0 -%}
+        {%- assign bt_url = '/collections/cosmetics' -%}{%- if c_bt_count == 0 and theme.role == 'unpublished' -%}{%- assign bt_url = '/collections/all?view=beauty' -%}{%- endif -%}
+        {%- if c_bt_count > 0 or theme.role == 'unpublished' -%}
+        {%- assign bt_groups = 'cosmetics-retinal-anti-age,cosmetics-anti-taches,cosmetics-hydratation' | split: ',' -%}
+        <li class="lbm-item">
+          <button type="button" class="lbm-a lbm-toggle lbm-g" aria-expanded="false" aria-controls="lbmGBeauty">تجميل · K-Beauty<span class="lbm-chev" aria-hidden="true"></span></button>
+          <div class="lbm-panel" id="lbmGBeauty" hidden>
+            {%- assign bt_rows = 0 -%}
+            {%- for h in bt_groups -%}{%- assign bc = collections[h] -%}{%- assign bcn = bc.products_count | default: 0 | plus: 0 -%}{%- if bcn > 0 -%}{%- assign bt_rows = bt_rows | plus: 1 -%}{%- endif -%}{%- endfor -%}
+            {%- if bt_rows > 0 -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">01</span> حسب الحاجة · Par besoin</p>
+              <ul class="lbm-zlist">
+                {%- for h in bt_groups -%}
+                  {%- assign bc = collections[h] -%}{%- assign bcn = bc.products_count | default: 0 | plus: 0 -%}
+                  {%- if bcn > 0 -%}<li><a href="{{ bc.url }}">{{ bc.title }}</a></li>{%- endif -%}
+                {%- endfor -%}
+              </ul>
+            </div>
+            {%- endif -%}
+            <div class="lbm-blk">
+              <p class="lbm-sec"><span class="lbm-num">+</span> عاونّي نختار</p>
+              <ul class="lbm-zlist">
+                <li><a href="/pages/k-beauty-consultation">الاستشارة · الروتين ديالك</a></li>
+                <li><a href="/pages/k-beauty-bundle">ركّب روتين · حتى ⁦−10%⁩</a></li>
+                {%- assign m_kb = blogs['k-beauty'] -%}{%- assign m_kbn = m_kb.articles_count | default: 0 | plus: 0 -%}
+                {%- if m_kbn > 0 -%}<li><a href="{{ m_kb.url }}">دليل السكين كير · Guides K-beauty</a></li>{%- endif -%}
+              </ul>
+            </div>
+            <a class="lbm-all lbm-vall" href="{{ bt_url }}">شوف كل K-beauty</a>
+          </div>
+        </li>
+        {%- endif -%}
+
         {%- comment -%} ============ utility, demoted below a rule ============ {%- endcomment -%}
         <li class="lbm-item lbm-rule">
           <a class="lbm-a lbm-util" href="{% if c_newin %}{{ c_newin.url }}{% else %}{{ routes.all_products_collection_url }}?sort_by=created-descending{% endif %}">جديد</a>

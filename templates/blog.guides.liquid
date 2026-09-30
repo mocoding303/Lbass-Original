@@ -1,0 +1,186 @@
+{%- comment -%}
+  ═══ LBASS — DEPARTMENT GUIDE HUB (2026-09-29) ═══
+  Blogs with template suffix "guides": /blogs/parfums and /blogs/k-beauty. The
+  clothing blog (/blogs/news) keeps templates/blog.liquid, whose intro, schema
+  language (ar-MA) and empty state are written for second-hand clothing.
+
+  This page is the hub of a department's topical cluster: hub → guide → collection
+  → product, with the consultation / bundle / similar-scent tools one tap away.
+
+  DATA (per blog):
+  - lbass.intro  text (may contain simple HTML): the hub introduction.
+  - lbass.faq    json [{q,a}]: topic questions (concentrations, longevity, routine
+                 order…). Deliberately NOT the shop questions (delivery, COD,
+                 returns) already answered on every department collection page.
+  Collection links render only for collections that are published and non-empty.
+{%- endcomment -%}
+{%- liquid
+  assign h_dept = 'fragrance'
+  assign h_kicker = 'GUIDES · PARFUMS ARABES'
+  assign h_colls = 'fragrances,parfums-arabes-homme,parfums-arabes-femme,lattafa-best-sellers,brand-lattafa,brand-armaf,brand-swiss-arabian,brand-maison-alhambra,brand-orientica,brand-the-spirit-of-dubai,brand-bait-al-bakhoor' | split: ','
+  assign h_tools_label = 'Pas sûr de votre choix ?'
+  if blog.handle == 'k-beauty'
+    assign h_dept = 'beauty'
+    assign h_kicker = 'GUIDES · K-BEAUTY'
+    assign h_colls = 'cosmetics,cosmetics-retinal-anti-age,cosmetics-anti-taches,cosmetics-hydratation' | split: ','
+  endif
+  assign h_intro = blog.metafields.lbass.intro.value
+  assign h_faq = blog.metafields.lbass.faq.value
+-%}
+<div class="wrap lbgh" data-lbg data-dept="{{ h_dept }}" data-guide="hub">
+  <nav class="crumb" aria-label="مسار التصفح">
+    <a href="{{ routes.root_url }}">الرئيسية</a> ›
+    <span aria-current="page" dir="ltr">{{ blog.title }}</span>
+  </nav>
+
+  <header class="lbgh-head" dir="ltr" lang="fr">
+    <p class="lbg-kicker">{{ h_kicker }}</p>
+    <h1 class="lbgh-h1">{{ blog.title }}</h1>
+    {%- if h_intro != blank -%}<div class="lbgh-intro">{{ h_intro }}</div>{%- endif -%}
+  </header>
+
+  <section class="lbg-tools" aria-label="{{ h_tools_label }}">
+    {% render 'lbass-discover-strip', dept: h_dept, place: 'guide_hub' %}
+  </section>
+
+  {% paginate blog.articles by 24 %}
+    {%- if blog.articles_count > 0 -%}
+      <div class="lbgh-grid" dir="ltr" lang="fr">
+        {%- for a in blog.articles -%}
+          <a class="lbgh-card" href="{{ a.url }}" data-lbg-cta="hub_card">
+            <span class="lbgh-card__img">
+              {%- if a.image -%}
+                <img src="{{ a.image | image_url: width: 640 }}" alt="{{ a.image.alt | default: a.title | escape }}" loading="lazy" width="640" height="{{ 640 | times: a.image.height | divided_by: a.image.width }}">
+              {%- else -%}
+                <span class="lbgh-card__ph" aria-hidden="true">✎</span>
+              {%- endif -%}
+            </span>
+            <span class="lbgh-card__body">
+              <span class="lbgh-card__t">{{ a.title }}</span>
+              {%- if a.excerpt_or_content != blank -%}<span class="lbgh-card__x">{{ a.excerpt_or_content | strip_html | truncate: 150 }}</span>{%- endif -%}
+              <span class="lbgh-card__go">Lire le guide →</span>
+            </span>
+          </a>
+        {%- endfor -%}
+      </div>
+      {% render 'lbass-pagination', paginate: paginate %}
+    {%- else -%}
+      <div class="lbgh-empty" dir="ltr" lang="fr">
+        <h2>Les guides arrivent bientôt.</h2>
+        <p>En attendant, nos outils vous aident à choisir parmi les produits disponibles.</p>
+      </div>
+    {%- endif -%}
+  {% endpaginate %}
+
+  {%- if h_faq != blank -%}
+    <section class="lbg-faq" dir="ltr" lang="fr" aria-labelledby="lbghFaqH">
+      <h2 id="lbghFaqH">Questions fréquentes</h2>
+      {%- for item in h_faq -%}
+        <details><summary>{{ item.q }}</summary><p>{{ item.a }}</p></details>
+      {%- endfor -%}
+    </section>
+  {%- endif -%}
+
+  {%- capture h_links -%}
+    {%- for h in h_colls -%}
+      {%- assign hc = collections[h] -%}{%- assign hcn = hc.products_count | default: 0 | plus: 0 -%}
+      {%- if hcn > 0 -%}<a class="chip" href="{{ hc.url }}" data-lbg-cta="hub_collection">{{ hc.title }}</a>{%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if h_links != blank -%}
+    <nav class="lbgh-colls" aria-label="Collections">
+      <p class="lbg-rel__h" dir="ltr" lang="fr">Voir les produits</p>
+      {{ h_links }}
+    </nav>
+  {%- endif -%}
+</div>
+
+<style>
+.lbgh{padding-bottom:40px}
+.lbgh-head{max-width:860px;text-align:left}
+.lbg-kicker{margin:6px 0 8px;color:var(--gold,#c89a0e);font-size:11px;font-weight:900;letter-spacing:.16em}
+.lbgh-h1{margin:0 0 10px;line-height:1.2}
+.lbgh-intro{color:var(--txt2);font-size:15px;line-height:1.8}
+.lbgh-intro p{margin:0 0 10px}
+.lbgh-intro [dir="rtl"]{text-align:right}
+.lbg-tools{max-width:960px;margin:22px 0 6px}
+.lbgh-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0 10px;text-align:left}
+.lbgh-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.028);text-decoration:none!important;color:var(--cream)!important;transition:transform .2s ease,box-shadow .2s ease}
+.lbgh-card__img{display:block;aspect-ratio:16/10;overflow:hidden;background:rgba(255,255,255,.04)}
+.lbgh-card__img img{width:100%;height:100%;object-fit:cover;display:block}
+.lbgh-card__ph{display:grid;place-items:center;height:100%;font-size:42px;opacity:.35}
+.lbgh-card__body{display:flex;flex-direction:column;gap:6px;padding:12px 14px 14px}
+.lbgh-card__t{font-weight:900;font-size:16px;line-height:1.35}
+.lbgh-card__x{color:var(--txt2);font-size:13px;line-height:1.6}
+.lbgh-card__go{margin-top:auto;color:var(--gold,#c89a0e);font-size:13px;font-weight:900}
+@media (hover:hover){.lbgh-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(11,11,12,.12)}}
+.lbgh-empty{max-width:820px;margin:20px 0;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--ink2);text-align:left}
+.lbgh-empty h2{margin-top:0}
+.lbg-faq{max-width:860px;margin:30px 0 0;display:grid;gap:8px;text-align:left}
+.lbg-faq h2{margin:0 0 6px}
+.lbg-faq details{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);overflow:hidden}
+.lbg-faq summary{list-style:none;cursor:pointer;padding:12px 14px;color:var(--cream);font-weight:900}
+.lbg-faq summary::-webkit-details-marker{display:none}
+.lbg-faq p{padding:0 14px 13px;margin:0;color:var(--txt2);font-size:14px;line-height:1.8}
+.lbgh-colls{margin:26px 0 0}
+.lbg-rel__h{margin:0 0 8px;color:var(--txt3);font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left}
+@media(max-width:900px){.lbgh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.lbgh-grid{grid-template-columns:1fr}}
+</style>
+
+<script>
+(function(){
+  var root = document.querySelector('[data-lbg]');
+  if (!root) return;
+  root.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[data-lbg-cta]') : null;
+    if (!a || !root.contains(a)) return;
+    var p = { department: root.getAttribute('data-dept'), guide: 'hub', page_type: 'blog', cta: a.getAttribute('data-lbg-cta'), destination: a.getAttribute('href') || '' };
+    try {
+      if (typeof window.lbTrack === 'function') window.lbTrack('guide_cta_click', p);
+      else if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_guide_cta_click', p);
+    } catch (err) {}
+  });
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": "{{ shop.url }}{{ blog.url }}#blog",
+  "name": {{ blog.title | json }},
+  "url": "{{ shop.url }}{{ blog.url }}",
+  "inLanguage": "fr-MA",
+  "publisher": {"@type": "Organization", "name": "Lbass Original", "url": {{ shop.url | json }}}{% if blog.articles_count > 0 %},
+  "blogPost": [
+    {%- for a in blog.articles limit: 24 -%}
+    {"@type": "BlogPosting", "headline": {{ a.title | json }}, "url": "{{ shop.url }}{{ a.url }}", "datePublished": {{ a.published_at | date: '%Y-%m-%d' | json }}}{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]{% endif %}
+}
+</script>
+{%- if h_faq != blank -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "{{ shop.url }}{{ blog.url }}#faq",
+  "mainEntity": [
+    {%- for item in h_faq -%}
+    {"@type": "Question", "name": {{ item.q | json }}, "acceptedAnswer": {"@type": "Answer", "text": {{ item.a | json }}}}{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}},
+    {"@type": "ListItem", "position": 2, "name": {{ blog.title | json }}}
+  ]
+}
+</script>

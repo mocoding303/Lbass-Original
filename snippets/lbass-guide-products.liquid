@@ -1,0 +1,61 @@
+{%- comment -%}
+  ═══ LBASS — GUIDE PRODUCT BLOCK (2026-09-29) ═══
+  Usage: {% render 'lbass-guide-products', block: b, guide: article.handle, idx: forloop.index %}
+
+  `block` is one entry of the article metafield lbass.guide_products (json list):
+    { "heading": "…", "intro": "…", "collection": "fragrances", "tag": "conc:edt",
+      "handles": "handle-a,handle-b", "limit": 4, "position": "top" | "bottom", "cta": "…" }
+
+  LIVE INVENTORY ONLY. Sold-out products never render, so a guide can stay published
+  for years without sending a reader to an unavailable product (the second-hand stock
+  sells out constantly; fragrances and K-beauty are held in 1-3 units). `handles`
+  (curated order) wins over collection + tag. When nothing is available the block
+  says so and links to its collection instead of showing an empty grid.
+{%- endcomment -%}
+{%- liquid
+  assign gp_c = collections[block.collection]
+  assign gp_lim = block.limit | default: 4 | plus: 0
+  assign gp_tag = block.tag | default: ''
+  assign gp_hs = block.handles | default: '' | split: ','
+  assign gp_place = 'guide_' | append: guide
+  assign gp_n = 0
+  assign gp_url = gp_c.url | default: '/collections/all'
+-%}
+{%- capture gp_cards -%}
+  {%- if gp_hs.size > 0 -%}
+    {%- for gp_h in gp_hs -%}
+      {%- assign gp_hh = gp_h | strip -%}
+      {%- assign gp_p = all_products[gp_hh] -%}
+      {%- comment -%} all_products returns an empty product that reports available=true for an
+          unknown handle (tested 2026-09-29), so a deleted or renamed product would print a broken
+          card: require a real product id as well. {%- endcomment -%}
+      {%- if gp_p.id != blank and gp_p.available and gp_n < gp_lim -%}
+        {%- assign gp_n = gp_n | plus: 1 -%}
+        {% render 'lbass-product-card', product: gp_p, placement: gp_place %}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- else -%}
+    {%- for gp_p in gp_c.products -%}
+      {%- if gp_p.available and gp_n < gp_lim -%}
+        {%- if gp_tag == '' or gp_p.tags contains gp_tag -%}
+          {%- assign gp_n = gp_n | plus: 1 -%}
+          {% render 'lbass-product-card', product: gp_p, placement: gp_place %}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+<section class="lbgp" data-lbgp data-block="{{ idx }}" aria-label="{{ block.heading | escape }}">
+  <div class="lbgp__head" dir="ltr" lang="fr">
+    <h2 class="lbgp__h">{{ block.heading }}</h2>
+    {%- if block.intro != blank -%}<p class="lbgp__intro">{{ block.intro }}</p>{%- endif -%}
+  </div>
+  {%- if gp_n > 0 -%}
+    <div class="grid lbgp__grid">{{ gp_cards }}</div>
+    {%- if block.cta != blank -%}
+      <p class="lbgp__more" dir="ltr" lang="fr"><a href="{{ gp_url }}" data-lbg-cta="collection">{{ block.cta }} →</a></p>
+    {%- endif -%}
+  {%- else -%}
+    <p class="lbgp__empty" dir="ltr" lang="fr">Cette sélection est épuisée pour le moment. <a href="{{ gp_url }}" data-lbg-cta="collection">{{ block.cta | default: 'Voir les produits disponibles' }} →</a></p>
+  {%- endif -%}
+</section>

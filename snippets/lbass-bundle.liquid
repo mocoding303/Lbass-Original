@@ -1,0 +1,393 @@
+{%- comment -%}
+  ═══ LBASS — BUILD YOUR OWN BUNDLE (2026-09-28) ═══
+  Usage: {% render 'lbass-bundle', dept: 'fragrance' %} or dept: 'beauty'
+  Rendered by templates/page.bundle.liquid. One department per bundle: fragrances
+  and K-beauty are never mixed (owner decision).
+
+  Architecture, adapted from NUR's nur-bundle-builder section:
+  - Products are server-rendered from the collection, one card each, with the
+    variant id, price and live stock as data attributes. There are no extra API
+    calls and images are lazy-loaded.
+  - Selections live in window.LbassBundle (snippets/lbass-bundle-core.liquid),
+    so they survive browsing, refresh and back/forward. NUR loses them.
+  - Add to cart = ONE /cart/add.js with separate line items via
+    LbassCart.addItems, each with hidden properties _bundle, _bundle_id and
+    _bundle_size. The existing drawer then opens.
+  - The price is a DISPLAY ESTIMATE only. The real saving is the Shopify
+    automatic discount for the department (see the lbass-bundle-core comment).
+    Tier numbers below must match that config and the discounts in Admin.
+{%- endcomment -%}
+{%- liquid
+  assign lbb_dept = dept | default: 'fragrance'
+  if lbb_dept == 'beauty'
+    assign lbb_coll = collections['cosmetics']
+    assign lbb_kick = 'K-BEAUTY · BUILD YOUR BUNDLE'
+    assign lbb_unit = 'منتوجات'
+    assign lbb_one = 'منتوج'
+    assign lbb_t1 = '⁦−5%⁩'
+    assign lbb_t2 = '⁦−10%⁩'
+    assign lbb_consult = '/pages/k-beauty-consultation'
+    assign lbb_consult_label = 'ماعرفتيش شنو يناسب بشرتك؟ دير الاستشارة (60 ثانية) ←'
+    assign lbb_all = '/collections/cosmetics'
+  else
+    assign lbb_dept = 'fragrance'
+    assign lbb_coll = collections['fragrances']
+    assign lbb_kick = 'FRAGRANCES · BUILD YOUR BUNDLE'
+    assign lbb_unit = 'عطور'
+    assign lbb_one = 'عطر'
+    assign lbb_t1 = '⁦−10%⁩'
+    assign lbb_t2 = '⁦−15%⁩'
+    assign lbb_consult = '/pages/find-your-fragrance'
+    assign lbb_consult_label = 'ماعرفتيش أشمن عطر تختار؟ دير الاستشارة (60 ثانية) ←'
+    assign lbb_all = '/collections/fragrances'
+  endif
+  assign lbb_avail = lbb_coll.products | where: 'available', true
+  assign lbb_sold = lbb_coll.products | where: 'available', false
+  assign lbb_pool = lbb_avail | concat: lbb_sold
+-%}
+<style>
+.lbb{--lbb-pad:clamp(16px,4vw,32px);max-width:1280px;margin:0 auto;padding:clamp(14px,3vw,28px) var(--lbb-pad) 40px;direction:rtl;text-align:right}
+.lbb *{box-sizing:border-box}
+.lbb-kick{margin:0 0 6px!important;font-size:11px;font-weight:900;letter-spacing:.16em;color:var(--gold,#BF2E15);direction:ltr;text-align:right}
+.lbb .lbb-h1{margin:0 0 8px!important;font-size:clamp(28px,6vw,48px)!important;line-height:1.08!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important;letter-spacing:-.01em}
+.lbb-lead{max-width:720px;margin:0 0 14px;color:var(--txt2,#57534E);font-size:15px;line-height:1.75}
+.lbb-lead p{margin:0 0 6px}
+.lbb-ladder{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0;list-style:none}
+.lbb-ladder li{border:1px solid var(--line,rgba(11,11,12,.16));border-radius:999px;padding:8px 12px;font-size:13px;font-weight:800;color:var(--cream,#0B0B0C);background:var(--ink,#fff)}
+.lbb-ladder li b{color:var(--gold,#BF2E15)}
+.lbb-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px;padding:0;list-style:none;counter-reset:s}
+.lbb-steps li{display:flex;align-items:center;gap:8px;padding:10px;border-radius:12px;background:var(--ink2,#F4F2ED);font-size:12.5px;font-weight:800;color:var(--cream,#0B0B0C);line-height:1.3}
+.lbb-steps li::before{counter-increment:s;content:counter(s);flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--cream,#0B0B0C);color:var(--ink,#fff);font-size:12px}
+.lbb-consult{display:inline-flex;align-items:center;min-height:44px;margin:0 0 18px;color:var(--cream,#0B0B0C);font-weight:900;font-size:14px;text-decoration:underline;text-underline-offset:4px}
+.lbb-from{display:none;margin:0 0 14px;padding:12px 14px;border-radius:12px;border:1px solid var(--gold,#BF2E15);font-weight:800;font-size:13.5px;color:var(--cream,#0B0B0C)}
+.lbb-from.is-on{display:block}
+.lbb-layout{display:block}
+.lbb-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lbb-card{position:relative;display:flex;flex-direction:column;min-width:0;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:14px;overflow:hidden;background:var(--ink,#fff);transition:border-color .15s,box-shadow .15s}
+.lbb-card.is-sel{border-color:var(--cream,#0B0B0C);box-shadow:0 0 0 2px var(--cream,#0B0B0C) inset}
+.lbb-card.is-out{opacity:.55}
+.lbb-card__img{display:block;aspect-ratio:1/1;background:var(--ink2,#F4F2ED)}
+.lbb-card__img img{display:block;width:100%;height:100%;object-fit:contain;padding:8px}
+.lbb-card__tick{position:absolute;top:8px;inset-inline-start:8px;display:none;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--cream,#0B0B0C);color:var(--ink,#fff);font-size:14px;font-weight:900}
+.lbb-card.is-sel .lbb-card__tick{display:grid}
+.lbb-card__body{display:flex;flex-direction:column;gap:3px;flex:1;padding:10px}
+.lbb-card__b{margin:0!important;font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--gold,#BF2E15);direction:ltr;text-align:right}
+.lbb-card__t{margin:0!important;font-size:13.5px!important;line-height:1.35!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbb-card__t a{color:inherit;text-decoration:none}
+.lbb-card__m{margin:0!important;font-size:12px;color:var(--txt2,#57534E);line-height:1.45}
+.lbb-card__chips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 0}
+.lbb-card__chips span{font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;background:var(--ink2,#F4F2ED);color:var(--cream,#0B0B0C)}
+.lbb-card__p{margin:auto 0 0!important;padding-top:6px;font-size:15px;font-weight:900;color:var(--cream,#0B0B0C);direction:ltr;text-align:right}
+.lbb-card__stock{margin:0!important;font-size:11.5px;font-weight:800;color:var(--gold,#BF2E15)}
+.lbb-card__ctl{padding:0 10px 10px}
+.lbb-add{width:100%;min-height:46px;border-radius:12px;border:1px solid var(--cream,#0B0B0C);background:var(--cream,#0B0B0C);color:var(--ink,#fff);font:inherit;font-weight:900;font-size:13.5px;cursor:pointer}
+.lbb-add[disabled]{background:transparent;color:var(--txt2,#57534E);border-color:var(--line,rgba(11,11,12,.16));cursor:not-allowed}
+.lbb-qty{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:46px;border:1px solid var(--cream,#0B0B0C);border-radius:12px;padding:3px}
+.lbb-qty button{flex:none;width:40px;height:40px;border:0;border-radius:9px;background:var(--ink2,#F4F2ED);color:var(--cream,#0B0B0C);font:inherit;font-size:20px;font-weight:900;cursor:pointer}
+.lbb-qty button[disabled]{opacity:.35;cursor:not-allowed}
+.lbb-qty output{font-weight:900;font-size:15px;color:var(--cream,#0B0B0C)}
+.lbb-qty .lbb-rm{font-size:13px;width:auto;padding:0 10px}
+/* tray: sticky bottom sheet on phones, side panel on desktop */
+.lbb-tray{position:fixed;inset-inline:0;bottom:0;z-index:998;background:var(--ink,#fff);border-top:1px solid var(--line,rgba(11,11,12,.16));box-shadow:0 -10px 30px rgba(0,0,0,.12);padding:10px 16px calc(10px + env(safe-area-inset-bottom));transform:translateY(0);transition:transform .2s}
+.lbb-tray[data-empty]{transform:translateY(110%)}
+.lbb-tray__bar{display:flex;align-items:center;gap:10px}
+.lbb-tray__sum{flex:1;min-width:0;background:none;border:0;padding:4px 0;text-align:right;font:inherit;cursor:pointer;color:var(--cream,#0B0B0C)}
+.lbb-tray__sum b{display:block;font-size:14px;font-weight:900}
+.lbb-tray__sum span{display:block;font-size:12px;font-weight:800;color:var(--gold,#BF2E15)}
+.lbb-cta{flex:none;min-height:50px;padding:0 18px;border:0;border-radius:12px;background:var(--cream,#0B0B0C);color:var(--ink,#fff);font:inherit;font-weight:900;font-size:14.5px;cursor:pointer}
+.lbb-cta[disabled]{opacity:.45;cursor:not-allowed}
+.lbb-tray__detail{display:none;max-height:min(62vh,520px);overflow:auto;overscroll-behavior:contain;padding:6px 0 10px;padding-inline-end:12px;scrollbar-width:thin}
+.lbb-tray.is-open .lbb-tray__detail{display:block}
+.lbb-tray__h{display:none;margin:0 0 10px!important;font-size:17px!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbb-line{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line,rgba(11,11,12,.12))}
+.lbb-line img{width:56px;height:56px;object-fit:contain;border-radius:10px;background:var(--ink2,#F4F2ED)}
+.lbb-line__n{margin:0!important;font-size:13px;font-weight:900;line-height:1.35;color:var(--cream,#0B0B0C)}
+.lbb-line__m{margin:2px 0 0!important;font-size:11.5px;color:var(--txt2,#57534E)}
+.lbb-line__p{font-size:13px;font-weight:900;direction:ltr;color:var(--cream,#0B0B0C);text-align:left}
+.lbb-line__ctl{display:flex;align-items:center;gap:4px;margin-top:4px}
+.lbb-line__ctl button{min-width:34px;min-height:34px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:9px;background:var(--ink,#fff);font:inherit;font-weight:900;cursor:pointer;color:var(--cream,#0B0B0C)}
+.lbb-line__ctl output{min-width:22px;text-align:center;font-weight:900}
+.lbb-line.is-gone{opacity:.5}
+.lbb-prog{display:flex;gap:6px;margin:12px 0 6px}
+.lbb-prog i{flex:1;height:6px;border-radius:999px;background:var(--ink2,#F4F2ED)}
+.lbb-prog i.on{background:var(--cream,#0B0B0C)}
+.lbb-nudge{margin:0 0 10px!important;font-size:13px;font-weight:900;color:var(--gold,#BF2E15)}
+.lbb-tot{margin:0;padding:0}
+.lbb-tot div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:13.5px;color:var(--txt2,#57534E)}
+.lbb-tot dd{margin:0;direction:ltr;font-weight:900;color:var(--cream,#0B0B0C)}
+.lbb-tot .is-save dd{color:var(--gold,#BF2E15)}
+.lbb-tot .is-final{border-top:1px solid var(--line,rgba(11,11,12,.16));margin-top:4px;padding-top:8px;font-size:15px}
+.lbb-tot .is-final dt{font-weight:900;color:var(--cream,#0B0B0C)}
+.lbb-ship{margin:8px 0 0!important;font-size:12.5px;font-weight:800;color:var(--txt2,#57534E)}
+.lbb-fine{margin:8px 0 0!important;font-size:11.5px;color:var(--txt2,#57534E);line-height:1.6}
+.lbb-empty{margin:0!important;padding:10px 0;font-size:13px;color:var(--txt2,#57534E)}
+.lbb-done{display:none;padding:10px 12px;border-radius:12px;background:var(--ink2,#F4F2ED);font-weight:900;font-size:13.5px;color:var(--cream,#0B0B0C)}
+.lbb-done.is-on{display:block}
+body.lbb-has-tray{padding-bottom:84px}
+/* The fixed tray would cover the floating WhatsApp button: lift it above the tray (phone/tablet only). */
+@media (max-width:1023px){ .wa-float{bottom:calc(84px + env(safe-area-inset-bottom,0px))!important} }
+@media (min-width:1024px){
+  .lbb-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+  .lbb-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lbb-tray{position:sticky;top:96px;inset:auto;bottom:auto;z-index:2;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:16px;box-shadow:none;padding:18px}
+  .lbb-tray[data-empty]{transform:none}
+  .lbb-tray__detail{display:block;max-height:none;overflow:visible}
+  .lbb-tray__h{display:block}
+  .lbb-tray__sum{cursor:default}
+  body.lbb-has-tray{padding-bottom:0}
+}
+@media (min-width:1280px){ .lbb-grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+</style>
+
+<section class="lbb" data-lbb-root data-dept="{{ lbb_dept }}" aria-labelledby="lbbH1">
+  <p class="lbb-kick">{{ lbb_kick }}</p>
+  <h1 class="lbb-h1" id="lbbH1">{{ page.title }}</h1>
+  <div class="lbb-lead">
+    {%- if page.content != blank -%}{{ page.content }}{%- else -%}<p>ختار {{ lbb_unit }} اللي بغيتي — كل ما زدتي، كل ما وفّرتي. الخصم كيطبق أوتوماتيكياً فالسلة.</p>{%- endif -%}
+  </div>
+  <ul class="lbb-ladder" aria-label="الخصم حسب العدد">
+    <li>{{ lbb_one }} واحد = الثمن العادي</li>
+    <li>جوج {{ lbb_unit }} = <b>{{ lbb_t1 }}</b></li>
+    <li>3 {{ lbb_unit }} ولفوق = <b>{{ lbb_t2 }}</b></li>
+    <li>🚚 توصيل مجاني من 500 درهم</li>
+  </ul>
+  <ol class="lbb-steps">
+    <li>اختار {{ lbb_unit }}</li>
+    <li>راجع الباك</li>
+    <li>زيدو للسلة</li>
+  </ol>
+  <a class="lbb-consult" href="{{ lbb_consult }}" data-lbb-consult>{{ lbb_consult_label }}</a>
+  <p class="lbb-from" data-lbb-from role="status">✓ هادو هوما الاختيارات ديالك من الاستشارة. زيد ولا نقّص كيف بغيتي.</p>
+
+  <div class="lbb-layout">
+    <div>
+      <h2 class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">{{ lbb_coll.title }}</h2>
+      <div class="lbb-grid" data-lbb-grid>
+        {%- for p in lbb_pool -%}
+          {%- liquid
+            assign v = p.selected_or_first_available_variant
+            assign t_main = p.title | split: ' | ' | first | remove_first: p.vendor | strip
+            assign t_ar = p.title | split: ' | ' | last
+            if t_ar == p.title
+              assign t_ar = ''
+            endif
+            assign v_max = v.inventory_quantity | default: 0
+            if v.inventory_management == blank
+              assign v_max = 9
+            endif
+            if v_max < 1 and p.available
+              assign v_max = 1
+            endif
+            if lbb_dept == 'beauty'
+              assign ml = p.metafields.beauty.volume_ml.value
+              assign m1 = p.metafields.beauty.product_form.value
+              assign g1 = p.metafields.beauty.goals.value | first
+            else
+              assign ml = p.metafields.fragrance.volume_ml.value
+              assign m1 = p.metafields.fragrance.concentration.value
+              assign g1 = ''
+            endif
+          -%}
+          <article class="lbb-card{% unless p.available %} is-out{% endunless %}" data-lbb-card
+            data-v="{{ v.id }}" data-h="{{ p.handle }}" data-price="{{ v.price }}" data-max="{{ v_max }}"
+            data-avail="{{ p.available }}" data-t="{{ t_main | escape }}" data-b="{{ p.vendor | escape }}"
+            data-size="{% if ml != blank %}{{ ml }} ml{% endif %}"
+            data-img="{{ p.featured_image | image_url: width: 160 }}" data-url="{{ p.url }}">
+            <span class="lbb-card__tick" aria-hidden="true">✓</span>
+            <a class="lbb-card__img" href="{{ p.url }}" tabindex="-1" aria-hidden="true">
+              {%- if p.featured_image -%}
+                {{ p.featured_image | image_url: width: 480 | image_tag: loading: 'lazy', widths: '240, 360, 480', sizes: '(min-width: 1024px) 22vw, 46vw', alt: p.featured_image.alt | default: t_main }}
+              {%- endif -%}
+            </a>
+            <div class="lbb-card__body">
+              <p class="lbb-card__b">{{ p.vendor }}</p>
+              <h3 class="lbb-card__t"><a href="{{ p.url }}">{{ t_main }}</a></h3>
+              <p class="lbb-card__m">{% if ml != blank %}{{ ml }} ml{% endif %}{% if m1 != blank %} · {{ m1 }}{% endif %}{% if t_ar != blank %}<br>{{ t_ar }}{% endif %}</p>
+              <p class="lbb-card__chips">
+                {%- if lbb_dept == 'beauty' -%}
+                  {%- case g1 -%}
+                    {%- when 'antiage' -%}<span>ضد التجاعيد</span>
+                    {%- when 'spots' -%}<span>ضد البقع</span>
+                    {%- when 'hydration' -%}<span>ترطيب</span>
+                    {%- when 'sensitive' -%}<span>بشرة حساسة</span>
+                    {%- when 'cleansing' -%}<span>تنظيف وديماكياج</span>
+                    {%- when 'tone' -%}<span>توحيد اللون · SPF</span>
+                  {%- endcase -%}
+                {%- else -%}
+                  {%- for a in p.metafields.fragrance.accords.value limit: 2 -%}
+                    {%- case a -%}
+                      {%- when 'fresh' -%}<span>فريش</span>{%- when 'sweet' -%}<span>حلو</span>{%- when 'woody' -%}<span>خشبي</span>{%- when 'spicy' -%}<span>حار (épicé)</span>
+                      {%- when 'floral' -%}<span>وردي</span>{%- when 'oud' -%}<span>عود</span>{%- when 'vanilla' -%}<span>فانيلا</span>{%- when 'citrus' -%}<span>حامض</span>
+                      {%- when 'amber' -%}<span>عنبر</span>{%- when 'fruity' -%}<span>فواكه</span>{%- when 'leather' -%}<span>جلد</span>{%- when 'musk' -%}<span>مسك</span>
+                    {%- endcase -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              </p>
+              <p class="lbb-card__p">{{ v.price | money }}</p>
+              {%- if p.available and v_max <= 2 -%}<p class="lbb-card__stock">باقي {{ v_max }} فقط</p>{%- endif -%}
+            </div>
+            <div class="lbb-card__ctl" data-lbb-ctl>
+              {%- if p.available -%}
+                <button type="button" class="lbb-add" data-lbb-toggle aria-pressed="false">+ زيد للباك</button>
+              {%- else -%}
+                <button type="button" class="lbb-add" disabled>مابقاش دابا</button>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endfor -%}
+      </div>
+      <p style="margin:14px 0 0"><a href="{{ lbb_all }}" style="font-weight:900;color:var(--cream,#0B0B0C)">شوف كل {{ lbb_unit }} مع التفاصيل ←</a></p>
+    </div>
+
+    <aside class="lbb-tray" data-lbb-tray data-empty aria-label="الباك ديالك">
+      <h2 class="lbb-tray__h">الباك ديالك</h2>
+      <div class="lbb-tray__detail" id="lbbDetail" data-lbb-detail>
+        <div data-lbb-lines><p class="lbb-empty">مازال ما اخترتي والو. ضغط «زيد للباك» على أي {{ lbb_one }}.</p></div>
+        <div class="lbb-prog" data-lbb-prog aria-hidden="true"><i></i><i></i><i></i></div>
+        <p class="lbb-nudge" data-lbb-nudge></p>
+        <dl class="lbb-tot">
+          <div><dt>المجموع</dt><dd data-lbb-sub>—</dd></div>
+          <div class="is-save" data-lbb-save-row hidden><dt data-lbb-save-lbl>خصم الباك</dt><dd data-lbb-save>—</dd></div>
+          <div class="is-final"><dt>الثمن ديال الباك</dt><dd data-lbb-final>—</dd></div>
+        </dl>
+        <p class="lbb-ship" data-lbb-ship></p>
+        <p class="lbb-fine">الخصم كيطبق أوتوماتيكياً فالسلة وفالـcheckout (بلا كود). الثمن النهائي هو اللي كيبان فالسلة.</p>
+      </div>
+      <div class="lbb-done" data-lbb-done role="status">✓ الباك تزاد للسلة. الخصم كيبان فالسلة.</div>
+      <div class="lbb-tray__bar">
+        <button type="button" class="lbb-tray__sum" data-lbb-sum aria-expanded="false" aria-controls="lbbDetail"><b data-lbb-count>0 {{ lbb_unit }}</b><span data-lbb-sumline>ختار باش تبدا</span></button>
+        <button type="button" class="lbb-cta" data-lbb-cta disabled>زيد الباك للسلة</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+  /* Boot after DOMContentLoaded: window.LbassBundle / window.LbassCart are defined by
+     snippets rendered at the END of the layout (lbass-cart-drawer → lbass-bundle-core). */
+  function boot(){
+  var root = document.querySelector('[data-lbb-root]');
+  if (!root || root.dataset.ready) return;
+  root.dataset.ready = '1';
+  var B = window.LbassBundle;
+  if (!B) return;
+  var dept = root.getAttribute('data-dept'), C = B.cfg[dept];
+  var FREE_SHIP = 50000;
+  var cards = Array.prototype.slice.call(root.querySelectorAll('[data-lbb-card]'));
+  var byV = {};
+  cards.forEach(function(c){
+    byV[c.getAttribute('data-v')] = { v: c.getAttribute('data-v'), h: c.getAttribute('data-h'), price: parseInt(c.getAttribute('data-price'), 10) || 0,
+      max: parseInt(c.getAttribute('data-max'), 10) || 1, avail: c.getAttribute('data-avail') === 'true', t: c.getAttribute('data-t'),
+      b: c.getAttribute('data-b'), size: c.getAttribute('data-size'), img: c.getAttribute('data-img'), url: c.getAttribute('data-url'), el: c };
+  });
+  var tray = root.querySelector('[data-lbb-tray]');
+  var $ = function(s){ return root.querySelector(s); };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(ch){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
+
+  /* Drop saved items that are not in this department (or no longer exist). */
+  (function prune(){ var saved = B.items(dept), keep = saved.filter(function(i){ return byV[String(i.v)]; }); if (keep.length !== saved.length) B.set(dept, keep); })();
+
+  function lines(){
+    return B.items(dept).map(function(i){ var p = byV[String(i.v)]; return p ? { p: p, q: Math.min(parseInt(i.q, 10) || 1, p.max), gone: !p.avail } : null; }).filter(Boolean);
+  }
+
+  function renderCards(){
+    var sel = {};
+    B.items(dept).forEach(function(i){ sel[String(i.v)] = parseInt(i.q, 10) || 1; });
+    cards.forEach(function(c){
+      var v = c.getAttribute('data-v'), p = byV[v], ctl = c.querySelector('[data-lbb-ctl]'), q = sel[v];
+      c.classList.toggle('is-sel', !!q);
+      if (!p.avail) return;
+      if (!q) {
+        if (!ctl.querySelector('[data-lbb-toggle]')) ctl.innerHTML = '<button type="button" class="lbb-add" data-lbb-toggle aria-pressed="false">+ زيد للباك</button>';
+      } else if (p.max <= 1) {
+        ctl.innerHTML = '<button type="button" class="lbb-add" data-lbb-toggle aria-pressed="true" style="background:transparent;color:var(--cream,#0B0B0C)">✓ فالباك · حيّد</button>';
+      } else {
+        ctl.innerHTML = '<div class="lbb-qty" role="group" aria-label="الكمية"><button type="button" data-lbb-dec aria-label="نقّص">−</button><output aria-live="polite">' + q + '</output><button type="button" data-lbb-inc aria-label="زيد"' + (q >= p.max ? ' disabled' : '') + '>+</button></div>';
+      }
+    });
+  }
+
+  function renderTray(){
+    var L = lines(), live = L.filter(function(l){ return !l.gone; });
+    var n = live.reduce(function(s, l){ return s + l.q; }, 0);
+    var sub = live.reduce(function(s, l){ return s + l.p.price * l.q; }, 0);
+    var pct = B.tier(dept, n), save = B.saving(live.map(function(l){ return { price: l.p.price, q: l.q }; }), pct), fin = sub - save, nx = B.next(dept, n);
+    var box = $('[data-lbb-lines]');
+    box.innerHTML = L.length ? L.map(function(l){
+      var p = l.p;
+      return '<div class="lbb-line' + (l.gone ? ' is-gone' : '') + '">'
+        + '<img src="' + esc(p.img) + '" alt="" width="56" height="56" loading="lazy">'
+        + '<div><p class="lbb-line__n">' + esc(p.b) + ' ' + esc(p.t) + '</p><p class="lbb-line__m">' + esc(B.ltr(p.size || '')) + (l.gone ? ' · مابقاش متوفر — ما غاديش يتزاد' : ' · الوحدة ' + esc(B.fmt(p.price))) + '</p>'
+        + '<div class="lbb-line__ctl">' + (p.max > 1 && !l.gone ? '<button type="button" data-lbb-ldec="' + esc(p.v) + '" aria-label="نقّص">−</button><output>' + l.q + '</output><button type="button" data-lbb-linc="' + esc(p.v) + '" aria-label="زيد"' + (l.q >= p.max ? ' disabled' : '') + '>+</button>' : '<output>×' + l.q + '</output>')
+        + '<button type="button" data-lbb-lrm="' + esc(p.v) + '" aria-label="حيّد ' + esc(p.t) + '">✕</button></div></div>'
+        + '<span class="lbb-line__p">' + esc(B.fmt(p.price * l.q)) + '</span></div>';
+    }).join('') : '<p class="lbb-empty">مازال ما اخترتي والو. ضغط «زيد للباك» على أي ' + esc(C.one) + '.</p>';
+    var bars = root.querySelectorAll('[data-lbb-prog] i');
+    bars.forEach(function(b, i){ b.classList.toggle('on', n >= i + 1); });
+    $('[data-lbb-nudge]').textContent = n === 0 ? '' : (nx ? ('زيد ' + nx.need + ' ' + (nx.need === 1 ? C.one : C.unit) + ' ووفّر ' + B.pct(nx.pct) + ' على الباك كامل') : ('✓ عندك أكبر خصم: ' + B.pct(pct) + ' على الباك'));
+    $('[data-lbb-sub]').textContent = n ? B.fmt(sub) : '—';
+    var sr = $('[data-lbb-save-row]'); sr.hidden = !save;
+    $('[data-lbb-save-lbl]').textContent = 'خصم الباك ' + B.pct(pct);
+    $('[data-lbb-save]').textContent = '− ' + B.fmt(save);
+    $('[data-lbb-final]').textContent = n ? B.fmt(fin) : '—';
+    $('[data-lbb-ship]').textContent = !n ? '' : (fin >= FREE_SHIP ? '🎉 التوصيل مجاني على هاد الباك' : ('🚚 باقي ' + B.fmt(FREE_SHIP - fin) + ' على التوصيل المجاني'));
+    $('[data-lbb-count]').textContent = n + ' ' + (n === 1 ? C.one : C.unit);
+    $('[data-lbb-sumline]').textContent = !n ? 'ختار باش تبدا' : (B.fmt(fin) + (pct ? ' · وفّرتي ' + B.pct(pct) : (nx ? ' · زيد ' + nx.need + ' ل' + B.pct(nx.pct) : '')));
+    var cta = $('[data-lbb-cta]'); cta.disabled = n === 0;
+    cta.textContent = n ? ('زيد الباك للسلة (' + n + ')') : 'زيد الباك للسلة';
+    if (n) tray.removeAttribute('data-empty'); else tray.setAttribute('data-empty', '');
+    document.body.classList.toggle('lbb-has-tray', n > 0);
+  }
+  function render(){ renderCards(); renderTray(); }
+
+  root.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('button') : null;
+    if (!t || !root.contains(t)) return;
+    var card = t.closest('[data-lbb-card]'), v, p;
+    if (card) { v = card.getAttribute('data-v'); p = byV[v]; }
+    if (t.hasAttribute('data-lbb-toggle') && p && p.avail) {
+      if (B.has(dept, v)) B.remove(dept, v, 'builder'); else B.add(dept, { v: v, h: p.h, q: 1, max: p.max }, 'builder');
+    } else if (t.hasAttribute('data-lbb-inc') && p) { B.setQty(dept, v, (B.items(dept).filter(function(i){ return String(i.v) === v; })[0] || { q: 0 }).q + 1, p.max); }
+    else if (t.hasAttribute('data-lbb-dec') && p) { B.setQty(dept, v, (B.items(dept).filter(function(i){ return String(i.v) === v; })[0] || { q: 1 }).q - 1, p.max); }
+    else if (t.hasAttribute('data-lbb-linc') || t.hasAttribute('data-lbb-ldec')) {
+      v = t.getAttribute('data-lbb-linc') || t.getAttribute('data-lbb-ldec'); p = byV[v];
+      var cur = (B.items(dept).filter(function(i){ return String(i.v) === v; })[0] || { q: 1 }).q;
+      B.setQty(dept, v, cur + (t.hasAttribute('data-lbb-linc') ? 1 : -1), p ? p.max : 1);
+    } else if (t.hasAttribute('data-lbb-lrm')) { B.remove(dept, t.getAttribute('data-lbb-lrm'), 'tray'); }
+    else if (t.hasAttribute('data-lbb-sum')) {
+      if (window.matchMedia('(min-width:1024px)').matches) return;
+      var open = !tray.classList.contains('is-open'); tray.classList.toggle('is-open', open); t.setAttribute('aria-expanded', String(open));
+    } else if (t.hasAttribute('data-lbb-cta')) { addBundle(t); }
+  });
+  document.addEventListener('lbass:bundle', render);
+  window.addEventListener('pageshow', render); /* back/forward cache */
+
+  function addBundle(btn){
+    var live = lines().filter(function(l){ return !l.gone; });
+    if (!live.length) return;
+    var n = live.reduce(function(s, l){ return s + l.q; }, 0), pct = B.tier(dept, n);
+    var sub = live.reduce(function(s, l){ return s + l.p.price * l.q; }, 0);
+    var bid = 'LB-' + Date.now().toString(36).toUpperCase();
+    var items = live.map(function(l){ return { id: parseInt(l.p.v, 10), quantity: l.q, properties: { _bundle: C.label, _bundle_id: bid, _bundle_size: String(n) } }; });
+    B.track('bundle_completed', { department: dept, items_count: n, discount_pct: pct, value: (sub - B.saving(live.map(function(l){ return { price: l.p.price, q: l.q }; }), pct)) / 100, currency: 'MAD' });
+    if (!window.LbassCart || typeof window.LbassCart.addItems !== 'function') { B.toast('⚠ السلة ما خدماتش دابا — عاود جرّب.'); return; }
+    window.LbassCart.addItems(items, { btn: btn, source: 'bundle_' + dept, label: C.label }).then(function(res){
+      if (!res || !res.added) return;
+      B.track('bundle_added_to_cart', { department: dept, items_count: res.added, requested_count: n, discount_pct: B.tier(dept, res.added), bundle_id: bid, currency: 'MAD', value: res.value || 0 });
+      B.clear(dept);
+      root.querySelector('[data-lbb-done]').classList.add('is-on');
+    });
+  }
+
+  var fromEl = root.querySelector('[data-lbb-from]');
+  if (/[?&]from=consult/.test(location.search)) fromEl.classList.add('is-on');
+  else if (/[?&]from=similar/.test(location.search)) { fromEl.textContent = '✓ هادو هوما العطور اللي ختاريتي من «Find Your Similar Scent». زيد ولا نقّص كيف بغيتي.'; fromEl.classList.add('is-on'); }
+  render();
+  if (B.count(dept)) B.track('bundle_viewed_with_items', { department: dept, items_count: B.count(dept) });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
