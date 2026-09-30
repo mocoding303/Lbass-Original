@@ -997,109 +997,16 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 <main id="main-content">
 
 <!-- ═══ HERO ═══ -->
-<section class="hero" id="top" aria-labelledby="home-h1">
-  <!-- Sticky viewport: the real MP4 timeline is scrubbed by page scroll. -->
-  <div class="hero-sticky">
-    <div class="hero-media">
-      <div class="hero-frames" id="heroFrames">
-        <img class="hero-poster" src="{{ 'hero-frame-1.webp' | asset_url }}" alt="مختارات Lbass Original من السنيكرز والستريتوير الأصلي فالمغرب" fetchpriority="high" loading="eager" decoding="async" width="1376" height="768">
-        <video class="hero-video" id="heroVideo" muted playsinline webkit-playsinline preload="auto" poster="{{ 'hero-frame-1.webp' | asset_url }}" aria-hidden="true" tabindex="-1">
-          <source src="{{ 'hero-scroll-film.mp4' | asset_url }}" type="video/mp4">
-        </video>
-      </div>
-      <canvas id="heroFx" aria-hidden="true"></canvas>
-    </div>
-    <span class="hero-star-bg star8"><svg><use href="#star8sym"/></svg></span>
-    <div class="hero-in">
-      <div class="hero-kicker rev">DROP جديد · قطع محدودة</div>
-      {%- comment -%}
-        This H1 is what crawlers receive in raw HTML. snippets/lbass-hero-swap
-        replaces this whole block with .lbh once JS runs, so the two MUST say
-        the same thing — otherwise the indexed headline is not the one users
-        see. Measured 2026-08-10: raw HTML said "حوايج Second-Hand أصلية
-        فالمغرب." while the rendered page said "…من ألمانيا…". Googlebot renders
-        JS and resolves it; Bing and most LLM crawlers do not.
-        If you change the headline, change it in BOTH places.
-      {%- endcomment -%}
-      <h1 class="hero-h rev-hero" id="home-h1">
-        <span class="ln"><span>Lbass Original —</span></span>
-        <span class="ln"><span><em>حوايج Second-Hand أصلية فالمغرب</em></span></span>
-      </h1>
-      <p class="hero-lt rev">ORIGINAL SECOND-HAND STREETWEAR — MOROCCO</p>
-      <p class="hero-lt rev" style="letter-spacing:.12em;font-size:clamp(10px,1.2vw,13px);opacity:.7;margin-top:-18px">FRIPERIE EN LIGNE — VÊTEMENTS DE MARQUE, PARTOUT AU MAROC</p>
-      <p class="hero-sub rev">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p>
-      <div class="hero-ctas rev">
-        <a class="btn btn-gold" href="#shop" data-cro-event="hero_cta_click" data-cro-label="shop_now">شوف الدروب دابا ←</a>
-        <a class="btn btn-line" href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" data-cro-event="hero_cta_click" data-cro-label="sneakers_hero">تسوق الصبابط</a>
-        <a class="btn btn-line" href="#faq" data-cro-event="hero_cta_click" data-cro-label="condition_proof">كيفاش كنشيّكو القطع؟</a>
-      </div>
-      <ul class="hero-chips rev" aria-label="معلومات Lbass">
-        <li>غالباً 1/1</li><li>صور حقيقية</li><li>حالة واضحة</li><li>COD</li><li>توصيل لكل المغرب</li>
-      </ul>
-      <p class="hero-scarce rev">ملي كتباع القطعة، كتخرج من الكوليكسيون.</p>
-      <div class="hero-proof rev">
-        <div class="hp-item"><div class="hp-num">CLEAR</div><div class="hp-lbl">الحالة والتّيكيت كيبانو قبل الشراء</div></div>
-        <div class="hp-item"><div class="hp-num">REAL</div><div class="hp-lbl">نفس القطعة فالصور، ماشي صور البراند</div></div>
-        <div class="hp-item"><div class="hp-num">1/1</div><div class="hp-lbl">غالباً قطعة وحدة حسب المخزون</div></div>
-        <div class="hp-item"><div class="hp-num">PAY</div><div class="hp-lbl">COD أو PayPal — فيك الاختيار</div></div>
-      </div>
-    </div>
-    {%- comment -%} Split hero: a real in-stock piece, not a stock image.
-        Proves the "صور حقيقية ديال نفس القطعة" promise in the first viewport. {%- endcomment -%}
-    {%- assign hero_avail = collections.all.products | where: 'available', true -%}
-    {%- assign hero_pick = hero_avail | first -%}
-    {%- if hero_pick -%}
-      <div class="hero-stack">
-      {%- assign hp_v = hero_pick.selected_or_first_available_variant -%}
-      {%- assign hp_title = hero_pick.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first -%}
-      <a class="hero-drop" href="{{ hero_pick.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_drop_piece">
-        <div class="hero-drop-img">
-          {%- if hero_pick.featured_image -%}
-            <img src="{{ hero_pick.featured_image | image_url: width: 800 }}" alt="{{ hp_title | escape }}" width="800" height="1000" fetchpriority="high" decoding="async">
-          {%- endif -%}
-          {% capture hero_one_s %}{% render 'lbass-one-of-one', product: hero_pick %}{% endcapture %}{% assign hero_one_s = hero_one_s | strip %}<span class="lb-stamp" aria-hidden="true">{% if hero_one_s == '1' %}1/1{% else %}LIVE{% endif %}</span>
-        </div>
-        <div class="hero-drop-info">
-          <span class="hero-drop-kick">متوفرة دابا</span>
-          <span class="hero-drop-brand">{{ hero_pick.vendor }}</span>
-          <span class="hero-drop-name">{{ hp_title }}</span>
-          <span class="hero-drop-row">
-            <b>{{ hp_v.price | money }}</b>
-            {%- unless hero_pick.has_only_default_variant -%}<span class="hero-drop-size">{{ hp_v.title }}</span>{%- endunless -%}
-            <span class="hero-drop-go">شوفها ←</span>
-          </span>
-        </div>
-      </a>
-      {%- comment -%} two more available pieces — compact rows, never sold-out {%- endcomment -%}
-      {%- for hp2 in hero_avail offset: 1 limit: 2 -%}
-        {%- assign hp2_t = hp2.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first -%}
-        <a class="hero-mini" href="{{ hp2.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_drop_piece_{{ forloop.index | plus: 1 }}">
-          {%- if hp2.featured_image -%}
-            <img src="{{ hp2.featured_image | image_url: width: 160 }}" alt="{{ hp2_t | escape }}" width="72" height="72" loading="lazy" decoding="async">
-          {%- endif -%}
-          <span class="hero-mini-txt">
-            <span class="hero-mini-brand">{{ hp2.vendor }}</span>
-            <span class="hero-mini-name">{{ hp2_t }}</span>
-          </span>
-          <span class="hero-mini-meta">
-            <b>{{ hp2.selected_or_first_available_variant.price | money }}</b>
-            {%- unless hp2.has_only_default_variant -%}<span class="hero-mini-size">{{ hp2.selected_or_first_available_variant.title }}</span>{%- else -%}{% capture hp2_one_s %}{% render 'lbass-one-of-one', product: hp2 %}{% endcapture %}{% assign hp2_one_s = hp2_one_s | strip %}<span class="hero-mini-11">{% if hp2_one_s == '1' %}1/1{% else %}LIVE{% endif %}</span>{%- endunless -%}
-          </span>
-        </a>
-      {%- endfor -%}
-      </div>
-    {%- endif -%}
-    <script>
-    (function(){var h=document.querySelector('.hero');if(!h||!('IntersectionObserver' in window))return;var sent=false;
-      new IntersectionObserver(function(es){es.forEach(function(e){
-        if(!e.isIntersecting&&e.boundingClientRect.top<0&&!sent){sent=true;
-          try{if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish('lbass_hero_scroll_past',{});}catch(x){}
-          try{sessionStorage.setItem('lb_hero_seen','1');}catch(x){}}
-      })},{threshold:0}).observe(h);})();
-    </script>
-    <div class="hero-scroll" aria-hidden="true"><span>SCROLL</span><i></i></div>
-  </div>
-</section>
+{%- comment -%}
+  2026-09-26 — the old scroll-film hero that lived here (1.8 MB MP4 + three.js
+  particles) was never shown: snippets/lbass-hero-swap replaced it with .lbh at
+  DOMContentLoaded, which cost CLS 0.16 and two wasted downloads. The hero is
+  now server-rendered as a carousel (clothing + Arabic fragrances + any
+  metaobject slides). The removed markup is kept in Lbass/expansion/
+  theme-preview-208658399563/before/ if it is ever needed again.
+{%- endcomment -%}
+{% render 'lbass-hero-carousel' %}
+{% render 'lbass-shop-by-category' %}
 
 <!-- ═══ MARQUEE ═══ -->
 <div class="mq" aria-hidden="true">
@@ -1186,6 +1093,8 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 </section>
 
 {% render 'lbass-home-collections' %}
+{% render 'lbass-home-fragrances' %}
+{%- comment -%} 2026-09-30 clothing-first homepage: K-beauty block no longer rendered on the homepage (menu-only). Restore the next line to revert: render 'lbass-home-beauty' {%- endcomment -%}
 
 <!-- ═══ INSPECTION CHECKLIST ═══ -->
 <section class="sec inspect" id="inspection" aria-labelledby="inspect-h">
@@ -1423,6 +1332,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
     <div id="lookGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px">
       {% for slot_cat in stl_slot_arr %}
         {% for cp in stl_avail %}
+          {% if cp.type == 'Fragrance' %}{% continue %}{% endif %}{% if cp.type == 'Cosmetics' %}{% continue %}{% endif %}{% comment %} fragrance + cosmetics guard 2026-09-26: own departments {% endcomment %}
           {% capture cpid %},{{ cp.id }},{% endcapture %}
           {% if stl_picked contains cpid %}{% continue %}{% endif %}
           {% assign cp_tags = cp.tags | join: ',' | downcase %}
@@ -1739,6 +1649,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       {% if bf_count < 4 %}
         {% assign bf_by_price = bf_avail | sort: 'price' | reverse %}
         {% for bp in bf_by_price %}
+          {% if bp.type == 'Fragrance' %}{% continue %}{% endif %}{% if bp.type == 'Cosmetics' %}{% continue %}{% endif %}{% comment %} fragrance + cosmetics guard 2026-09-26: own departments {% endcomment %}
           {% if bf_count >= 4 %}{% break %}{% endif %}
           {% unless bp.tags contains 'vault' %}
             {% assign bf_count = bf_count | plus: 1 %}
@@ -1773,6 +1684,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
     {% capture v_pool %},{% for p in v_avail %}{% if p.tags contains 'vault' %}{{ p.id }},{% endif %}{% endfor %}{% endcapture %}
     {% assign v_sorted = v_avail | sort: 'price' | reverse %}
     {% for p in v_sorted limit: 14 %}
+      {% if p.type == 'Fragrance' %}{% continue %}{% endif %}{% if p.type == 'Cosmetics' %}{% continue %}{% endif %}{% comment %} fragrance + cosmetics guard 2026-09-26: own departments {% endcomment %}
       {% capture v_pid %},{{ p.id }},{% endcapture %}
       {% unless v_pool contains v_pid %}{% assign v_pool = v_pool | append: p.id | append: ',' %}{% endunless %}
     {% endfor %}
@@ -2036,11 +1948,11 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       {% if form.errors %}
         <p class="nl-note" role="alert">وقع مشكل. تأكد من الإيميل وعاود جرب.</p>
       {% endif %}
-      <input type="hidden" name="contact[tags]" value="newsletter,homepage">
+      <style>.nl-g{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;color:#97928A;margin:0 0 10px}.nl-g label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.nl-g input{accent-color:#C89A0E}</style><div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-all' checked>بجوج</label></div>
       <input class="nl-input" type="email" name="contact[email]" placeholder="الإيميل ديالك…" required aria-label="الإيميل">
       <button class="nl-btn" type="submit">عَلمني ←</button>
     {% endform %}
-    <p class="nl-note">ما غاديش نسبّاموك. تلغي التسجيل بضغطة وحدة.</p>
+    <p class="nl-note">غادي توصلك رسالة فالإيميل باش تأكد التسجيل. كنصيفطو غير الDrops الجداد والتخفيضات الحقيقية · <a href="{{ shop.privacy_policy.url }}" style="color:inherit;text-decoration:underline">سياسة الخصوصية</a><br>ما غاديش نسبّاموك. تلغي التسجيل بضغطة وحدة.</p>
   </div>
 </section>
 
@@ -2334,10 +2246,10 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
     <button class="ei-x" id="eiX" aria-label="سدّ">✕</button>
     <h3>قبل ما تمشي… 👀</h3>
     <p>خلّي الإيميل ديالك ونعلموك ملي يوصل Drop جديد باش تشوف المتوفر من اللول.</p>
-    <form class="ei-form" id="eiForm" action="/contact" method="post">
+    <p class="ei-note" style="font-size:12px;line-height:1.6;margin:0 0 12px;color:#5E5A55">غادي توصلك رسالة فالإيميل باش تأكد التسجيل. كنصيفطو غير الDrops الجداد والتخفيضات الحقيقية، وتلغي فأي وقت · <a href="{{ shop.privacy_policy.url }}" style="color:#97928A;text-decoration:underline">سياسة الخصوصية</a></p><form class="ei-form" id="eiForm" action="/contact" method="post">
       <input type="hidden" name="form_type" value="customer">
       <input type="hidden" name="return_to" value="/pages/newsletter-confirmation">
-      <input type="hidden" name="contact[tags]" value="newsletter,exit-intent">
+      <div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,exit-intent,pref-all' checked>بجوج</label></div>
       <input class="ei-input" type="email" name="contact[email]" placeholder="الإيميل ديالك…" required aria-label="الإيميل">
       <button class="ei-btn" type="submit">عَلمني ←</button>
     </form>
@@ -2360,17 +2272,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 <!-- ═══ GSAP ═══ -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
-<script>
-/* three.js is decorative (hero particles) — only fetch its ~600KB on capable desktop screens */
-(function(){
-  if (innerWidth > 900 && matchMedia('(pointer:fine)').matches && !(navigator.connection && navigator.connection.saveData)){
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
-    s.defer = true;
-    document.head.appendChild(s);
-  }
-})();
-</script>
+{%- comment -%} three.js loader removed 2026-09-26: its only consumer was the old hero's #heroFx canvas, which is gone. {%- endcomment -%}
 
 <script>
 /* ════════════════ DATA ════════════════ */
@@ -3047,8 +2949,10 @@ if (animOn && 'IntersectionObserver' in window){
   if (!pl) return;
   let p = 0;
   const tick = setInterval(()=>{ p = Math.min(96, p + Math.random()*22); bar.style.width = p + '%'; }, 140);
-  function finish(){ clearInterval(tick); bar.style.width='100%'; setTimeout(()=>{ pl.classList.add('done'); document.body.style.overflow=''; }, 260); }
-  document.body.style.overflow='hidden';
+  /* 2026-09-26: no longer toggles body overflow. The overlay is position:fixed and
+     covers the page anyway; locking and unlocking <body> scroll made Chrome report a
+     whole-page layout shift of 0.73 on phones (CLS) when the lock was released. */
+  function finish(){ clearInterval(tick); bar.style.width='100%'; setTimeout(()=>{ pl.classList.add('done'); }, 260); }
   window.addEventListener('load', () => setTimeout(finish, 380));
   setTimeout(finish, 4000); // hard failsafe
 })();
@@ -3169,7 +3073,7 @@ window.addEventListener('load', () => {
   }
 
   /* ── Three.js gold-dust field in hero (cheap: capped DPR, paused while scrolled away) ── */
-  if (window.THREE && FINE && innerWidth > 900 && !navigator.connection?.saveData){
+  if (window.THREE && FINE && innerWidth > 900 && !navigator.connection?.saveData && document.getElementById('heroFx') && document.querySelector('.hero-sticky')){
     const cv=$('#heroFx'), hero=$('.hero-sticky');
     try{
       const renderer=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:false,powerPreference:'low-power'});

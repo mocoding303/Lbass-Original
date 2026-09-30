@@ -1,0 +1,302 @@
+{%- comment -%}
+  ═══ LBASS — ARABIC FRAGRANCES HERO (2026-09-26) ═══
+
+  One design, two placements:
+    mode: 'slide'  second slide of the homepage hero (snippets/lbass-hero-swap.liquid
+                   injects it next to the clothing hero). Heading is an <h2> — the
+                   homepage keeps ONE <h1>, the clothing one.
+    mode: 'page'   top of templates/collection.fragrance.liquid (/collections/fragrances
+                   and the brand-* house pages). Heading is the page <h1>.
+
+  Parameters (page mode): title (the H1), latin (display line, e.g. LATTAFA),
+  coll (the collection — house pages show that house's own bottles), demo (true on
+  the preview stand-in, see the collection template).
+
+  Look: a dark "oud" plate — warm black, amber glow, a faint 8-point-star lattice —
+  with the bottles in Moroccan-arch niches. The photos sit on white; multiply
+  blending drops the white into the niche's warm gradient, so product shots with
+  any light background (and the owner's own photos later) read as one set.
+
+  Nothing here claims more than the catalogue does: full bottles, new in box, not
+  decants (owner decision 2026-09-25), COD/PayPal and the 20/40 shipping policy.
+  The eyebrow says COMING SOON until at least one bottle is in stock.
+
+  2026-09-30 COMPACT PAGE MODE (owner approved): on collection pages the hero was
+  745 px tall on a phone and pushed the bottles 2+ screens down. Page mode is now a
+  short band (~270 px on phones): smaller type, one line of badges, no bottle art on
+  phones. It is also accurate per collection: the desktop art and the sub-line come
+  from the collection itself (best sellers → the ranking source, a house → that
+  house, men/women → no house names); the generic Rose 01 / Khamrah / Club de Nuit
+  art stays on /collections/fragrances only. Optional override of the sub-line:
+  collection metafield lbass.hero_sub. Slide mode (homepage) is unchanged.
+{%- endcomment -%}
+{%- liquid
+  assign lbfh_mode = mode | default: 'slide'
+  assign lbfh_all = collections['fragrances']
+  assign lbfh_live = lbfh_all.products_count | default: 0 | plus: 0
+  assign lbfh_url = '/collections/fragrances'
+  if lbfh_live == 0 and theme.role == 'unpublished'
+    assign lbfh_url = '/collections/all?view=fragrance'
+  endif
+
+  assign lbfh_scope = lbfh_all
+  if lbfh_mode == 'page' and coll != blank and demo != true
+    assign lbfh_scope = coll
+  endif
+  assign lbfh_avail = lbfh_scope.products | where: 'available', true | size
+
+  assign lbfh_latin = latin | default: 'ARABIC FRAGRANCES'
+  assign lbfh_title = title | default: 'عطور عربية أصلية فالمغرب'
+  assign lbfh_house = ''
+  if lbfh_mode == 'page' and coll != blank and demo != true and coll.handle contains 'brand-'
+    assign lbfh_house = coll.title
+  endif
+
+  # Page mode on any collection other than the all-fragrances one shows that
+  # collection's own bottles (in stock first), never the generic three.
+  assign lbfh_own = false
+  if lbfh_mode == 'page' and coll != blank and demo != true and coll.handle != 'fragrances'
+    assign lbfh_own = true
+  endif
+  assign lbfh_pool = ''
+  if lbfh_own
+    assign lbfh_pool = coll.products | where: 'available', true
+    if lbfh_pool.size == 0
+      assign lbfh_pool = coll.products
+    endif
+  endif
+
+  assign lbfh_count = 3
+  if lbfh_own
+    assign lbfh_count = lbfh_pool.size | at_most: 3
+    if lbfh_count == 0
+      assign lbfh_count = 3
+    endif
+  endif
+
+  assign lbfh_sub = ''
+  if lbfh_mode == 'page' and coll != blank and demo != true
+    if coll.metafields.lbass.hero_sub != blank
+      assign lbfh_sub = coll.metafields.lbass.hero_sub.value
+    elsif coll.handle == 'lattafa-best-sellers'
+      assign lbfh_sub = 'مرتبين حسب أرقام المبيعات العمومية ديال السوق المغربي (شتنبر 2026). قرعات كاملة جديدة فالكرطونة — ماشي ديكانت، وكتخلص ملي توصلك.'
+    elsif lbfh_house != blank
+      assign lbfh_sub = 'قرعات كاملة جديدة فالكرطونة من ' | append: lbfh_house | append: ' — ماشي ديكانت. النوطات، التركيز والحجم مكتوبين فكل عطر، وكتخلص ملي توصلك.'
+    elsif coll.handle != 'fragrances'
+      assign lbfh_sub = 'قرعات كاملة جديدة فالكرطونة — ماشي ديكانت. النوطات، التركيز والحجم مكتوبين فكل عطر، وكتخلص ملي توصلك.'
+    endif
+  endif
+  if lbfh_sub == ''
+    assign lbfh_sub = 'قرعات كاملة جديدة فالكرطونة من Lattafa، Armaf، Swiss Arabian وديور عربية أخرى — ماشي ديكانت. النوطات، التركيز والحجم مكتوبين فكل عطر، وكتخلص ملي توصلك.'
+  endif
+
+  assign lbfh_wa_help = 'سلام Lbass Original! بغيت نصيحة نختار عطر. كنحب ريحة: ' | url_encode
+  assign lbfh_wa_soon = 'سلام Lbass Original! مهتم بالعطور العربية، علموني ملي يوصلو ومعاهم الثمن.' | url_encode
+  assign lbfh_blank = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+-%}
+<section class="lbfh lbfh--{{ lbfh_mode }}" aria-labelledby="lbfhT-{{ lbfh_mode }}" data-lbfh>
+  <style>
+    .lbfh{--g1:#D6A456;--g2:#F2D398;--g3:#A87936;--cr:#F4EDE1;--cr2:rgba(244,237,225,.76);--cr3:rgba(244,237,225,.56);
+      position:relative;isolation:isolate;overflow:hidden;color:var(--cr);
+      display:flex;align-items:center;width:100%;
+      font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif);
+      background:
+        radial-gradient(70% 78% at 24% 60%, rgba(214,164,86,.30) 0%, rgba(214,164,86,.10) 40%, transparent 72%),
+        radial-gradient(46% 52% at 92% 6%, rgba(191,46,21,.18) 0%, transparent 70%),
+        linear-gradient(160deg,#1C150E 0%,#100C08 54%,#150F0A 100%)}
+    .lbfh--slide{min-height:82svh}
+    .lbfh--page{min-height:clamp(520px,66svh,760px)}
+    .lbfh-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}
+    .lbfh-pat{position:absolute;inset:0;width:100%;height:100%;color:var(--g1);opacity:.14;
+      -webkit-mask-image:radial-gradient(62% 88% at 26% 56%,#000 0%,rgba(0,0,0,.35) 55%,transparent 82%);
+              mask-image:radial-gradient(62% 88% at 26% 56%,#000 0%,rgba(0,0,0,.35) 55%,transparent 82%)}
+    .lbfh-in{position:relative;width:100%;max-width:1320px;margin:0 auto;display:grid;
+      grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:center;
+      gap:clamp(24px,4vw,64px);padding:clamp(44px,6vw,92px) clamp(20px,4vw,52px)}
+    .lbfh-eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 18px;
+      font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:11px;font-weight:700;
+      letter-spacing:.36em;text-transform:uppercase;color:var(--g1);line-height:1.5}
+    .lbfh-eyebrow::before{content:'';width:34px;height:1px;background:currentColor;opacity:.6;flex:0 0 auto}
+    .lbfh-h{margin:0;display:flex;flex-direction:column;gap:.22em}
+    .lbfh-lat{display:block;font-family:var(--lb-display,'Anton',Impact,sans-serif);font-weight:400;
+      font-size:clamp(42px,6.2vw,96px);line-height:.92;letter-spacing:.015em;text-transform:uppercase;
+      background:linear-gradient(100deg,#A97A35 0%,#F4D79C 36%,#C8923F 64%,#F0CD86 100%);
+      -webkit-background-clip:text;background-clip:text;color:transparent}
+    .lbfh-ar{display:block;font-weight:900;font-size:clamp(26px,3.3vw,50px);line-height:1.3;color:var(--cr)}
+    .lbfh-sub{margin:22px 0 0;max-width:54ch;font-size:clamp(14px,1.2vw,16.5px);line-height:1.95;font-weight:500;color:var(--cr2)}
+    .lbfh-ctas{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 0}
+    .lbfh-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 30px;
+      font-family:inherit;font-size:15.5px;font-weight:900;text-decoration:none;border-radius:0;
+      transition:background .2s,color .2s,border-color .2s,transform .2s,box-shadow .2s}
+    .lbfh-btn--gold{background:linear-gradient(180deg,#E9C27A 0%,#C8913E 100%);color:#1A1209;border:1px solid #E6BB6C;
+      box-shadow:0 10px 30px rgba(214,164,86,.22)}
+    .lbfh-btn--gold:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(214,164,86,.34);color:#1A1209}
+    .lbfh-btn--ghost{background:rgba(244,237,225,.04);color:var(--cr);border:1px solid rgba(244,237,225,.40)}
+    .lbfh-btn--ghost:hover{border-color:var(--g1);color:var(--g2)}
+    .lbfh-btn:focus-visible{outline:2px solid var(--g2);outline-offset:3px}
+    .lbfh-btn .lbfh-m{display:none}
+    .lbfh-chips{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none}
+    .lbfh-chips li{padding:8px 13px;border:1px solid rgba(214,164,86,.30);background:rgba(16,12,8,.40);
+      font-size:12px;font-weight:700;color:var(--cr2);line-height:1.4}
+    .lbfh-chips b{color:var(--g2);font-weight:900}
+    .lbfh-art{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.24fr) minmax(0,1fr);
+      align-items:end;gap:clamp(10px,1.8vw,26px);width:100%;max-width:620px;margin-inline:auto;padding:0 0 30px}
+    .lbfh-art--1{grid-template-columns:minmax(0,1fr);max-width:250px}
+    .lbfh-art--2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:440px}
+    .lbfh-art::before{content:'';position:absolute;left:50%;bottom:6px;width:78%;height:46px;transform:translateX(-50%);
+      background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(4px);z-index:-1}
+    .lbfh-art::after{content:'';position:absolute;left:4%;right:4%;bottom:22px;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(233,196,128,.8),transparent)}
+    .lbfh-item{margin:0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:12px;
+      animation:lbfhFloat 7s ease-in-out infinite}
+    .lbfh-item:nth-child(2){animation-delay:-2.3s}
+    .lbfh-item:nth-child(3){animation-delay:-4.6s}
+    @keyframes lbfhFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+    .lbfh-arch{position:relative;width:100%;aspect-ratio:5/8;overflow:hidden;isolation:isolate;
+      border-radius:999px 999px 8px 8px;border:1px solid rgba(233,196,128,.55);
+      background:linear-gradient(180deg,#FFFDF8 0%,#F7EEDD 58%,#EAD8B6 100%);
+      box-shadow:0 0 0 5px rgba(214,164,86,.07),0 30px 60px rgba(0,0,0,.55),inset 0 -34px 46px rgba(168,121,54,.20)}
+    .lbfh-arch img{position:absolute;left:11%;right:11%;top:17%;bottom:7%;width:78%;height:76%;
+      object-fit:contain;object-position:50% 100%;mix-blend-mode:multiply}
+    .lbfh-item figcaption{font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:10px;font-weight:700;
+      letter-spacing:.24em;text-transform:uppercase;color:var(--cr3);white-space:nowrap}
+    .lbfh-soon{margin:14px 0 0;font-size:12.5px;font-weight:700;color:var(--cr3)}
+    .lbfh-soon b{color:var(--g2)}
+    @media(max-width:900px){
+      .lbfh-in{grid-template-columns:1fr;gap:20px;padding:34px 20px 30px}
+      .lbfh--slide{min-height:76svh}
+      .lbfh--page{min-height:0}
+      .lbfh-eyebrow{font-size:9.5px;letter-spacing:.24em;margin-bottom:14px}
+      .lbfh-lat{font-size:clamp(36px,11.5vw,58px)}
+      .lbfh-ar{font-size:clamp(22px,6.4vw,32px)}
+      .lbfh-sub{font-size:14px;line-height:1.8;margin-top:16px}
+      .lbfh--slide .lbfh-sub{display:none}
+      .lbfh-ctas{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+      .lbfh-btn{min-height:50px;padding:0 10px;font-size:13.5px;line-height:1.25;text-align:center}
+      .lbfh-btn .lbfh-d{display:none}
+      .lbfh-btn .lbfh-m{display:inline}
+      .lbfh-chips{margin-top:16px;gap:6px}
+      .lbfh-chips li{padding:7px 10px;font-size:11.5px}
+      .lbfh-art{max-width:430px;padding-bottom:26px;gap:10px}
+      .lbfh-item{gap:8px}
+      .lbfh-item figcaption{font-size:8.5px;letter-spacing:.16em}
+    }
+    @media(max-width:420px){ .lbfh-chips li:nth-child(n+4){display:none} }
+    @media(prefers-reduced-motion:reduce){ .lbfh-item{animation:none} .lbfh-btn{transition:none} }
+    /* ── compact page mode (2026-09-30): a short band above the bottles ── */
+    .lbfh--page{min-height:0}
+    .lbfh--page .lbfh-in{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:clamp(18px,3vw,44px);
+      padding:clamp(26px,3vw,40px) clamp(20px,4vw,52px)}
+    .lbfh--page .lbfh-eyebrow{margin-bottom:10px}
+    .lbfh--page .lbfh-lat{font-size:clamp(34px,4.2vw,58px)}
+    .lbfh--page .lbfh-ar{font-size:clamp(20px,2.2vw,30px)}
+    .lbfh--page .lbfh-sub{margin-top:12px;max-width:62ch;font-size:14px;line-height:1.8}
+    .lbfh--page .lbfh-ctas{margin-top:16px}
+    .lbfh--page .lbfh-btn{min-height:46px;padding:0 22px;font-size:14px}
+    .lbfh--page .lbfh-chips{gap:4px 0;margin-top:12px}
+    .lbfh--page .lbfh-chips li{padding:0;border:0;background:none;font-size:12px}
+    .lbfh--page .lbfh-chips li + li::before{content:"·";padding:0 9px;color:var(--g1)}
+    .lbfh--page .lbfh-art{max-width:330px;padding-bottom:18px}
+    .lbfh--page .lbfh-item{gap:8px}
+    @media(max-width:900px){
+      .lbfh--page .lbfh-in{grid-template-columns:1fr;gap:0;padding:22px 18px 20px}
+      .lbfh--page .lbfh-art{display:none}
+      .lbfh--page .lbfh-eyebrow{margin-bottom:8px}
+      .lbfh--page .lbfh-lat{font-size:clamp(30px,9vw,44px)}
+      .lbfh--page .lbfh-ar{font-size:clamp(19px,5.4vw,24px)}
+      .lbfh--page .lbfh-sub{margin-top:10px;font-size:13.5px;line-height:1.75}
+      .lbfh--page .lbfh-ctas{margin-top:14px}
+      .lbfh--page .lbfh-btn{min-height:46px;padding:0 10px;font-size:13.5px}
+      .lbfh--page .lbfh-chips{margin-top:10px}
+      .lbfh--page .lbfh-chips li{font-size:11.5px}
+    }
+  </style>
+
+  <div class="lbfh-bg" aria-hidden="true">
+    <svg class="lbfh-pat" xmlns="http://www.w3.org/2000/svg" focusable="false">
+      <defs>
+        <pattern id="lbfhStar-{{ lbfh_mode }}" width="64" height="64" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="20" y="20" width="24" height="24"/>
+            <rect x="20" y="20" width="24" height="24" transform="rotate(45 32 32)"/>
+            <path d="M0 32h8M56 32h8M32 0v8M32 56v8"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#lbfhStar-{{ lbfh_mode }})"/>
+    </svg>
+  </div>
+
+  <div class="lbfh-in">
+    <div class="lbfh-copy">
+      {%- if lbfh_mode == 'page' -%}
+      <p class="lbfh-eyebrow">{% if lbfh_avail > 0 %}LBASS ORIGINAL · PARFUMS{% else %}COMING SOON · PARFUMS{% endif %}</p>
+      {%- else -%}
+      <p class="lbfh-eyebrow">{% if lbfh_avail > 0 %}NEW · ARABIC FRAGRANCES{% else %}COMING SOON · ARABIC FRAGRANCES{% endif %}</p>
+      {%- endif -%}
+      {%- if lbfh_mode == 'page' -%}
+      <h1 class="lbfh-h" id="lbfhT-page"><span class="lbfh-lat">{{ lbfh_latin }}</span><span class="lbfh-ar">{{ lbfh_title }}</span></h1>
+      {%- else -%}
+      <h2 class="lbfh-h" id="lbfhT-slide"><span class="lbfh-lat">{{ lbfh_latin }}</span><span class="lbfh-ar">{{ lbfh_title }}</span></h2>
+      {%- endif -%}
+      <p class="lbfh-sub">{{ lbfh_sub }}</p>
+      <div class="lbfh-ctas">
+        {%- if lbfh_mode == 'page' -%}
+        <a class="lbfh-btn lbfh-btn--gold" href="#lbassCollectionProducts" data-cro-event="hero_cta_click" data-cro-label="frag_page_primary"><span class="lbfh-d">شوف العطور ↓</span><span class="lbfh-m">شوف العطور</span></a>
+        {%- else -%}
+        <a class="lbfh-btn lbfh-btn--gold" href="{{ lbfh_url }}" data-cro-event="hero_cta_click" data-cro-label="frag_slide_primary"><span class="lbfh-d">اكتشف العطور ←</span><span class="lbfh-m">اكتشف العطور</span></a>
+        {%- endif -%}
+        {%- if lbfh_avail > 0 -%}
+        <a class="lbfh-btn lbfh-btn--ghost" href="https://wa.me/491754264425?text={{ lbfh_wa_help }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="frag_{{ lbfh_mode }}_help"><span class="lbfh-d">عاونّي نختار عطر</span><span class="lbfh-m">عاونّي نختار</span></a>
+        {%- else -%}
+        <a class="lbfh-btn lbfh-btn--ghost" href="https://wa.me/491754264425?text={{ lbfh_wa_soon }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="frag_{{ lbfh_mode }}_notify"><span class="lbfh-d">علمني ملي يوصلو</span><span class="lbfh-m">علمني ملي يوصلو</span></a>
+        {%- endif -%}
+      </div>
+      <ul class="lbfh-chips" aria-label="معلومات مهمة">
+        <li><b>قرعة كاملة</b></li>
+        <li>جديدة فالكرطونة</li>
+        <li>ماشي ديكانت</li>
+        <li><b>COD</b> · PayPal</li>
+        <li>توصيل لكل المغرب</li>
+      </ul>
+    </div>
+
+    <div class="lbfh-art lbfh-art--{{ lbfh_count }}" aria-hidden="true">
+      {%- assign lbfh_dyn = 0 -%}
+      {%- if lbfh_own -%}
+        {%- comment -%} Any collection page except the all-fragrances one: its own bottles (in stock first), bottle-only shot when one exists. {%- endcomment -%}
+        {%- assign lbfh_n = lbfh_pool.size | at_most: 3 -%}
+        {%- for p in lbfh_pool limit: 3 -%}
+          {%- assign pick = p.featured_image -%}
+          {%- for im in p.images -%}
+            {%- if im.alt contains ', bottle –' or im.alt contains 'bottle close-up' -%}{%- assign pick = im -%}{%- break -%}{%- endif -%}
+          {%- endfor -%}
+          {%- if pick -%}
+            {%- assign lbfh_dyn = lbfh_dyn | plus: 1 -%}
+            {%- assign lbfh_short = p.title | split: ' | ' | first | remove: p.vendor | split: ' Eau de ' | first | split: ' Extrait' | first | split: ' Concentrated' | first | strip -%}
+            <figure class="lbfh-item{% if lbfh_n == 1 or forloop.index == 2 %} lbfh-item--hero{% endif %}">
+              <div class="lbfh-arch"><img src="{{ pick | image_url: width: 520 }}" alt="" width="520" height="520" loading="eager" decoding="async"></div>
+              <figcaption>{{ lbfh_short | truncate: 22, '' }}</figcaption>
+            </figure>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if lbfh_dyn == 0 and lbfh_own == false -%}
+        {%- assign lbfh_imgs = 'lbass-frag-rose.webp|Rose 01,lbass-frag-khamrah.webp|Khamrah,lbass-frag-cdn.webp|Club de Nuit' | split: ',' -%}
+        {%- for row in lbfh_imgs -%}
+          {%- assign bits = row | split: '|' -%}
+          <figure class="lbfh-item{% if forloop.index == 2 %} lbfh-item--hero{% endif %}">
+            <div class="lbfh-arch">
+              {%- if lbfh_mode == 'slide' -%}
+              <img src="{{ lbfh_blank }}" data-src="{{ bits[0] | asset_url }}" alt="" width="480" height="640" decoding="async">
+              {%- else -%}
+              <img src="{{ bits[0] | asset_url }}" alt="" width="480" height="640" loading="eager" decoding="async">
+              {%- endif -%}
+            </div>
+            <figcaption>{{ bits[1] }}</figcaption>
+          </figure>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>

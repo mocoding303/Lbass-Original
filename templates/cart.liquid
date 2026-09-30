@@ -45,13 +45,17 @@
               {% if item.product.metafields.lbass.product_code != blank %}
                 <p class="ci-code">{{ item.product.metafields.lbass.product_code }}</p>
               {% endif %}
+              {%- comment -%} bundle label + automatic discount title (2026-09-28) {%- endcomment -%}
+              {%- if item.properties._bundle != blank or item.line_level_discount_allocations.size > 0 -%}
+                <p class="ci-variant" style="color:var(--gold,#BF2E15);font-weight:800">{% if item.properties._bundle != blank %}📦 {{ item.properties._bundle }}{% endif %}{% for a in item.line_level_discount_allocations %} · 🎁 {{ a.discount_application.title }}{% endfor %}</p>
+              {%- endif -%}
             </div>
             <div class="ci-controls">
               <div class="ci-qty">
                 <a class="qbtn" href="{{ item.url_to_remove }}" aria-label="حيّد القطعة">✕</a>
                 <span class="qval">×{{ item.quantity }}</span>
               </div>
-              <div class="ci-price">{{ item.final_line_price | money }}</div>
+              <div class="ci-price">{% if item.original_line_price > item.final_line_price %}<s style="opacity:.55;font-weight:700;margin-inline-end:6px;display:inline-block;white-space:nowrap">{{ item.original_line_price | money }}</s>{% endif %}<span style="display:inline-block;white-space:nowrap">{{ item.final_line_price | money }}</span></div>
             </div>
           </div>
         {% endfor %}
@@ -59,7 +63,8 @@
 
       <div class="cart-foot">
         <div class="cart-totals">
-          <div class="ct-row"><span>المجموع الفرعي</span><span>{{ cart.total_price | money }}</span></div>
+          <div class="ct-row"><span>المجموع الفرعي</span><span>{% if cart.total_discount > 0 %}{{ cart.original_total_price | money }}{% else %}{{ cart.total_price | money }}{% endif %}</span></div>
+          {%- if cart.total_discount > 0 -%}<div class="ct-row" style="color:var(--gold,#BF2E15);font-weight:800"><span>🎁 وفّرتي بخصم الباك</span><span>− {{ cart.total_discount | money }}</span></div>{%- endif -%}
           {% if cart.total_price >= free_ship_threshold_cents %}
             <div class="ct-row"><span>التوصيل</span><span class="ct-free">مجاني</span></div>
           {% else %}

@@ -64,6 +64,7 @@
          data-cro-label="{{ h }}">{{ label }}<span class="lbhc__n">{{ n }}</span></a>
     {%- endif -%}
   {%- endfor -%}
+  {%- comment -%} 2026-09-30 clothing-first homepage: the fragrance and K-beauty chips were removed from this clothing nav (fragrance has its own best-sellers row lower down; K-beauty is menu-only). {%- endcomment -%}
 {%- endcapture -%}
 
 {%- assign hc_count = hc_links | split: 'lbhc__chip' | size | minus: 1 -%}

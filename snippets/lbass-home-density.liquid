@@ -59,13 +59,41 @@
 main{display:flex;flex-direction:column}
 main > *{order:10}
 main > .lbh,
-main > #top{order:0}
+main > #top,
+main > .lbhs,
+main > .lbcat{order:0}         /* hero carousel + Shop by category strip (2026-09-26); DOM order keeps the strip under the hero */
 main > .mq{order:1}
 main > #drop{order:2}          /* THE DROP — products */
 main > .lb-answer{order:3}
 main > .trust-strip{order:4}
 main > .intent-moments{order:5}
 main > #inspection{order:6}
+
+/* ── 2b. products-first (2026-09-25) ──────────────────────────────────────
+   The category nav and the full grid still sat below the storytelling, so
+   the 65-product grid only began at screen 5.8 on mobile (375×812) and 4.5
+   on desktop (1024×768). Measured after this block: 3.5 and 3.3.
+
+   .lbhc is ALREADY the horizontal category nav — sneakers, Nike, Adidas,
+   jackets, tees, pants, track pants, accessories, 1/1, full drop — with live
+   counts. It only needed to move; no new nav was added. #cats further down
+   duplicates its types and is a candidate to retire separately.
+
+   These override the four order values set directly above by coming later
+   at equal specificity. Nothing is hidden or deleted; delete this block to
+   revert, exactly like the one above. */
+main > .lbhc{order:5}          /* category nav */
+main > #shop{order:6}          /* THE FULL GRID — 65 products */
+main > .lbfr{order:10}         /* 2026-09-30 clothing-first homepage (strategic assessment): the fragrance
+                                  best-sellers row sits right after «لوك كامل» (#shoplook, pinned to 9 below),
+                                  i.e. after the full clothing grid, size shortcuts, intent and inspection.
+                                  Was order:3 (directly under THE DROP). */
+main > #shoplook{order:9}      /* same visual slot as before (first after #inspection); lets .lbfr follow it */
+main > .lbbe{order:3}          /* K-beauty discovery (2026-09-26 night) — same slot, after .lbfr in DOM order */
+main > .sec.shop-by{order:7}   /* size shortcuts S/M/L/XL + 41–44 */
+main > .intent-moments{order:8}
+main > #inspection{order:9}
+
 
 /* The homepage already has one full trust reminder and one brand story.
    Suppress the repeated second/third versions so mobile visitors reach

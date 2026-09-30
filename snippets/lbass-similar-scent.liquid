@@ -1,0 +1,463 @@
+{%- comment -%}
+  ═══ LBASS — FIND YOUR SIMILAR SCENT (2026-09-28) ═══
+  Usage: {% render 'lbass-similar-scent', place: 'collection'|'page', heading: 'h1'|'h2' %}
+  Rendered at the bottom of /collections/fragrances (after the grid) and on
+  /pages/similar-scent (template page.similar, hidden from search engines).
+
+  DATA — nothing hard-coded:
+  · References = metaobject «Scent reference (similar-scent tool)»
+    (lbass_scent_reference, Admin → Content → Metaobjects). Same schema as the
+    fragrance.* product metafields: accords (12 values), sweetness / freshness /
+    warmth (1–5), intensity (estimated from concentration), family, wearer,
+    French notes. Sources + derivation rule: Lbass/expansion/2026-09-28-similar-scent.md
+  · Candidates = every AVAILABLE product of collections['fragrances'], read from
+    the same metafields the consultation uses.
+
+  SCORE (transparent, same numbers as scratchpad model.py):
+    accords (Dice overlap)                     35 %
+    sweetness / freshness / warmth distance    30 %
+    shared notes (top ×1, heart ×1.3, base ×1.6; same note family = half)  25 %
+    family words (skipped when either side has none)                        10 %
+    × 0.85 if the reference has oud and the bottle has not
+    × 0.85 for a men-only ↔ women-only mismatch (unisex never penalised)
+  Shown only from 60 %, max 4. Bands: ≥80 very close · ≥70 close · ≥60 some shared character.
+
+  WORDING RULE (owner decision 2026-09-28): "similar scent direction" only —
+  never "alternative", "dupe", "copy", "inspired by", never designer prices;
+  trademark note at the bottom. Designer names stay out of page titles / URLs.
+{%- endcomment -%}
+{%- liquid
+  assign lbss_place = place | default: 'collection'
+  assign lbss_h = heading | default: 'h2'
+  assign lbss_c = collections['fragrances']
+  assign lbss_refs = shop.metaobjects.lbass_scent_reference.values
+-%}
+{%- if lbss_refs.size > 0 and lbss_c.products_count > 0 -%}
+<section class="lbss" id="lbss" aria-labelledby="lbss-h" data-place="{{ lbss_place }}">
+<style>
+.lbss{--lbss-ink:var(--cream,#0B0B0C);--lbss-bg:var(--ink,#FFFFFF);--lbss-soft:var(--ink2,#F4F2ED);--lbss-line:var(--line,rgba(11,11,12,.14));--lbss-acc:var(--gold,#BF2E15);
+  max-width:1100px;margin:clamp(28px,5vw,56px) auto;padding:0 clamp(16px,4vw,32px);direction:rtl;text-align:right;color:var(--lbss-ink)}
+.lbss[data-place="collection"]{padding:0;max-width:none}
+.lbss *{box-sizing:border-box}
+.lbss__in{border:1px solid var(--lbss-line);border-radius:22px;background:var(--lbss-soft);padding:clamp(20px,4vw,40px)}
+.lbss__kick{margin:0 0 10px!important;font-size:11.5px!important;font-weight:800!important;letter-spacing:.2em;color:var(--lbss-acc)!important;direction:ltr;text-align:right}
+.lbss__h{margin:0 0 10px!important;font-size:clamp(26px,5vw,42px)!important;line-height:1.1!important;font-weight:900!important;color:var(--lbss-ink)!important;letter-spacing:-.01em}
+.lbss__h small{display:block;margin-top:6px;font-size:clamp(15px,2.4vw,19px);font-weight:800;letter-spacing:0;opacity:.75}
+.lbss__lede{margin:0 0 22px!important;max-width:64ch;font-size:15px!important;line-height:1.85!important;color:var(--txt2,#57534E)!important}
+.lbss__q{margin:0 0 10px!important;font-size:16px!important;font-weight:900!important;color:var(--lbss-ink)!important}
+.lbss__search{position:relative;margin:0 0 12px}
+.lbss__search input{width:100%;min-height:52px;padding:0 44px 0 16px;border:1.5px solid var(--lbss-line);border-radius:14px;background:var(--lbss-bg);font:inherit;font-size:16px;color:var(--lbss-ink);direction:rtl}
+.lbss__search input:focus{outline:none;border-color:var(--lbss-ink)}
+.lbss__search svg{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:.55;pointer-events:none}
+.lbss__tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+.lbss__tile{width:100%;min-height:64px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:10px 14px;border:1.5px solid var(--lbss-line);border-radius:14px;background:var(--lbss-bg);font:inherit;color:var(--lbss-ink);cursor:pointer;text-align:left;direction:ltr;transition:border-color .2s,transform .2s,box-shadow .2s}
+.lbss__tile:hover{border-color:var(--lbss-ink);transform:translateY(-1px)}
+.lbss__tile:focus-visible{outline:3px solid var(--lbss-acc);outline-offset:2px}
+.lbss__tile[aria-pressed="true"]{border-color:var(--lbss-ink);box-shadow:0 0 0 1.5px var(--lbss-ink) inset}
+.lbss__tile i{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+.lbss__tile b{font-size:14.5px;font-weight:900;line-height:1.25}
+.lbss__all{display:none;margin:10px 0 0;min-height:44px;padding:0 14px;border:1.5px solid var(--lbss-line);border-radius:12px;background:transparent;font:inherit;font-size:13.5px;font-weight:900;color:var(--lbss-ink);cursor:pointer}
+.lbss__none{display:none;margin:10px 0 0!important;font-size:14px!important;font-weight:700!important;color:var(--txt2,#57534E)!important}
+.lbss__none a{color:var(--lbss-ink);font-weight:900}
+.lbss__res{margin-top:26px}
+.lbss__res[hidden]{display:none}
+.lbss__grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:14px;align-items:start}
+.lbss__card{border:1px solid var(--lbss-line);border-radius:18px;background:var(--lbss-bg);padding:clamp(16px,2.6vw,24px)}
+.lbss__label{margin:0 0 12px!important;font-size:11px!important;font-weight:800!important;letter-spacing:.18em;color:var(--lbss-acc)!important;direction:ltr;text-align:right;text-transform:uppercase}
+.lbss__dna-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 14px;font-size:12.5px;font-weight:800}
+.lbss__dna-legend span{display:inline-flex;align-items:center;gap:6px}
+.lbss__dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--lbss-ink)}
+.lbss__dia{display:inline-block;width:11px;height:11px;transform:rotate(45deg);background:var(--lbss-acc);border-radius:2px}
+.lbss__row{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:10px;margin:0 0 14px}
+.lbss__row > span{font-size:13px;font-weight:800}
+.lbss__track{position:relative;height:18px}
+.lbss__track::before{content:"";position:absolute;inset-inline:0;top:50%;height:2px;margin-top:-1px;background:var(--lbss-line);border-radius:2px}
+.lbss__track::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to left,transparent 0,transparent calc(25% - 1px),var(--lbss-line) calc(25% - 1px),var(--lbss-line) 25%);opacity:.5;height:8px;top:5px}
+.lbss__m{position:absolute;top:50%;inset-inline-start:0;width:14px;height:14px;margin-inline-start:-7px;margin-top:-7px;transition:inset-inline-start .7s cubic-bezier(.22,.61,.36,1)}
+.lbss__m--ref{border-radius:50%;background:var(--lbss-ink);z-index:2;box-shadow:0 0 0 3px var(--lbss-bg)}
+.lbss__m--ar{transform:rotate(45deg);background:var(--lbss-acc);border-radius:2px;z-index:1;box-shadow:0 0 0 3px var(--lbss-bg)}
+.lbss__dna-note{margin:4px 0 0!important;font-size:11.5px!important;color:var(--txt2,#57534E)!important;line-height:1.6!important}
+.lbss__chips{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.lbss__chips li{padding:5px 10px;border-radius:999px;background:var(--lbss-soft);font-size:12px;font-weight:800}
+.lbss__top{display:grid;grid-template-columns:minmax(110px,190px) 1fr;gap:16px;align-items:start}
+.lbss__img{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#F6F2EA;display:flex;align-items:center;justify-content:center}
+.lbss__img img{width:100%;height:100%;object-fit:contain}
+.lbss__vendor{margin:0 0 2px!important;font-size:11px!important;font-weight:800!important;letter-spacing:.14em;text-transform:uppercase;color:var(--lbss-acc)!important;direction:ltr;text-align:right}
+.lbss__name{margin:0 0 8px!important;font-size:clamp(18px,2.6vw,22px)!important;font-weight:900!important;line-height:1.25!important;color:var(--lbss-ink)!important;direction:ltr;text-align:right}
+.lbss__pct{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.lbss__pct b{font-size:clamp(30px,5vw,40px);font-weight:900;line-height:1;direction:ltr}
+.lbss__pct span{font-size:12.5px;font-weight:800;color:var(--txt2,#57534E)}
+.lbss__pct em{font-style:normal;font-size:11.5px;font-weight:900;padding:4px 9px;border-radius:999px;background:var(--lbss-ink);color:var(--lbss-bg)}
+.lbss__why{margin:0 0 12px;padding:0;list-style:none;display:grid;gap:7px}
+.lbss__why li{position:relative;padding-inline-start:20px;font-size:14px;line-height:1.65;font-weight:700}
+.lbss__why li::before{content:"";position:absolute;inset-inline-start:2px;top:.62em;width:8px;height:8px;border-radius:50%;background:var(--lbss-acc)}
+.lbss__price{margin:0 0 12px!important;font-size:18px!important;font-weight:900!important;direction:ltr;text-align:right}
+.lbss__acts{display:flex;flex-wrap:wrap;gap:8px}
+.lbss__btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:12px;font:inherit;font-size:14.5px;font-weight:900;text-decoration:none;cursor:pointer;border:1.5px solid var(--lbss-ink);transition:background-color .2s,color .2s}
+.lbss__btn--solid{background:var(--lbss-ink);color:var(--lbss-bg)!important}
+.lbss__btn--ghost{background:transparent;color:var(--lbss-ink)!important}
+.lbss__btn[data-in]{background:var(--lbss-soft);border-color:var(--lbss-line)}
+.lbss__cmp{width:100%;border-collapse:collapse;font-size:13.5px}
+.lbss__cmp th,.lbss__cmp td{padding:10px 8px;border-bottom:1px solid var(--lbss-line);vertical-align:top;text-align:right}
+.lbss__cmp thead th{font-size:12px;font-weight:900;direction:ltr;text-align:right}
+.lbss__cmp tbody th{width:26%;font-weight:800;color:var(--txt2,#57534E)}
+.lbss__cmp td{font-weight:700;line-height:1.55}
+.lbss__cmp td[dir="ltr"]{text-align:right}
+.lbss__more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.lbss__mini{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:start;border:1px solid var(--lbss-line);border-radius:16px;background:var(--lbss-bg);padding:12px}
+.lbss__mini .lbss__img{border-radius:10px}
+.lbss__mini .lbss__name{font-size:14.5px!important;margin-bottom:4px!important}
+.lbss__mini .lbss__pct{margin-bottom:6px}
+.lbss__mini .lbss__pct b{font-size:22px}
+.lbss__mini p.lbss__one{margin:0 0 8px!important;font-size:12.5px!important;line-height:1.55!important;font-weight:700!important;color:var(--txt2,#57534E)!important}
+.lbss__mini .lbss__btn{min-height:40px;padding:0 12px;font-size:13px}
+.lbss__pick{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;font-weight:900;cursor:pointer}
+.lbss__pick input{width:18px;height:18px;accent-color:var(--lbss-ink)}
+.lbss__bundle{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:14px;padding:16px 18px;border-radius:16px;background:var(--lbss-ink);color:var(--lbss-bg)}
+.lbss__bundle p{margin:0!important;font-size:15px!important;font-weight:900!important;color:inherit!important}
+.lbss__bundle small{display:block;font-size:12.5px;font-weight:700;opacity:.8}
+.lbss__bundle .lbss__btn{background:var(--lbss-bg);color:var(--lbss-ink)!important;border-color:var(--lbss-bg)}
+.lbss__bundle .lbss__btn[disabled]{opacity:.45;cursor:not-allowed}
+.lbss__nomatch{padding:18px;border-radius:16px;background:var(--lbss-bg);border:1px dashed var(--lbss-line);font-size:14.5px;font-weight:700;line-height:1.8}
+.lbss__nomatch a{color:var(--lbss-ink);font-weight:900}
+.lbss__how{margin-top:18px;border-top:1px solid var(--lbss-line);padding-top:12px}
+.lbss__how summary{cursor:pointer;font-size:13px;font-weight:900;list-style:none}
+.lbss__how summary::-webkit-details-marker{display:none}
+.lbss__how p,.lbss__legal{margin:8px 0 0!important;font-size:12px!important;line-height:1.75!important;color:var(--txt2,#57534E)!important}
+.lbss__legal{margin-top:12px!important}
+.lbss__fade{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease}
+.lbss__fade.is-in{opacity:1;transform:none}
+@media(max-width:900px){ .lbss__grid{grid-template-columns:1fr} .lbss__tiles{grid-template-columns:repeat(3,minmax(0,1fr))} .lbss__more{grid-template-columns:1fr} }
+@media(max-width:600px){
+  .lbss__tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lbss__tiles.is-collapsed li:nth-child(n+9){display:none}
+  .lbss__tiles.is-collapsed ~ .lbss__all{display:inline-flex;align-items:center}
+  .lbss__top{grid-template-columns:96px 1fr;gap:12px}
+  .lbss__row{grid-template-columns:78px 1fr}
+  .lbss__acts .lbss__btn{flex:1 1 0}
+  .lbss__cmp{font-size:12.5px}
+  .lbss__cmp tbody th{width:30%}
+  .lbss__bundle .lbss__btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){ .lbss__m,.lbss__fade,.lbss__tile{transition:none} }
+</style>
+<div class="lbss__in">
+  <p class="lbss__kick">ALREADY WEAR A WESTERN FRAGRANCE?</p>
+  <{{ lbss_h }} class="lbss__h" id="lbss-h">Find Your Similar Scent<small>لقى عطر عربي عندو نفس الاتجاه فالريحة</small></{{ lbss_h }}>
+  <p class="lbss__lede">عوض ما تشري قرعة ديال ماركة عالمية على العمى: ختار العطر اللي كتلبس دابا، نفكّو ليك البصمة ديالو — النوطات، الطابع والقوة — ونوريوك العطور العربية اللي عندنا بنفس الاتجاه فالريحة، بثمن معقول.</p>
+
+  <p class="lbss__q" id="lbss-q">شنو العطر اللي كتلبس دابا؟</p>
+  <div class="lbss__search">
+    <input type="search" id="lbss-search" placeholder="قلّب على العطر ديالك… Sauvage، Aventus، BR540" autocomplete="off" aria-labelledby="lbss-q" data-lbss-search>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+  </div>
+  <ul class="lbss__tiles is-collapsed" data-lbss-tiles aria-label="العطور العالمية">
+    {%- for r in lbss_refs -%}
+      {%- if r.active.value != false -%}
+      <li data-pos="{{ r.position.value | default: 99 }}"><button type="button" class="lbss__tile" aria-pressed="false" data-lbss-ref="{{ r.system.handle }}"><i>{{ r.house.value }}</i><b>{{ r.name.value }}</b></button></li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+  <button type="button" class="lbss__all" data-lbss-all>شوف كل العطور ({{ lbss_refs.size }}) ↓</button>
+  <p class="lbss__none" data-lbss-none>ما لقيناش هاد العطر فاللائحة ديالنا. <a href="/pages/find-your-fragrance" data-lbss-consult>دير الاستشارة ديال 60 ثانية ←</a></p>
+
+  <div class="lbss__res" data-lbss-res aria-live="polite" hidden></div>
+
+  <details class="lbss__how">
+    <summary>كيفاش كنحسبو النسبة؟</summary>
+    <p>كل عطر عالمي فاللائحة وكل عطر عندنا عندو نفس المعلومات، مأخوذة من اللوائح المنشورة ديال النوطات (Fragrantica): الطابع (فريش، حلو، خشبي، حار…)، مستوى الحلاوة والفرشة والدفء من 1 حتى 5، النوطات والعائلة. النسبة = الطابع 35% + الحلاوة/الفرشة/الدفء 30% + النوطات المشتركة 25% + العائلة 10%. كنقصو من النسبة إلا العطر العالمي فيه العود والعطر ديالنا لا، ولا إلا واحد للرجال والآخر للنساء. ما كنبينو غير العطور اللي متوفرة وفوق 60%. النسبة كتقيس الاتجاه ديال الريحة، ماشي أن الريحة هي نفسها.</p>
+  </details>
+  <p class="lbss__legal">الأسماء ديال الماركات العالمية ملك لأصحابها، وكنستعملوها غير باش نوصفو الاتجاه ديال الريحة. Lbass Original كيبيع عطور عربية أصلية؛ ماشي نسخ ديال هاد العطور وما عندنا حتى علاقة بهاد الماركات. · Les marques citées appartiennent à leurs propriétaires et ne sont mentionnées qu'à titre descriptif du profil olfactif.</p>
+</div>
+
+<script type="application/json" data-lbss-refs>
+[
+{%- assign lbss_first = true -%}
+{%- for r in lbss_refs -%}
+  {%- if r.active.value != false -%}
+  {%- unless lbss_first -%},{%- endunless -%}{%- assign lbss_first = false -%}
+  {"h":{{ r.system.handle | json }},"n":{{ r.name.value | json }},"house":{{ r.house.value | json }},"conc":{{ r.concentration.value | json }},"wear":{{ r.wearer.value | json }},"fam":{{ r.family.value | json }},"top":{{ r.notes_top.value | json }},"heart":{{ r.notes_heart.value | json }},"base":{{ r.notes_base.value | json }},"acc":{{ r.accords.value | json }},"sw":{{ r.sweetness.value | json }},"fr":{{ r.freshness.value | json }},"wa":{{ r.warmth.value | json }},"in":{{ r.intensity.value | json }},"q":{{ r.search_terms.value | json }},"pos":{{ r.position.value | default: 99 | json }}}
+  {%- endif -%}
+{%- endfor -%}
+]
+</script>
+<script type="application/json" data-lbss-products>
+[
+{%- assign lbss_first = true -%}
+{%- for p in lbss_c.products -%}
+  {%- if p.available -%}
+  {%- assign v = p.selected_or_first_available_variant -%}
+  {%- assign vmax = v.inventory_quantity | default: 1 -%}
+  {%- if v.inventory_management == blank -%}{%- assign vmax = 9 -%}{%- endif -%}
+  {%- unless lbss_first -%},{%- endunless -%}{%- assign lbss_first = false -%}
+  {"v":{{ v.id | json }},"h":{{ p.handle | json }},"t":{{ p.title | split: ' | ' | first | remove_first: p.vendor | split: ' Eau de ' | first | split: ' Extrait' | first | split: ' Concentrated' | first | strip | json }},"b":{{ p.vendor | json }},"url":{{ p.url | json }},"img":{{ p.featured_image | image_url: width: 400 | json }},"price":{{ v.price | json }},"max":{{ vmax | json }},"acc":{{ p.metafields.fragrance.accords.value | json }},"sw":{{ p.metafields.fragrance.sweetness.value | json }},"fr":{{ p.metafields.fragrance.freshness.value | json }},"wa":{{ p.metafields.fragrance.warmth.value | json }},"in":{{ p.metafields.fragrance.intensity.value | json }},"wear":{{ p.metafields.fragrance.wearer.value | json }},"fam":{{ p.metafields.fragrance.family.value | json }},"top":{{ p.metafields.fragrance.notes_top.value | json }},"heart":{{ p.metafields.fragrance.notes_heart.value | json }},"base":{{ p.metafields.fragrance.notes_base.value | json }},"conc":{{ p.metafields.fragrance.concentration.value | json }},"ml":{{ p.metafields.fragrance.volume_ml.value | json }}}
+  {%- endif -%}
+{%- endfor -%}
+]
+</script>
+<script>
+(function(){
+  'use strict';
+  function boot(){
+  var root = document.getElementById('lbss'); if (!root) return;
+  var REFS = [], P = [];
+  try { REFS = JSON.parse(root.querySelector('[data-lbss-refs]').textContent || '[]'); } catch (e) {}
+  try { P = JSON.parse(root.querySelector('[data-lbss-products]').textContent || '[]'); } catch (e) {}
+  P = P.filter(function(p){ return p.price > 0 && p.acc && p.sw; });
+  var byH = {}; REFS.forEach(function(r){ byH[r.h] = r; });
+  var B = window.LbassBundle || null;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var res = root.querySelector('[data-lbss-res]');
+  var tilesUl = root.querySelector('[data-lbss-tiles]');
+  var search = root.querySelector('[data-lbss-search]');
+  var none = root.querySelector('[data-lbss-none]');
+  var allBtn = root.querySelector('[data-lbss-all]');
+  allBtn.addEventListener('click', function(){ tilesUl.classList.remove('is-collapsed'); });
+
+  /* order tiles by the metaobject's Position field */
+  Array.prototype.slice.call(tilesUl.children).sort(function(a, b){ return (+a.getAttribute('data-pos')) - (+b.getAttribute('data-pos')); }).forEach(function(li){ tilesUl.appendChild(li); });
+
+  /* ---------- labels ---------- */
+  var ACC = { fresh: 'فريش', sweet: 'حلو', woody: 'خشبي', spicy: 'حار', floral: 'وردي', oud: 'عود', vanilla: 'فانيلا', citrus: 'حامض', amber: 'عنبر', fruity: 'فواكه', leather: 'جلد', musk: 'مسك' };
+  var GRP = { citrus: 'حوامض', resin: 'بخور وراتنج', amber: 'عنبر', woods: 'أخشاب', spices: 'توابل', gourmand: 'نوطات حلوة (gourmand)', vanilla: 'فانيلا وتونكا', musk: 'مسك', whitefloral: 'ورود بيضاء', floral: 'ورود', aromatic: 'أعشاب عطرية', fruity: 'فواكه', smoky: 'تبغ وجلد', marine: 'نوطات بحرية', oud: 'عود' };
+  var FAMW = { oriental: 'شرقي', floral: 'وردي', fruity: 'بالفواكه', gourmand: 'حلو', woody: 'خشبي', spicy: 'حار', vanilla: 'بالفانيلا', aromatic: 'عطري (أعشاب)', fougere: 'فوجير', chypre: 'شيبر', citrus: 'حامض', aquatic: 'مائي', musk: 'مسكي', amber: 'عنبري' };
+  var INT = { 1: 'خفيف', 2: 'خفيف لمتوسط', 3: 'متوسط', 4: 'قوي', 5: 'قوي بزاف' };
+  var WEAR = { Men: 'للرجال', Women: 'للنساء', Unisex: 'للجوج (unisex)' };
+  function iso(t){ return '⁦' + t + '⁩'; }
+  function cap(s){ s = String(s || '').trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fmt(c){ return B && B.fmt ? B.fmt(c) : (Math.round(c) / 100).toLocaleString('en-US') + ' درهم'; }
+  function track(n, d){ try { if (window.lbTrack) window.lbTrack(n, d || {}); } catch (e) {} }
+
+  /* ---------- notes (French, same vocabulary as the product metafields) ---------- */
+  function norm(s){ s = String(s).split('(')[0].toLowerCase(); try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {} return s.replace(/™/g, '').replace(/’/g, "'").replace(/\s+/g, ' ').trim(); }
+  var SYN = { 'feve tonka': 'tonka', 'musc blanc': 'musc', 'ambrofix': 'ambroxan', 'bois de cachemire': 'cashmeran', 'poivre': 'poivre noir', "racine d'iris": 'iris', 'mandarine sanguine': 'mandarine', 'citron vert': 'citron', 'rose de bulgarie': 'rose', 'rose de damas': 'rose', 'jasmin sambac': 'jasmin', 'notes boisees': 'bois', 'bois sec': 'bois', 'baies de genievre': 'genievre', 'pomme verte': 'pomme', 'oliban': 'encens', 'fleur de tabac': 'tabac', 'vanille de madagascar': 'vanille', 'amande caramelisee': 'amande', 'amande amere': 'amande', 'notes aquatiques': 'notes marines', 'ambre leger': 'ambre' };
+  function canon(n){ var k = norm(n); return SYN[k] || k; }
+  var G = {};
+  var GW = {
+    citrus: 'bergamote|citron|mandarine|pamplemousse|orange|yuzu|neroli|petitgrain|nectarine',
+    resin: 'labdanum|benjoin|myrrhe|encens|resine de sapin|elemi',
+    amber: 'ambre|bois ambre|ambroxan|ambre gris',
+    woods: 'cedre|santal|vetiver|bois de gaiac|akigalawood|bois|bois blanc|bouleau|chene|cashmeran|bois de rose|patchouli|mousse de chene',
+    spices: 'cannelle|cardamome|poivre rose|poivre noir|poivre de sichuan|gingembre|safran|noix de muscade|epices|piment|coriandre|reglisse',
+    gourmand: 'praline|caramel|miel|rayon de miel|chocolat|chocolat noir|cacao|cafe|guimauve|sucre|lait|amande|cognac|rhum|dattes|fruits confits|accord gourmand|confiture de lait',
+    vanilla: 'vanille|tonka|heliotrope', musk: 'musc',
+    whitefloral: "jasmin|tubereuse|fleur d'oranger|gardenia|frangipanier|fleurs blanches|ylang-ylang|magnolia|muguet|hedione|orchidee",
+    floral: 'rose|pivoine|iris|violette|freesia|geranium|osmanthus|jacinthe|cyclamen|nenuphar|rosyfolia|mahonial|fleur de poirier',
+    aromatic: 'lavande|sauge|romarin|menthe|genievre|armoise',
+    fruity: 'pomme|poire|cassis|ananas|peche|fruits rouges|framboise|cerise|litchi|fruits tropicaux|fruit de la passion|pitaya|prune|fruits secs|melon|fraise',
+    smoky: 'tabac|cuir', marine: 'notes marines|sel marin|calone|concombre|the', oud: 'oud'
+  };
+  Object.keys(GW).forEach(function(g){ GW[g].split('|').forEach(function(w){ G[w] = g; }); });
+  function notelist(o){
+    var out = [];
+    [['top', 1], ['heart', 1.3], ['base', 1.6]].forEach(function(l){
+      String(o[l[0]] || '').split(',').forEach(function(n){ n = n.trim(); if (n) out.push({ k: canon(n), w: l[1], label: n }); });
+    });
+    return out;
+  }
+  function dir(a, b){
+    var bk = {}, bg = {}; b.forEach(function(x){ bk[x.k] = 1; if (G[x.k]) bg[G[x.k]] = 1; });
+    var num = 0, den = 0;
+    a.forEach(function(x){ den += x.w; if (bk[x.k]) num += x.w; else if (G[x.k] && bg[G[x.k]]) num += x.w * 0.5; });
+    return den ? num / den : 0;
+  }
+
+  /* ---------- score (mirror of model.py) ---------- */
+  var FW = ['oriental','floral','fruity','gourmand','woody','spicy','vanilla','aromatic','fougere','chypre','citrus','aquatic','musk','amber'];
+  function famWords(f){ f = String(f || '').toLowerCase(); return FW.filter(function(w){ return f.indexOf(w) > -1; }).sort(function(a, b){ return f.indexOf(a) - f.indexOf(b); }); }
+  function famScore(a, b){
+    if (!a || !b) return null;
+    if (String(a).toLowerCase() === String(b).toLowerCase()) return 1;
+    var wa = famWords(a), wb = famWords(b); if (!wa.length || !wb.length) return 0;
+    var n = wa.filter(function(w){ return wb.indexOf(w) > -1; }).length;
+    return n / Math.max(wa.length, wb.length);
+  }
+  function score(r, p){
+    var A = r.acc || [], Bc = p.acc || [];
+    var inter = A.filter(function(x){ return Bc.indexOf(x) > -1; });
+    var acc = (A.length && Bc.length) ? 2 * inter.length / (A.length + Bc.length) : 0;
+    var sc = 1 - (Math.abs(r.sw - p.sw) + Math.abs(r.fr - p.fr) + Math.abs(r.wa - p.wa)) / 12;
+    var ra = notelist(r), pa = notelist(p);
+    var nt = (dir(ra, pa) + dir(pa, ra)) / 2;
+    var fm = famScore(r.fam, p.fam);
+    var parts = [[0.35, acc], [0.30, sc], [0.25, nt]]; if (fm !== null) parts.push([0.10, fm]);
+    var tw = 0, tot = 0; parts.forEach(function(x){ tw += x[0]; tot += x[0] * x[1]; });
+    tot = tot / tw;
+    if (A.indexOf('oud') > -1 && Bc.indexOf('oud') < 0) tot *= 0.85;
+    if ((r.wear === 'Men' && p.wear === 'Women') || (r.wear === 'Women' && p.wear === 'Men')) tot *= 0.85;
+    return { s: tot, inter: inter, ra: ra, pa: pa };
+  }
+  function band(s){ return s >= 0.8 ? 'قريب بزاف' : s >= 0.7 ? 'قريب' : 'كيتشاركو شي طابع'; }
+
+  /* ---------- reasons from the data ---------- */
+  function shared(x){
+    var pk = {}; x.pa.forEach(function(n){ if (!pk[n.k]) pk[n.k] = cap(n.label); });
+    var exact = [], seen = {};
+    x.ra.slice().sort(function(a, b){ return b.w - a.w; }).forEach(function(n){ if (pk[n.k] && !seen[n.k]) { seen[n.k] = 1; exact.push(pk[n.k]); } });
+    var groups = [], gs = {};
+    var pg = {}; x.pa.forEach(function(n){ if (G[n.k]) pg[G[n.k]] = 1; });
+    x.ra.forEach(function(n){ var g = G[n.k]; if (g && pg[g] && !gs[g] && !seen[n.k]) { gs[g] = 1; groups.push(GRP[g]); } });
+    return { exact: exact, groups: groups };
+  }
+  function reasons(r, p, x){
+    var out = [], sh = shared(x);
+    if (x.inter.length >= 2) out.push('بجوج عندهم نفس الطابع: ' + x.inter.slice(0, 3).map(function(a){ return ACC[a]; }).join(' · '));
+    else if (x.inter.length === 1) out.push('كيتشاركو الطابع ' + ACC[x.inter[0]]);
+    if (sh.exact.length) out.push('نوطات مشتركة: ' + iso(esc(sh.exact.slice(0, 3).join(' · '))) + (sh.exact.length < 2 && sh.groups.length ? '، ونفس العائلة ديال ' + sh.groups[0] : ''));
+    else if (sh.groups.length) out.push('نفس العائلات ديال النوطات: ' + sh.groups.slice(0, 3).join(' · '));
+    var d = [['sw', 'أحلى', 'أقل حلاوة'], ['fr', 'أفرش', 'أقل فرشة'], ['wa', 'أدفى', 'أخف فالدفء']].map(function(k){ return { k: k, v: p[k[0]] - r[k[0]] }; });
+    var big = d.slice().sort(function(a, b){ return Math.abs(b.v) - Math.abs(a.v); })[0];
+    if (Math.abs(big.v) <= 1) out.push('تقريباً نفس المستوى ديال الحلاوة، الفرشة والدفء');
+    else out.push(iso(esc(p.t)) + ' ' + (big.v > 0 ? big.k[1] : big.k[2]) + (Math.abs(big.v) >= 3 ? ' بزاف' : ' شوية') + ' من ' + iso(esc(r.n)));
+    return out.slice(0, 3);
+  }
+  function famLabel(f, acc){
+    if (!f) return (acc || []).slice(0, 2).map(function(a){ return ACC[a]; }).join(' · ');
+    var w = famWords(f).map(function(x){ return FAMW[x]; });
+    return (w.length ? w.join(' ') + ' ' : '') + iso('(' + f + ')');
+  }
+  function mainNotes(o){ var t = String(o.top || '').split(',')[0], h = String(o.heart || '').split(',')[0], b = String(o.base || '').split(','); return [t, h, b[0], b[1]].map(function(s){ return cap(s); }).filter(Boolean).slice(0, 4).join(' · '); }
+
+  /* ---------- render ---------- */
+  function dnaRow(label, key, r, p){
+    var pos = function(v){ return ((Math.max(1, Math.min(5, +v || 1)) - 1) / 4 * 100) + '%'; };
+    return '<div class="lbss__row"><span>' + label + '</span><div class="lbss__track" role="img" aria-label="' + esc(label + ': ' + r.n + ' ' + r[key] + '/5 — ' + p.t + ' ' + p[key] + '/5') + '">'
+      + '<i class="lbss__m lbss__m--ar" data-to="' + pos(p[key]) + '"></i><i class="lbss__m lbss__m--ref" data-to="' + pos(r[key]) + '"></i></div></div>';
+  }
+  function inBundle(v){ return !!(B && B.has && B.has('fragrance', v)); }
+  function addBtn(p, cls){ var on = inBundle(p.v); return '<button type="button" class="lbss__btn ' + (cls || 'lbss__btn--ghost') + '" data-lbss-add="' + p.v + '"' + (on ? ' data-in' : '') + '>' + (on ? '✓ فالباك' : '+ زيد للباك') + '</button>'; }
+  function render(r){
+    var list = P.map(function(p){ var x = score(r, p); x.p = p; return x; }).sort(function(a, b){ return b.s - a.s; });
+    var shown = list.filter(function(x){ return x.s >= 0.6; }).slice(0, 4);
+    track('similar_scent_selected', { reference: r.h, reference_name: r.n, results: shown.length, top_match: shown[0] ? shown[0].p.h : '', top_score: shown[0] ? Math.round(shown[0].s * 100) : 0 });
+    if (!shown.length) {
+      res.innerHTML = '<div class="lbss__nomatch">ما لقينا حتى عطر عندنا قريب بما فيه الكفاية (' + iso('60%+') + ') من ' + iso(esc(r.n)) + ' دابا. <a href="/pages/find-your-fragrance" data-lbss-consult>دير الاستشارة ديال 60 ثانية ←</a></div>';
+      res.hidden = false; return;
+    }
+    var t = shown[0], tp = t.p;
+    var h = '';
+    h += '<div class="lbss__grid">';
+    h += '<div class="lbss__card lbss__fade"><p class="lbss__label">Scent DNA · البصمة ديال الريحة</p>'
+      + '<div class="lbss__dna-legend"><span><i class="lbss__dot"></i>' + iso(esc(r.n)) + '</span><span><i class="lbss__dia"></i>' + iso(esc(tp.t)) + '</span></div>'
+      + dnaRow('الفرشة', 'fr', r, tp) + dnaRow('الحلاوة', 'sw', r, tp) + dnaRow('الدفء', 'wa', r, tp) + dnaRow('القوة', 'in', r, tp)
+      + '<p class="lbss__label" style="margin-top:14px!important">الطابع ديال ' + iso(esc(r.n)) + '</p><ul class="lbss__chips">' + (r.acc || []).map(function(a){ return '<li>' + ACC[a] + '</li>'; }).join('') + '</ul>'
+      + '<p class="lbss__dna-note">من 1 حتى 5، من اللوائح المنشورة. القوة ديال ' + iso(esc(r.n)) + ' تقدير حسب التركيز (' + iso(esc(r.conc || '')) + ').</p></div>';
+    h += '<div class="lbss__card lbss__fade"><p class="lbss__label">Your Arabic match · العطر العربي اللي كيقرب ليه</p>'
+      + '<div class="lbss__top"><a class="lbss__img" href="' + esc(tp.url) + '" data-lbss-go="' + esc(tp.h) + '">' + (tp.img ? '<img src="' + esc(tp.img) + '" alt="' + esc(tp.b + ' ' + tp.t) + '" loading="lazy" width="400" height="400">' : '') + '</a><div>'
+      + '<p class="lbss__vendor">' + esc(tp.b) + '</p><p class="lbss__name">' + esc(tp.t) + '</p>'
+      + '<div class="lbss__pct"><b>' + iso(Math.round(t.s * 100) + '%') + '</b><span>تقارب فالاتجاه ديال الريحة</span><em>' + band(t.s) + '</em></div>'
+      + '</div></div>'
+      + '<p class="lbss__label" style="margin-top:12px!important">علاش كيقرب ليه</p><ul class="lbss__why">' + reasons(r, tp, t).map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ul>'
+      + '<p class="lbss__price">' + fmt(tp.price) + '</p>'
+      + '<div class="lbss__acts"><a class="lbss__btn lbss__btn--solid" href="' + esc(tp.url) + '" data-lbss-go="' + esc(tp.h) + '">شوف العطر ←</a>' + addBtn(tp) + '</div></div>';
+    h += '</div>';
+    h += '<div class="lbss__card lbss__fade" style="margin-top:14px"><p class="lbss__label">Compare the two · قارن بيناتهم</p><table class="lbss__cmp"><thead><tr><th></th><th>' + esc(r.n) + '</th><th>' + esc(tp.t) + '</th></tr></thead><tbody>'
+      + '<tr><th>الاتجاه</th><td>' + famLabel(r.fam, r.acc) + '</td><td>' + famLabel(tp.fam, tp.acc) + '</td></tr>'
+      + '<tr><th>النوطات الأساسية</th><td dir="ltr">' + esc(mainNotes(r)) + '</td><td dir="ltr">' + esc(mainNotes(tp)) + '</td></tr>'
+      + '<tr><th>الطابع</th><td>' + (r.acc || []).slice(0, 4).map(function(a){ return ACC[a]; }).join(' · ') + '</td><td>' + (tp.acc || []).slice(0, 4).map(function(a){ return ACC[a]; }).join(' · ') + '</td></tr>'
+      + '<tr><th>القوة</th><td>' + (INT[r.in] || '') + ' <small>(تقدير)</small></td><td>' + (INT[tp.in] || '') + '</td></tr>'
+      + '<tr><th>لمن</th><td>' + (WEAR[r.wear] || '') + '</td><td>' + (WEAR[tp.wear] || '') + '</td></tr>'
+      + '</tbody></table></div>';
+    var more = shown.slice(1);
+    if (more.length) {
+      h += '<p class="lbss__label lbss__fade" style="margin-top:22px!important">You might also love · حتى هادو يقدرو يعجبوك</p><div class="lbss__more">';
+      more.forEach(function(x){
+        var p = x.p;
+        h += '<div class="lbss__mini lbss__fade"><a class="lbss__img" href="' + esc(p.url) + '" data-lbss-go="' + esc(p.h) + '">' + (p.img ? '<img src="' + esc(p.img) + '" alt="' + esc(p.b + ' ' + p.t) + '" loading="lazy" width="400" height="400">' : '') + '</a><div>'
+          + '<p class="lbss__vendor">' + esc(p.b) + '</p><p class="lbss__name">' + esc(p.t) + '</p>'
+          + '<div class="lbss__pct"><b>' + iso(Math.round(x.s * 100) + '%') + '</b><em>' + band(x.s) + '</em></div>'
+          + '<p class="lbss__one">' + reasons(r, p, x)[0] + '</p>'
+          + '<p class="lbss__price" style="font-size:15px!important;margin-bottom:8px!important">' + fmt(p.price) + '</p>'
+          + '<div class="lbss__acts"><a class="lbss__btn lbss__btn--solid" href="' + esc(p.url) + '" data-lbss-go="' + esc(p.h) + '">شوف</a>' + addBtn(p) + '</div></div></div>';
+      });
+      h += '</div>';
+    }
+    if (shown.length >= 2 && B) {
+      h += '<div class="lbss__bundle lbss__fade"><div><p>بغيتي تجرب أكثر من واحد؟</p><small>ختار جوج ولا تلاتة وركّب باك: الخصم كيطبق أوتوماتيكياً فالسلة.</small>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px">'
+        + shown.slice(0, 3).map(function(x, i){ return '<label class="lbss__pick"><input type="checkbox" data-lbss-pick="' + x.p.v + '"' + (i < 3 ? ' checked' : '') + '>' + esc(x.p.t) + '</label>'; }).join('')
+        + '</div></div><button type="button" class="lbss__btn" data-lbss-bundle></button></div>';
+    }
+    res.innerHTML = h; res.hidden = false;
+    res._shown = shown; res._ref = r;
+    paintBundle();
+    /* reveal: fade the blocks in, then slide the DNA markers to their values */
+    var fades = res.querySelectorAll('.lbss__fade');
+    Array.prototype.forEach.call(fades, function(el, i){ if (reduce) el.classList.add('is-in'); else setTimeout(function(){ el.classList.add('is-in'); }, 40 + i * 70); });
+    var ms = res.querySelectorAll('.lbss__m');
+    var go = function(){ Array.prototype.forEach.call(ms, function(m){ m.style.insetInlineStart = m.getAttribute('data-to'); }); };
+    if (reduce) go(); else setTimeout(go, 160);
+  }
+  function paintBundle(){
+    var btn = res.querySelector('[data-lbss-bundle]'); if (!btn) return;
+    var picked = Array.prototype.map.call(res.querySelectorAll('[data-lbss-pick]:checked'), function(i){ return i.getAttribute('data-lbss-pick'); });
+    var n = picked.length, fresh = picked.filter(function(v){ return !inBundle(v); }).length;
+    var pct = B && B.tier ? B.tier('fragrance', fresh + (B.count ? B.count('fragrance') : 0)) : 0;
+    btn.disabled = n < 1;
+    btn.textContent = n ? ('ركّب باك بهادو (' + n + ')' + (pct ? ' · ' + (B.pct ? B.pct(pct) : '−' + pct + '%') : '') + ' ←') : 'ختار عطر واحد على الأقل';
+  }
+  function paintAdd(){ Array.prototype.forEach.call(res.querySelectorAll('[data-lbss-add]'), function(b){ var on = inBundle(b.getAttribute('data-lbss-add')); if (on) b.setAttribute('data-in', ''); else b.removeAttribute('data-in'); b.textContent = on ? '✓ فالباك' : '+ زيد للباك'; }); }
+
+  /* ---------- selection, search, state ---------- */
+  function select(h, how){
+    var r = byH[h]; if (!r) return;
+    Array.prototype.forEach.call(tilesUl.querySelectorAll('[data-lbss-ref]'), function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-lbss-ref') === h ? 'true' : 'false'); });
+    render(r);
+    try { history.replaceState(null, '', location.pathname + location.search + '#scent=' + h); } catch (e) {}
+    if (how === 'user' && window.matchMedia('(max-width: 900px)').matches) {
+      setTimeout(function(){ res.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }, 120);
+    }
+  }
+  tilesUl.addEventListener('click', function(e){ var b = e.target.closest('[data-lbss-ref]'); if (b) select(b.getAttribute('data-lbss-ref'), 'user'); });
+  var qTimer;
+  search.addEventListener('input', function(){
+    var q = norm(search.value), shownN = 0;
+    if (q) tilesUl.classList.remove('is-collapsed');
+    Array.prototype.forEach.call(tilesUl.children, function(li){
+      var r = byH[li.querySelector('[data-lbss-ref]').getAttribute('data-lbss-ref')];
+      var hay = norm([r.n, r.house, r.q].join(' '));
+      var ok = !q || hay.indexOf(q) > -1; li.hidden = !ok; if (ok) shownN++;
+    });
+    none.style.display = shownN ? 'none' : 'block';
+    clearTimeout(qTimer);
+    if (q && !shownN) qTimer = setTimeout(function(){ track('similar_scent_search_no_result', { query: search.value.slice(0, 60) }); }, 900);
+  });
+  search.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); var li = Array.prototype.filter.call(tilesUl.children, function(x){ return !x.hidden; })[0]; if (li) select(li.querySelector('[data-lbss-ref]').getAttribute('data-lbss-ref'), 'user'); } });
+
+  res.addEventListener('change', function(e){ if (e.target.matches('[data-lbss-pick]')) paintBundle(); });
+  res.addEventListener('click', function(e){
+    var a = e.target.closest('[data-lbss-add]');
+    if (a && B) {
+      var v = a.getAttribute('data-lbss-add'), p = P.filter(function(x){ return String(x.v) === v; })[0];
+      if (!p) return;
+      if (inBundle(v)) { location.href = B.cfg.fragrance.page; return; }
+      B.add('fragrance', { v: p.v, h: p.h, q: 1, max: p.max }, 'similar_scent');
+      track('similar_scent_add_to_bundle', { reference: res._ref ? res._ref.h : '', product_handle: p.h });
+      var n = B.count('fragrance'), nx = B.next('fragrance', n);
+      if (B.toast) B.toast(nx ? ('تزاد للباك ✓ — زيد ' + nx.need + ' وتربح ' + B.pct(nx.pct)) : ('تزاد للباك ✓ — عندك ' + B.pct(B.tier('fragrance', n)) + ' على الباك'));
+      paintAdd(); paintBundle(); return;
+    }
+    var bb = e.target.closest('[data-lbss-bundle]');
+    if (bb && B && !bb.disabled) {
+      var picks = Array.prototype.map.call(res.querySelectorAll('[data-lbss-pick]:checked'), function(i){ return i.getAttribute('data-lbss-pick'); });
+      picks.forEach(function(v){ var p = P.filter(function(x){ return String(x.v) === v; })[0]; if (p && !inBundle(v)) B.add('fragrance', { v: p.v, h: p.h, q: 1, max: p.max }, 'similar_scent'); });
+      track('similar_scent_bundle_click', { reference: res._ref ? res._ref.h : '', items: picks.length });
+      location.href = B.cfg.fragrance.page + '?from=similar';
+      return;
+    }
+    var g = e.target.closest('[data-lbss-go]');
+    if (g) track('similar_scent_product_click', { reference: res._ref ? res._ref.h : '', product_handle: g.getAttribute('data-lbss-go') });
+    var c = e.target.closest('[data-lbss-consult]');
+    if (c) track('similar_scent_consult_click', { reference: res._ref ? res._ref.h : '' });
+  });
+  document.addEventListener('lbass:bundle', function(){ if (!res.hidden) { paintAdd(); paintBundle(); } });
+
+  var m = (location.hash || '').match(/scent=([a-z0-9-]+)/);
+  if (m && byH[m[1]]) select(m[1], 'load');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+</section>
+{%- endif -%}

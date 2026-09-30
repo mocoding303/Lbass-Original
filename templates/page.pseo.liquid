@@ -219,6 +219,7 @@
   {%- endif -%}
   <div class="grid" data-cro-list data-cro-list-name="pseo_{{ page.handle | escape }}">
     {%- for p in ps_avail -%}
+      {%- if p.type == 'Fragrance' -%}{%- continue -%}{%- endif -%}{%- if p.type == 'Cosmetics' -%}{%- continue -%}{%- endif -%}{%- comment -%} fragrance + cosmetics guard 2026-09-26: own departments {%- endcomment -%}
       {%- if ps_shown >= 8 -%}{%- break -%}{%- endif -%}
       {%- if page.handle == 'comment-acheter-second-hand-original-maroc' and p.price < 19900 -%}{%- continue -%}{%- endif -%}
       {%- if page.handle == 'comment-acheter-second-hand-original-maroc' and p.price > 39900 -%}{%- continue -%}{%- endif -%}

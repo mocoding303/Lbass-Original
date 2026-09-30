@@ -1,4 +1,8 @@
 {%- comment -%}
+  2026-09-26: the hero is now server-rendered by snippets/lbass-hero-carousel.liquid,
+  so the build() below finds .lbh and returns at its guard. This file still supplies
+  the .lbh CSS, the LCP preload, hero-cta / hero-type / hero-mobile and hero-fx.
+
   LBASS — HOMEPAGE HERO SWAP (2026-08-01)
 
   WHY THIS EXISTS. The new hero lives in sections/lbass-hero.liquid, and the
@@ -189,7 +193,7 @@
       '<div class="lbh-wrap">' +
         '<p class="lbh-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p>' +
         '<h1 class="lbh-h">' +
-          '<span class="lbh-ln" data-lbh-reveal="Lbass Original —">Lbass Original —</span>' +
+          '<span class="lbh-ln" dir="ltr" data-lbh-reveal="Lbass Original —">Lbass Original —</span>' +
           '<span class="lbh-ln lbh-ln--accent" data-lbh-reveal="حوايج Second-Hand أصلية فالمغرب">حوايج Second-Hand أصلية فالمغرب</span>' +
         '</h1>' +
         '<p class="lbh-sub">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p>' +

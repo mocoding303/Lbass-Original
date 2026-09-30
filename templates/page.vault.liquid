@@ -273,6 +273,7 @@ button{font-family:inherit;border:none;background:none;color:inherit;cursor:poin
 {% if tagged_count < 6 %}
   {% assign fallback_sorted = all_avail | sort: 'price' | reverse %}
   {% for p in fallback_sorted limit: 14 %}
+    {% if p.type == 'Fragrance' %}{% continue %}{% endif %}{% if p.type == 'Cosmetics' %}{% continue %}{% endif %}{% comment %} fragrance + cosmetics guard 2026-09-26: own departments {% endcomment %}
     {% if p.price >= vault_floor %}
       {% capture id_marker %},{{ p.id }},{% endcapture %}
       {% unless vault_pool contains id_marker %}

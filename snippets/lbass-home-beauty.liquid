@@ -1,0 +1,83 @@
+{%- comment -%}
+  ═══ LBASS — HOMEPAGE K-BEAUTY DISCOVERY (2026-09-26) ═══
+
+  Same pattern as snippets/lbass-home-fragrances.liquid: one restrained block,
+  a heading, one CTA and up to 4 products, in-stock first. Rendered from
+  templates/index.liquid right after the fragrance block and positioned by
+  snippets/lbass-home-density.liquid (main > .lbbe{order:3}, after .lbfr in DOM
+  order), so the owner's brief order holds: Hero → Categories → THE DROP →
+  Fragrance discovery → K-beauty discovery → full clothing grid.
+
+  Nothing renders while /collections/cosmetics has no published product, so
+  publishing the theme first shows nothing new. On an unpublished (preview)
+  theme a placeholder marks the slot so the placement can be reviewed.
+
+  Colours are literal, like .lbfr: this page's tokens are inverted at runtime
+  (see the PAGE POLARITY note in lbass-home-collections.liquid).
+{%- endcomment -%}
+{%- assign lbbe_c = collections['cosmetics'] -%}
+{%- assign bt_live = lbbe_c.products_count | default: 0 | plus: 0 -%}
+{%- assign bt_url = '/collections/cosmetics' -%}{%- if bt_live == 0 and theme.role == 'unpublished' -%}{%- assign bt_url = '/collections/all?view=beauty' -%}{%- endif -%}
+{%- assign lbbe_avail = lbbe_c.products | where: 'available', true -%}
+{%- assign lbbe_n = lbbe_avail.size -%}
+{%- assign lbbe_rest = lbbe_c.products | where: 'available', false -%}
+{%- assign lbbe_pool = lbbe_avail | concat: lbbe_rest -%}
+{%- assign lbbe_preview = false -%}
+{%- if bt_live == 0 and theme.role == 'unpublished' -%}{%- assign lbbe_preview = true -%}{%- endif -%}
+{%- if bt_live > 0 or lbbe_preview -%}
+<section class="lbbe" aria-labelledby="lbbe-h"{% if lbbe_preview %} data-lb-preview="cosmetics"{% endif %}>
+  <style>
+    .lbbe{padding:clamp(26px,4vw,44px) var(--pad,20px)}
+    .lbbe__in{max-width:var(--max,1100px);margin:0 auto;padding:clamp(20px,3vw,30px);
+      border:1px solid rgba(142,64,58,.18);border-radius:16px;
+      background:linear-gradient(160deg,#FCF8F4 0%,#F6ECE5 60%,#F1E4DC 100%)}
+    .lbbe__head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:0 0 18px;flex-wrap:wrap}
+    .lbbe__kick{margin:0 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.16em;color:#8E403A;direction:ltr;text-align:right}
+    .lbbe h2{margin:0 0 8px;font-size:clamp(20px,2.6vw,28px);line-height:1.35;color:#1D1714}
+    .lbbe__lede{margin:0;font-size:15px;line-height:1.85;color:#3A2E29;max-width:62ch}
+    .lbbe__cta{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 18px;border-radius:999px;
+      background:#1D1714;color:#FCF8F4;font-size:14px;font-weight:900;text-decoration:none;white-space:nowrap;
+      transition:background-color .18s,transform .18s}
+    .lbbe__cta:hover,.lbbe__cta:focus-visible{background:#8E403A;transform:translateY(-1px)}
+    .lbbe__cta:focus-visible{outline:3px solid #8E403A;outline-offset:2px}
+    .lbbe__cta span{font-weight:700;opacity:.8}
+    .lbbe__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    /* Card base styles — index.liquid uses {% layout none %}, so layout/theme.liquid's
+       .card rules never load on the homepage (same fix as .lbfr, 2026-09-26 PM). */
+    .lbbe .card{border:1px solid var(--line,rgba(11,11,12,.12));border-radius:14px;overflow:hidden;background:var(--ink2,#fff);transition:transform .2s,border-color .2s;display:block;text-decoration:none;color:inherit}
+    .lbbe .card:hover{transform:translateY(-3px);border-color:#8E403A}
+    .lbbe .card-img{position:relative;aspect-ratio:4/5;background:#F5F3EF;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .lbbe .card-img img{width:100%;height:100%;object-fit:cover}
+    .lbbe .card-body{padding:14px;display:flex;flex-direction:column;gap:6px}
+    .lbbe .card-title{font-weight:800;color:var(--cream,#0B0B0C);font-size:14.5px;margin:2px 0;line-height:1.45}
+    .lbbe .card-vendor{color:#8E403A;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+    .lbbe .card-price{font-weight:800;color:var(--gold,#BF2E15);font-size:17px;direction:ltr;margin-top:2px}
+    .lbbe .chip{display:inline-block;border:1px solid var(--line,rgba(11,11,12,.12));border-radius:30px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--txt2,#3A3A3C);margin:3px}
+    @media(max-width:600px){ .lbbe .card-body{padding:10px} .lbbe .card-title{font-size:13px} }
+    .lbbe__preview{margin:0;padding:18px;border:1px dashed rgba(29,23,20,.35);border-radius:12px;
+      color:#3A2E29;font-size:14px;line-height:1.8;background:#fff}
+    @media(max-width:900px){ .lbbe__grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+    @media(max-width:600px){ .lbbe__cta{width:100%;justify-content:center;white-space:normal} }
+  </style>
+  <div class="lbbe__in">
+    <div class="lbbe__head">
+      <div>
+        <p class="lbbe__kick">NEW · K-BEAUTY</p>
+        <h2 id="lbbe-h">سكين كير كوري أصلي — جديد فالعلبة</h2>
+        <p class="lbbe__lede">سيرومات بالريتينال والنياسيناميد، كريمات مرطبة وBB كريم من ماركات كورية، شريناهم من YesStyle وكيتصيفطو من مراكش. التصاور ديال السلعة اللي عندنا، والمكونات وطريقة الاستعمال مكتوبين فصفحة كل منتوج. خلّص ملي توصلك أو بـ PayPal.</p>
+      </div>
+      <a class="lbbe__cta" href="{{ bt_url }}" data-cro-event="home_collection_click" data-cro-label="cosmetics_section">اكتشف K-Beauty <span dir="ltr">· Korean skincare</span></a>
+    </div>
+    {% render 'lbass-discover-strip', dept: 'beauty', place: 'home' %}
+    {%- if bt_live > 0 -%}
+    <div class="lbbe__grid">
+      {%- for p in lbbe_pool limit: 4 -%}
+        {% render 'lbass-product-card', product: p, placement: 'home_beauty' %}
+      {%- endfor -%}
+    </div>
+    {%- else -%}
+    <p class="lbbe__preview">معاينة فقط (preview theme): هنا غادي يبانو 4 منتوجات K-beauty ملي تنشر الكوليكشن. فالموقع الحقيقي هاد البلوك ما كيبانش حتى يكون فيه منتوج منشور.</p>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}

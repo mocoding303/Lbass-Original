@@ -669,6 +669,10 @@
 {%- if page and page.handle == 'newsletter-confirmation' -%}
   {%- assign robots_directive = 'noindex, follow' -%}
 {%- endif -%}
+{%- comment -%} 2026-09-28: pages hidden in Admin (seo.hidden = 1, e.g. /pages/similar-scent) — Shopify already adds its own noindex; keep ours consistent instead of a contradicting "index, follow". {%- endcomment -%}
+{%- if page and page.metafields.seo.hidden == 1 -%}
+  {%- assign robots_directive = 'noindex, follow' -%}
+{%- endif -%}
 {%- if page and page.template_suffix == 'pseo' -%}
   {%- unless pseo_indexable_handles contains page.handle -%}
     {%- assign robots_directive = 'noindex, follow' -%}

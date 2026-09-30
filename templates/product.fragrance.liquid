@@ -185,6 +185,57 @@
 {% capture product_image_alt %}{{ title_intro }} {% if is_new_condition %}new{% else %}second-hand{% endif %} original in Morocco{% if color_note != blank %}, {{ color_note }}{% endif %}{% unless product.has_only_default_variant %}, size {{ selv.title }}{% endunless %}{% if condition_label != blank %}, {{ condition_label }}{% endif %}, photographed by Lbass Original{% endcapture %}
 {% assign product_image_alt = product_image_alt | strip %}
 {%- comment -%}
+  ═══ FRAGRANCE PDP — templates/product.fragrance.liquid (2026-09-26) ═══
+  Assigned per product via template_suffix "fragrance" (the 12 perfumes only).
+  Copy of templates/product.liquid with every second-hand/1-of-1 claim replaced:
+  no condition grade, no "real photos of this exact piece", no "from Germany",
+  NewCondition in schema, and the notes pyramid from fragrance.* metafields
+  (verified against each house's published pyramid, never NUR's copy).
+  Gallery, lightbox, cart form, sticky CTA and express COD are unchanged so the
+  shared JS (ids pdpForm / pdpVariantId / pdpStickyAdd / pdpExpressForm) works.
+{%- endcomment -%}
+{%- assign fr_house = product.metafields.fragrance.house.value | default: product.vendor -%}
+{%- assign fr_conc = product.metafields.fragrance.concentration.value -%}
+{%- assign fr_ml = product.metafields.fragrance.volume_ml.value -%}
+{%- assign fr_wear = product.metafields.fragrance.wearer.value -%}
+{%- assign fr_family = product.metafields.fragrance.family.value -%}
+{%- assign fr_top = product.metafields.fragrance.notes_top.value -%}
+{%- assign fr_heart = product.metafields.fragrance.notes_heart.value -%}
+{%- assign fr_base = product.metafields.fragrance.notes_base.value -%}
+{%- assign fr_year = product.metafields.fragrance.launch_year.value -%}
+{%- case fr_conc -%}
+  {%- when 'Eau de Toilette' -%}{%- assign fr_conc_ar = 'أو دو تواليت' -%}
+  {%- when 'Extrait de Parfum' -%}{%- assign fr_conc_ar = 'إكستري دو بارفان' -%}
+  {%- when 'Concentrated Perfume Oil' -%}{%- assign fr_conc_ar = 'زيت عطر مركّز' -%}
+  {%- else -%}{%- assign fr_conc_ar = 'أو دو بارفان' -%}
+{%- endcase -%}
+{%- case fr_wear -%}
+  {%- when 'Men' -%}{%- assign fr_wear_ar = 'للرجال' -%}
+  {%- when 'Women' -%}{%- assign fr_wear_ar = 'للنساء' -%}
+  {%- else -%}{%- assign fr_wear_ar = 'للرجال والنساء' -%}
+{%- endcase -%}
+{%- assign fr_vol_label = fr_ml | append: ' ml' -%}
+{%- assign fr_name = display_title | split: ' | ' | first | strip -%}
+{% assign wa_msg_scent = 'سلام، عندي سؤال على الريحة ديال ' | append: fr_name | url_encode %}
+{%- comment -%}
+  COMING SOON / PRICE PENDING (2026-09-26). The bottles went live before stock,
+  to measure demand. Tag `coming-soon` on an out-of-stock bottle = not arrived
+  yet: the page says «قريباً» and offers a WhatsApp "notify me" (tracked as
+  lbass_whatsapp_click, label fragrance_notify*) instead of "sold out". Remove the
+  tag when stock is set. Price 0 = not priced yet: «الثمن قريباً», and the
+  JSON-LD omits the Offer rather than declaring 0 MAD.
+{%- endcomment -%}
+{%- assign fr_soon = false -%}
+{%- if product.available == false and product.tags contains 'coming-soon' -%}{%- assign fr_soon = true -%}{%- endif -%}
+{%- assign fr_price_pending = false -%}
+{%- if product.price == 0 -%}{%- assign fr_price_pending = true -%}{%- endif -%}
+{% assign wa_msg_notify = 'سلام Lbass Original! بغيت ' | append: fr_name | append: '. علموني ملي يوصل وشحال الثمن ديالو. المدينة ديالي: [اكتب المدينة]' | url_encode %}
+{%- assign is_one_of_one = false -%}
+{%- assign promo_visible = false -%}
+{% capture product_summary %}{{ fr_name }}: {{ fr_conc_ar }} من {{ fr_house }}، قرعة كاملة جديدة فالكرطونة الأصلية ديالها، {{ fr_wear_ar }}.{% if fr_top != blank %} الافتتاحية: {{ fr_top }}.{% endif %}{% if fr_heart != blank %} القلب: {{ fr_heart }}.{% endif %}{% if fr_base != blank %} القاعدة: {{ fr_base }}.{% endif %} التوصيل لكل المغرب مع الدفع عند الاستلام.{% endcapture %}
+{% capture product_image_alt %}{{ fr_name }} – {{ fr_house }} perfume – Lbass Original Morocco{% endcapture %}
+{% assign product_image_alt = product_image_alt | strip %}
+{%- comment -%}
   Prefill asks for the city because the Marrakech (20) vs rest-of-Morocco (40)
   rate cannot be detected at checkout — Shopify exposes no provinces for MA.
   This message is where the correct rate gets confirmed before dispatch.
@@ -628,13 +679,13 @@
         {% endfor %}
       </div>
     {% else %}
-      <p class="pdp-gal-note">📷 بغيتي صور حقيقية إضافية ديال هاد القطعة بالضبط؟ <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_photos }}" target="_blank" rel="noopener">سولنا فالواتساب</a></p>
+      <p class="pdp-gal-note">📷 بغيتي تشوف القرعة ولا الكرطونة من زاوية أخرى؟ <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_photos }}" target="_blank" rel="noopener">سولنا فالواتساب</a></p>
     {% endif %}
   </div>
 
   <div class="pdp-info-col">
     <aside class="pdp-buy-panel" aria-label="معلومات الشراء">
-    <p class="pdp-brand">{{ product.vendor }} — {% if is_new_condition %}NEW · REAL PHOTOS{% else %}SECOND-HAND · REAL PHOTOS{% endif %}</p>
+    <p class="pdp-brand">{{ product.vendor }} — PARFUM · NEUF EN BOÎTE</p>
     {%- comment -%}
       Product titles here are bilingual and pipe-separated, e.g.
         "Adidas Copa Black Football Boots - Size 44 | سبادري كورة أديداس"
@@ -683,15 +734,11 @@
         card uses when it puts the condition chip next to the size chip.
       {%- endcomment -%}
       <span class="pdp-stock">
-        {% if product.available %}
-          {% if is_one_of_one %}⚡ قطعة وحدة فقط · 1/1{% else %}متوفرة دابا{% endif %}
-        {% else %}
-          هاد القطعة تباعت
-        {% endif %}
+        {% if product.available %}متوفر دابا · {{ fr_conc }} {{ fr_ml }} ml{% elsif fr_soon %}قريباً · جاي من دبي{% else %}مابقاش فالستوك دابا{% endif %}
       </span>
     </div>
 
-    {% unless product.available %}
+    {% unless product.available or fr_soon %}
       {%- capture soldout_exclude_ids -%},{{ product.id }},{%- endcapture -%}
       {%- assign soldout_prefer_type = product.type | default: product.product_type -%}
       {%- comment -%}
@@ -702,8 +749,8 @@
         sat in the same collection. Collection first, then vendor, then store-wide.
       {%- endcomment -%}
       {% render 'lbass-live-products-rail',
-        heading: 'هاد القطعة تباعت — شوف البدائل',
-        intro: 'قطع مشابهة ومتوفرة دابا قبل ما تكمل التصفح.',
+        heading: 'مابقاش فالستوك — شوف عطور أخرى',
+        intro: 'عطور متوفرة دابا من نفس الدار أو نفس الستايل.',
         placement: 'sold_product_above_fold',
         limit: 2,
         exclude_ids: soldout_exclude_ids,
@@ -730,7 +777,9 @@
       {%- endcomment -%}
       {% if condition_confirmed %}<span class="lb-cond"><b>الحالة</b>{{ condition_label }}</span>{% endif %}
       {% if is_one_of_one %}<span class="pdp-badge lb-uniq" dir="auto">Pièce unique <i>· قطعة وحدة فقط</i></span>{% endif %}
-      <span class="pdp-badge">صور حقيقية</span>
+      {% if fr_soon %}<span class="pdp-badge" style="background:#C8913E;border-color:#C8913E;color:#1A1209">قريباً</span>{% endif %}
+      <span class="pdp-badge">جديد فالكرطونة</span>
+      <span class="pdp-badge" dir="ltr">{{ fr_conc }} · {{ fr_ml }} ml</span>
       {% if promo_visible %}<span class="pdp-badge pdp-badge--promo">{{ product.metafields.lbass.promo_badge.value | default: 'عرض على منتجات مختارة' }}</span>{% endif %}
     </div>
 
@@ -753,7 +802,7 @@
       {%- assign pdp_pct = pdp_pct | strip -%}
       {%- assign pdp_on_sale = false -%}
       {%- if product.selected_or_first_available_variant.compare_at_price and product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price and pdp_pct != '0' -%}{%- assign pdp_on_sale = true -%}{%- endif -%}
-      <p class="pdp-price-kicker">السعر الحالي</p>
+      <p class="pdp-price-kicker">{% if fr_price_pending %}السعر{% else %}السعر الحالي{% endif %}</p>
       {%- comment -%}
         Below the kicker, not above it. With the kicker in between, «السعر
         الحالي» separated the discount from the number it describes; directly
@@ -761,7 +810,7 @@
       {%- endcomment -%}
       <span class="pdp-save" data-savepct{% unless pdp_on_sale %} hidden{% endunless %}>{% if pdp_on_sale %}&minus;{{ pdp_pct }}%{% endif %}</span>
       <div class="pdp-prices">
-        <span class="pdp-price" data-price>{{ product.selected_or_first_available_variant.price | money }}</span>
+        <span class="pdp-price" data-price>{% if fr_price_pending %}قريباً{% else %}{{ product.selected_or_first_available_variant.price | money }}{% endif %}</span>
       {%- comment -%}
         NEW-RETAIL REFERENCE. Not compare_at_price and must never become it:
         compare_at means "we used to charge this" and Shopify pushes it into the
@@ -868,23 +917,23 @@
         this block. The link below is the source of truth.
       {% endcomment %}
       <div class="pdp-pay" aria-label="طرق الخلاص">
-        <p class="pdp-pay-h">PayPal كيعطيك مرونة أكثر</p>
-        <p class="pdp-pay-b">إلا خلصتي بـ <b>PayPal</b>، تقدر تطلب الإرجاع خلال <b>14 يوم</b> من وقت ما توصلك القطعة إلا ما عجباتكش — بشرط تبقى بنفس الحالة اللي وصلاتك، مالبوساش ومامغسولاش وبالإتيكيتات. <span class="pdp-pay-note">تكاليف الإرجاع على الزبون، إلا كان الغلط من عندنا.</span></p>
-        <p class="pdp-pay-b">وباقي تقدر تختار <b>الدفع عند الاستلام</b>: كتشوف القطعة فالباب قبل ما تخلص، وإلا ما عجباتكش ما تخلصش وما تاخدهاش. ملي كتخلص وكتاخدها، البيعة كتسالى.</p>
+        <p class="pdp-pay-h">الدفع عند الاستلام أو PayPal</p>
+        <p class="pdp-pay-b">اختار <b>الدفع عند الاستلام</b>: كتشوف الكرطونة فالباب قبل ما تخلص، وإلا ما عجباتكش ما تخلصش وما تاخدهاش. ملي كتخلص وكتاخدها، البيعة كتسالى.</p>
+        <p class="pdp-pay-b">ولا خلّص أونلاين بـ <b>PayPal</b>. الإرجاع كيتطبق حسب شروط الإرجاع المنشورة.</p>
         <a class="pdp-pay-link" href="/pages/refund-policy">شوف شروط الإرجاع كاملة ←</a>
       </div>
-      <p class="pdp-price-helper"><strong>هاد السعر هو السعر النهائي قبل التوصيل.</strong>{% if promo_visible %} السعر كيبقى نفسه فالسلة وما كاين حتى تخفيض مخبّي فالخلاص.{% endif %}</p>
+      {% if fr_price_pending %}<p class="pdp-price-helper"><strong>الثمن غادي يتعلن ملي يوصل العطر.</strong> ضغط «علمني ملي يوصل» ونصيفطو ليك الثمن فالواتساب.</p>{% else %}<p class="pdp-price-helper"><strong>هاد السعر هو السعر النهائي قبل التوصيل.</strong>{% if promo_visible %} السعر كيبقى نفسه فالسلة وما كاين حتى تخفيض مخبّي فالخلاص.{% endif %}</p>{% endif %}
     </div>
 
-    <div class="pdp-condition-card" aria-label="شفافية الحالة والتوفر">
-      {% if condition_confirmed %}<div class="pdp-mini pdp-condition-message"><b>{{ condition_label }}</b><span>{{ condition_description }}</span></div>{% endif %}
-      {% if ticket_confirmed %}<div class="pdp-mini"><b>التّيكيت</b><span>{% if ticket_status == 'ticket_attached' %}التّيكيت الأصلي باقي متعلق{% elsif ticket_status == 'ticket_included' %}التّيكيت الأصلي داخل مع القطعة{% else %}ما فيهاش التّيكيت الأصلي{% endif %}</span></div>{% endif %}
-      <div class="pdp-mini"><b>القطعة والصور</b><span>هاد القطعة جاية من ألمانيا. الصور ديال نفس القطعة اللي غادي توصلك{% if is_one_of_one %} · 1/1{% endif %}</span></div>
+    <div class="pdp-condition-card" aria-label="تفاصيل العطر">
+      <div class="pdp-mini"><b>الدار</b><span>{{ fr_house }}</span></div>
+      <div class="pdp-mini"><b>التركيز</b><span>{{ fr_conc_ar }} ({{ fr_conc }}) · {{ fr_ml }} ml</span></div>
+      <div class="pdp-mini"><b>لمن</b><span>{{ fr_wear_ar }}{% if fr_family != blank %} · {{ fr_family }}{% endif %}</span></div>
+      <div class="pdp-mini"><b>القرعة</b><span>جديدة فالكرطونة الأصلية، جات من موزع فدبي. ماشي ديكانت.</span></div>
       <div class="pdp-mini"><b>الخلاص</b><span>COD ملي توصلك أو PayPal أونلاين</span></div>
-      <div class="pdp-mini"><b>التوصيل</b><span>كنأكدو المدة والكلفة حسب المدينة قبل الإرسال</span></div>
     </div>
 
-    {% if product.available and condition_confirmed %}
+    {% if product.available %}
     <form id="pdpForm" action="{{ routes.cart_add_url }}" method="post" novalidate>
       {% unless product.has_only_default_variant %}
         <p class="pdp-lbl">اختار القياس <button type="button" data-szguide style="background:none;border:0;font-size:12px;color:var(--gold);font-weight:700;text-decoration:underline;cursor:pointer">دليل القياسات</button></p>
@@ -912,7 +961,7 @@
         <input type="hidden" name="id" id="pdpVariantId" value="">
       {% else %}
         <input type="hidden" name="id" id="pdpVariantId" value="{{ product.variants.first.id }}">
-        <div class="pdp-selected"><span>القياس</span><b id="pdpSelectedSize">{% if product.variants.first.title == 'Default Title' %}One Size{% else %}{{ product.variants.first.title }}{% endif %}</b></div>
+        <div class="pdp-selected"><span>الحجم</span><b id="pdpSelectedSize">{{ fr_ml }} ml · {{ fr_conc }}</b></div>
       {% endunless %}
       <p class="pdp-size-err" id="pdpSizeErr" role="alert">اختار القياس أولاً قبل ما تزيدها للسلة.</p>
 
@@ -926,7 +975,7 @@
         in substance; nothing new is promised. aria-describedby still resolves.
       {%- endcomment -%}
       <p class="pdp-cta-reassurance" id="pdpCtaHelp">
-        <b>الدفع عند الاستلام</b> — تشوف القطعة فالباب قبل ما تخلص · السعر كيبقى نفسه فالسلة
+        <b>الدفع عند الاستلام</b> — تشوف الكرطونة فالباب قبل ما تخلص · السعر كيبقى نفسه فالسلة
       </p>
       <div class="pdp-ctas">
         <button type="submit" class="pdp-cart" id="pdpAdd" data-cro-event="add_to_cart_click" data-cro-label="pdp_primary" aria-describedby="pdpCtaHelp" data-idle-label="{% if product.has_only_default_variant %}زيد للسلة{% else %}اختار القياس أولاً{% endif %}" {% unless product.has_only_default_variant %}disabled{% endunless %}>{% if product.has_only_default_variant %}زيد للسلة{% else %}اختار القياس أولاً{% endif %}</button>
@@ -943,24 +992,26 @@
         </div>
       </section>
     {% else %}
-      <section class="pdp-soldout" aria-labelledby="pdp-soldout-title">
-        <h2 id="pdp-soldout-title">هاد القطعة تباعت</h2>
-        <p>ولكن كاينين قطع قريبة منها فالدروب الحالي. شوف نفس البراند، نفس الكاتيجوري، أو قطع بنفس الستايل.</p>
+      {% if fr_soon %}
+      <section class="pdp-soldout pdp-soon" aria-labelledby="pdp-soldout-title">
+        <h2 id="pdp-soldout-title">قريباً فـ Lbass Original</h2>
+        <p>هاد العطر جاي فالطريق من دبي. قول لينا فالواتساب إلا بغيتيه، ونعلموك أول واحد ملي يوصل{% if fr_price_pending %} مع الثمن{% endif %}.</p>
         <div class="pdp-block-actions">
-          {%- assign soldout_brand_coll = nil -%}
-          {%- assign soldout_cat_coll = nil -%}
-          {%- for c in product.collections -%}
-            {%- unless bc_junk contains c.handle -%}
-              {%- if c.handle contains 'brand-' and soldout_brand_coll == nil -%}{%- assign soldout_brand_coll = c -%}{%- endif -%}
-              {%- unless c.handle contains 'brand-' -%}{%- if soldout_cat_coll == nil -%}{%- assign soldout_cat_coll = c -%}{%- endif -%}{%- endunless -%}
-            {%- endunless -%}
-          {%- endfor -%}
-          {% if soldout_brand_coll %}<a href="{{ soldout_brand_coll.url }}">قطع {{ product.vendor }} الأخرى</a>{% elsif first_collection %}<a href="{{ first_collection.url }}">شوف قطع مشابهة</a>{% endif %}
-          {% if soldout_cat_coll and soldout_cat_coll.handle != soldout_brand_coll.handle %}<a href="{{ soldout_cat_coll.url }}">{{ soldout_cat_coll.title }}</a>{% endif %}
-          <a href="{{ routes.all_products_collection_url }}">الدروب الحالي</a>
-          <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener">سولنا فـ WhatsApp</a>
+          <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_notify }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_notify">علمني ملي يوصل</a>
+          <a href="/collections/fragrances">شوف العطور الأخرى</a>
         </div>
       </section>
+      {% else %}
+      <section class="pdp-soldout" aria-labelledby="pdp-soldout-title">
+        <h2 id="pdp-soldout-title">هاد العطر مابقاش فالستوك دابا</h2>
+        <p>سولنا فالواتساب نعلموك ملي يرجع، ولا شوف عطور أخرى متوفرة دابا.</p>
+        <div class="pdp-block-actions">
+          {%- for c in product.collections -%}{%- if c.handle contains 'brand-' -%}<a href="{{ c.url }}">عطور {{ product.vendor }} الأخرى</a>{%- break -%}{%- endif -%}{%- endfor -%}
+          <a href="/collections/fragrances">كل العطور</a>
+          <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_availability }}" target="_blank" rel="noopener">علمني ملي يرجع</a>
+        </div>
+      </section>
+      {% endif %}
     {% endif %}
 
     {% if promo_visible %}
@@ -981,21 +1032,21 @@
       </section>
     {% endif %}
 
+    {% render 'lbass-bundle-pdp', product: product, dept: 'fragrance' %}
     <div class="pdp-buy-note">
-      {% if is_one_of_one %}<span>قطعة وحدة فقط</span>{% endif %}
-      <span>🇩🇪 من ألمانيا</span>
-      <span>✓ تشيكت فمراكش</span>
-      <span>الصور ديال نفس القطعة</span>
+      <span>🇦🇪 جاية من دبي</span>
+      <span>جديد فالكرطونة</span>
+      <span>ماشي ديكانت</span>
       <span>خلّص ملي توصلك</span>
       <span>إرجاع حسب الشروط</span>
     </div>
 
     <div class="pdp-why">
-      <p class="pdp-why-h">🇩🇪 جاية من ألمانيا، تشيكت فمراكش</p>
-      <p class="pdp-why-b">هاد القطعة من القطع اللي كنجيبو من ألمانيا. قبل ما نعرضوها، كنشيكو الحالة، القياس، والتفاصيل فمراكش، وكنصورو نفس القطعة باش تعرف شنو غادي يوصلك. الحالة: <b>{{ condition_label }}</b>{% if is_one_of_one %}، والقطعة وحدة فقط فالمخزون{% endif %}.</p>
+      <p class="pdp-why-h">🇦🇪 جاية من دبي، جديدة فالكرطونة</p>
+      <p class="pdp-why-b">هاد العطر قرعة كاملة جديدة فالكرطونة الأصلية ديالها، جات من موزع فدبي. ماشي ديكانت: كتوصلك القرعة كاملة كيف كتجي فالكرطونة ديالها من {{ fr_house }}. النوطات مكتوبة حسب اللائحة المنشورة ديال العطر.</p>
     </div>
 
-    {% if product.available and condition_confirmed %}
+    {% if product.available %}
     <details class="pdp-express" id="pdpExpress" open>
       <summary>⚡ اطلب دابا مباشرة — بلا حساب، بلا تعقيد</summary>
       <form id="pdpExpressForm" novalidate>
@@ -1011,211 +1062,74 @@
 
     <div class="pdp-trust">
       <span class="pt-chip">COD أو PayPal</span>
-      <span class="pt-chip">صور حقيقية</span>
-      {% if inspection_confirmed %}<span class="pt-chip">تشيكّات قبل العرض</span>{% endif %}
-      {% if is_one_of_one %}<span class="pt-chip">كمية 1 فقط</span>{% endif %}
+      <span class="pt-chip">جديد فالكرطونة</span>
+      <span class="pt-chip" dir="ltr">{{ fr_conc }} · {{ fr_ml }} ml</span>
     </div>
     </aside>
   </div>
 
-  <section class="pdp-details-flow" aria-label="تفاصيل المنتج">
-
-    {% if product.metafields.lbass.transformation != blank or product.metafields.lbass.styling != blank or product.metafields.lbass.occasion != blank %}
-    <div class="pdp-trio">
-      {% if product.metafields.lbass.transformation != blank %}<div class="pdp-trio-card"><p class="ptc-h">شنو غادي يزيد ليك؟</p><p class="ptc-b">{{ product.metafields.lbass.transformation }}</p></div>{% endif %}
-      {% if product.metafields.lbass.styling != blank %}<div class="pdp-trio-card"><p class="ptc-h">كيفاش تنسقو؟</p><p class="ptc-b">{{ product.metafields.lbass.styling }}</p></div>{% endif %}
-      {% if product.metafields.lbass.occasion != blank %}<div class="pdp-trio-card"><p class="ptc-h">فاش يلبس؟</p><p class="ptc-b">{{ product.metafields.lbass.occasion }}</p></div>{% endif %}
-    </div>
-    {% endif %}
+  <section class="pdp-details-flow" aria-label="تفاصيل العطر">
 
     <section class="pdp-answer" aria-labelledby="pdp-answer-title">
       <h2 id="pdp-answer-title">شنو خاصك تعرف قبل ما تشري؟</h2>
-      <p><strong>{{ title_intro }}</strong> {% if is_new_condition %}هي قطعة branded جديدة من Lbass Original.{% else %}هي قطعة branded second-hand من Lbass Original.{% endif %} {{ condition_description }} الثمن اللي باين هو نفس الثمن فالسلة والـ checkout قبل التوصيل.</p>
-      <p>راجع القياس والصور الحقيقية ديال نفس القطعة{% if visible_defects != blank %}، والملاحظة المسجلة: {{ visible_defects }}{% endif %}. تقدر تسولنا فالواتساب أو عبر <a class="pdp-email" href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a> قبل الطلب.</p>
+      <p><strong dir="auto">{{ fr_name }}</strong>: {{ fr_conc_ar }} من {{ fr_house }}، {{ fr_wear_ar }}. قرعة كاملة ({{ fr_ml }} ml) جديدة فالكرطونة الأصلية ديالها، جات من موزع فدبي، ماشي ديكانت. الثمن اللي باين هو نفس الثمن فالسلة والـ checkout قبل التوصيل.</p>
+      <p>النوطات تحت مكتوبة حسب اللائحة المنشورة ديال العطر. إلا عندك سؤال على الريحة ولا على القرعة، سولنا فالواتساب أو عبر <a class="pdp-email" href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a> قبل الطلب.</p>
       <div class="pdp-answer-links">
-        {% if product.vendor == 'Adidas' or product.handle contains 'adidas' %}<a href="{{ collections['adidas-originals'].url }}">اديداس اورجينال ملابس</a>{% endif %}
-        {% if product.handle contains 'track-pants' %}<a href="{{ collections['track-pants'].url }}">Track Pants second-hand</a>{% endif %}
-        <a href="/pages/condition-guide">دليل الحالة</a>
-        <a href="/pages/size-guide">دليل القياسات</a>
+        <a href="/collections/fragrances">كل العطور</a>
+        {%- for c in product.collections -%}{%- if c.handle contains 'brand-' -%}<a href="{{ c.url }}">عطور {{ product.vendor }}</a>{%- break -%}{%- endif -%}{%- endfor -%}
         <a href="/pages/shipping-and-payment">التوصيل والخلاص</a>
       </div>
     </section>
 
-    <section class="pdp-intent-q" aria-label="أسئلة الشراء حول {{ display_title | escape }}">
-      <div><b>واش هادي نفس القطعة؟</b><span>إيه، صور المنتج كتخص نفس القطعة المعروضة. إلا بغيتي زاوية أخرى، سول فالواتساب.</span></div>
-      <div><b>واش غادي تجيني فالقياس؟</b><span>قارن القياس أو القياسات مع قطعة عندك. إلا ماكانتش قياسات كاملة، اعتبرها معلومة ناقصة وسولنا قبل الطلب.</span></div>
-      <div><b>كيفاش نعرف الحالة؟</b><span>{% if condition_confirmed %}الحالة الحالية: {{ condition_label }}. أي ملاحظة معروفة كتبان هنا، فالوصف أو فالصور.{% else %}هاد المنتج ماشي متوفر للطلب دابا.{% endif %}</span></div>
-      <div><b>كيفاش نطلب؟</b><span>{% if product.available and condition_confirmed %}راجع الصور والثمن، اختار القياس إلا كان، وكمل الطلب بـ COD أو PayPal حسب الطرق المتاحة.{% elsif product.available %}تواصل معنا باش تعرف واش غادي يرجع متوفر.{% else %}هاد القطعة تباعت؛ شوف القطع المشابهة أو الدروب الجديد.{% endif %}</span></div>
-    </section>
-
-    <div class="pdp-fit">📐 <span><b>{% if fit_note != blank %}{{ fit_note }}{% else %}قارن القياسات قبل الشراء{% endif %}</b> · قارن هاد القياسات مع قطعة عندك كاتجيك مزيان. إلا بغيتي مساعدة، سولنا فالواتساب.</span></div>
-
-    <!-- ═══ PROOF BEFORE YOU ORDER ═══ -->
+    <!-- ═══ NOTES PYRAMID ═══ -->
     <section class="pdp-proof" aria-labelledby="pdp-proof-h">
-      <h2 id="pdp-proof-h" class="pdp-proof-h">الدليل قبل ما تطلب — <em>هاد القطعة بالضبط</em></h2>
+      <h2 id="pdp-proof-h" class="pdp-proof-h">النوطات — <em>{{ ttl_main }}</em></h2>
       <ul class="pdp-proof-list">
-
-        <li class="pp-row">
-          <span class="pp-ic">📷</span>
-          <div><b>الصور</b><span>{{ product.images.size }} صور ديال نفس القطعة — ماشي صور البراند. بغيتي close-up؟ <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_photos }}" target="_blank" rel="noopener">سول فالواتساب</a></span></div>
-        </li>
-
-        <li class="pp-row">
-          <span class="pp-ic">BR</span>
-          <div><b>البراند والليبل</b><span>{{ product.vendor }}{% if product.metafields.lbass.label_size != blank %} · القياس فالإتيكيت: {{ product.metafields.lbass.label_size }}{% endif %}</span></div>
-        </li>
-
-        <li class="pp-row">
-          <span class="pp-ic">TAG</span>
-          <div><b>التّيكيت الأصلي</b><span>{% if ticket_status == 'ticket_attached' %}باقي متعلق فالقطعة.{% elsif ticket_status == 'ticket_included' %}داخل مع القطعة.{% elsif ticket_status == 'no_ticket' %}ما كاينش التّيكيت الأصلي ديال البيع.{% else %}المعلومة ما كتبانش حتى يكون المنتج متوفر للطلب.{% endif %}</span></div>
-        </li>
-
-        {% if product.metafields.lbass.meas_length != blank or product.metafields.lbass.meas_chest != blank or product.metafields.lbass.meas_waist != blank or product.metafields.lbass.meas_sleeve != blank or product.metafields.lbass.meas_inseam != blank or product.metafields.lbass.meas_insole != blank %}
-        <li class="pp-row">
-          <span class="pp-ic">📏</span>
-          <div><b>القياسات بالشمتر</b><span>{% if product.metafields.lbass.meas_length != blank %}الطول {{ product.metafields.lbass.meas_length }}cm · {% endif %}{% if product.metafields.lbass.meas_chest != blank %}الصدر {{ product.metafields.lbass.meas_chest }}cm · {% endif %}{% if product.metafields.lbass.meas_waist != blank %}الوسط {{ product.metafields.lbass.meas_waist }}cm · {% endif %}{% if product.metafields.lbass.meas_sleeve != blank %}الكمّ {{ product.metafields.lbass.meas_sleeve }}cm · {% endif %}{% if product.metafields.lbass.meas_inseam != blank %}داخل الرجل {{ product.metafields.lbass.meas_inseam }}cm · {% endif %}{% if product.metafields.lbass.meas_insole != blank %}النعل {{ product.metafields.lbass.meas_insole }}cm{% endif %}</span></div>
-        </li>
-        {% endif %}
-
-        <li class="pp-row">
-          <span class="pp-ic">🔍</span>
-          <div><b>الحالة بالتفصيل</b><span>{% if condition_confirmed %}<strong>{{ condition_label }}.</strong> {% if condition_notes != blank %}{{ condition_notes }}{% else %}راجع الوصف والصور الحقيقية ديال نفس القطعة.{% endif %}{% else %}هاد المنتج ماشي متوفر للطلب دابا.{% endif %}</span></div>
-        </li>
-
-        {% if visible_defects != blank %}
-        <li class="pp-row">
-          <span class="pp-ic">!</span>
-          <div><b>الملاحظات أو العيوب الظاهرة</b><span>{{ visible_defects }}</span></div>
-        </li>
-        {% endif %}
-
-        {% if is_one_of_one %}
-          <li class="pp-row">
-            <span class="pp-ic">1/1</span>
-            <div><b>قطعة وحدة فالستوك</b><span>ملي تتباع، كتخرج من الكوليكسيون وما كنقدروش نضمنو ترجع بنفس الحالة والقياس.</span></div>
-          </li>
-        {% endif %}
-
-        <li class="pp-row">
-          <span class="pp-ic">MAD</span>
-          <div><b>الثمن</b><span>{{ selv.price | money }} هو الثمن الحالي والنهائي قبل التوصيل. نفس الثمن كيبقى فالسلة والـ checkout.</span></div>
-        </li>
-
-        <li class="pp-row">
-          <span class="pp-ic">🚚</span>
-          <div><b>التوصيل</b><span>المدة كتتأكد حسب المدينة وشركة التوصيل. كنأكدو معاك فالواتساب قبل ما نصيفطو، وشوف صفحة التوصيل والخلاص للتفاصيل المتاحة.</span></div>
-        </li>
-
-        <li class="pp-row">
-          <span class="pp-ic">💳</span>
-          <div><b>الخلاص</b><span>اختار <b>COD</b> وتخلّص ملي توصلك بلا مقدّم، أو ادفع أونلاين بـ PayPal.</span></div>
-        </li>
-
-        <li class="pp-row">
-          <span class="pp-ic">↩</span>
-          <div><b>الإرجاع</b><span>إلا وصلاتك قطعة مختلفة على اللي عرضنا، تواصل معنا بسرعة باش نراجعو الحالة حسب <a href="/pages/refund-policy" target="_blank" rel="noopener">شروط الإرجاع كاملة</a>.</span></div>
-        </li>
-
+        {% if fr_top != blank %}<li class="pp-row"><span class="pp-ic">1</span><div><b>الافتتاحية (tête)</b><span dir="auto">{{ fr_top }}</span></div></li>{% endif %}
+        {% if fr_heart != blank %}<li class="pp-row"><span class="pp-ic">2</span><div><b>القلب (cœur)</b><span dir="auto">{{ fr_heart }}</span></div></li>{% endif %}
+        {% if fr_base != blank %}<li class="pp-row"><span class="pp-ic">3</span><div><b>القاعدة (fond)</b><span dir="auto">{{ fr_base }}</span></div></li>{% endif %}
+        <li class="pp-row"><span class="pp-ic">ML</span><div><b>التركيز والحجم</b><span>{{ fr_conc_ar }} ({{ fr_conc }}) · {{ fr_ml }} ml</span></div></li>
+        <li class="pp-row"><span class="pp-ic">✦</span><div><b>لمن</b><span>{{ fr_wear_ar }}{% if fr_family != blank %} · العائلة: {{ fr_family }}{% endif %}{% if fr_year != blank %} · خرج ف {{ fr_year }}{% endif %}</span></div></li>
+        <li class="pp-row"><span class="pp-ic">MAD</span><div><b>الثمن</b><span>{% if fr_price_pending %}الثمن غادي يتعلن ملي يوصل العطر — ضغط «علمني ملي يوصل» ونصيفطوه ليك.{% else %}{{ selv.price | money }} هو الثمن الحالي والنهائي قبل التوصيل. نفس الثمن كيبقى فالسلة والـ checkout.{% endif %}</span></div></li>
+        <li class="pp-row"><span class="pp-ic">🚚</span><div><b>التوصيل</b><span>20 درهم داخل مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم. كنأكدو معاك فالواتساب قبل ما نصيفطو.</span></div></li>
+        <li class="pp-row"><span class="pp-ic">💳</span><div><b>الخلاص</b><span>اختار <b>COD</b> وتخلّص ملي توصلك بلا مقدّم، أو ادفع أونلاين بـ PayPal.</span></div></li>
+        <li class="pp-row"><span class="pp-ic">↩</span><div><b>الإرجاع</b><span>حسب <a href="/pages/refund-policy" target="_blank" rel="noopener">شروط الإرجاع كاملة</a>. مع COD كتشوف الكرطونة فالباب قبل ما تخلص.</span></div></li>
       </ul>
     </section>
 
     <div class="pdp-desc"><p>{{ product_summary }}</p></div>
+    {%- comment -%} 2026-09-29: guides that match this bottle (product → guide link of the topical cluster). {%- endcomment -%}
+    {% render 'lbass-guide-links', dept: 'fragrance', place: 'product', product: product %}
 
     <section class="pdp-desc-cta" aria-label="قرار الشراء">
-      <p class="pdc-eyebrow">REAL PHOTOS · CLEAR CONDITION</p>
-      <h2>{% if product.available and condition_confirmed %}عجباتك القطعة؟{% elsif product.available %}هاد المنتج ماشي متوفر دابا{% else %}هاد القطعة تباعت{% endif %}</h2>
-      <p>{% if product.available and condition_confirmed %}{% if is_one_of_one %}حيت هي قطعة 1/1، إلا كان القياس مناسب ليك زيدها للسلة قبل ما تمشي. {% endif %}مازال شاك فالحالة ولا القياس؟ سولنا فالواتساب ونصيفطو ليك تفاصيل أكثر.{% elsif product.available %}تواصل معنا باش تعرف واش غادي يرجع متوفر.{% else %}شوف قطع قريبة من نفس البراند أو الكاتيجوري فالدروب الحالي.{% endif %}</p>
+      <p class="pdc-eyebrow">PARFUM · FLACON NEUF EN BOÎTE</p>
+      <h2>{% if product.available %}عجبك العطر؟{% elsif fr_soon %}بغيتي هاد العطر؟{% else %}هاد العطر مابقاش فالستوك دابا{% endif %}</h2>
+      <p>{% if product.available %}زيدو للسلة وخلّص ملي يوصلك. عندك سؤال على الريحة؟ سولنا فالواتساب.{% elsif fr_soon %}جاي قريباً من دبي. خلي لينا خبر فالواتساب ونعلموك أول واحد ملي يوصل.{% else %}سولنا فالواتساب نعلموك ملي يرجع، ولا شوف عطور أخرى متوفرة.{% endif %}</p>
       <div class="pdc-actions">
-        {% if product.available and condition_confirmed %}
-          <button type="button" class="pdc-primary" data-pdp-desc-add data-cro-event="add_to_cart_click" data-cro-label="pdp_lower">زيدها للسلة</button>
-        {% elsif product.available %}
-          <a class="pdc-primary" href="mailto:contact@lbassoriginal.com?subject={{ display_title | url_encode }}">سول بالإيميل</a>
+        {% if product.available %}
+          <button type="button" class="pdc-primary" data-pdp-desc-add data-cro-event="add_to_cart_click" data-cro-label="pdp_lower">زيدو للسلة</button>
+        {% elsif fr_soon %}
+          <a class="pdc-primary" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_notify }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_notify_lower">علمني ملي يوصل</a>
         {% else %}
-          <a class="pdc-primary" href="{% if first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}">شوف قطع مشابهة</a>
+          <a class="pdc-primary" href="/collections/fragrances">شوف عطور أخرى</a>
         {% endif %}
-        <a class="pdc-secondary" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener">سول فالواتساب</a>
+        <a class="pdc-secondary" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_scent }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="pdp_scent_question">سول على الريحة فالواتساب</a>
       </div>
-      <p class="pdc-proof">صور حقيقية{% if is_one_of_one %} · قطعة 1/1{% endif %} · COD أو PayPal · إرجاع حسب الشروط</p>
+      <p class="pdc-proof">جديد فالكرطونة · ماشي ديكانت · COD أو PayPal · إرجاع حسب الشروط</p>
     </section>
 
-    {% if product.metafields.lbass.fits_for != blank or product.metafields.lbass.fits_against != blank %}
-    <div class="pdp-fits">
-      {% if product.metafields.lbass.fits_for != blank %}
-        {% assign fits_for_items = product.metafields.lbass.fits_for | split: '|' %}
-        {% for item in fits_for_items %}<div class="pdp-fit-row pdp-fit-yes"><span class="pf-ic">✓</span>{{ item }}</div>{% endfor %}
-      {% endif %}
-      {% if product.metafields.lbass.fits_against != blank %}
-        {% assign fits_against_items = product.metafields.lbass.fits_against | split: '|' %}
-        {% for item in fits_against_items %}<div class="pdp-fit-row pdp-fit-no"><span class="pf-ic">✗</span>{{ item }}</div>{% endfor %}
-      {% endif %}
-    </div>
-    {% endif %}
-
-    {% if product.metafields.lbass.meas_length != blank or product.metafields.lbass.meas_chest != blank %}
-    <div class="pdp-meas">
-      <p class="pm-h">📏 القياسات الحقيقية</p>
-      <p class="pm-sub">بالسنتمتر — قارن مع قطعة عندك كاتجيك مزيان</p>
-      <div class="pm-grid">
-        {% if product.metafields.lbass.meas_length != blank %}<div class="pm-i"><span class="k">الطول</span><span class="v">{{ product.metafields.lbass.meas_length }} cm</span></div>{% endif %}
-        {% if product.metafields.lbass.meas_chest != blank %}<div class="pm-i"><span class="k">الصدر</span><span class="v">{{ product.metafields.lbass.meas_chest }} cm</span></div>{% endif %}
-        {% if product.metafields.lbass.meas_waist != blank %}<div class="pm-i"><span class="k">الوسط</span><span class="v">{{ product.metafields.lbass.meas_waist }} cm</span></div>{% endif %}
-        {% if product.metafields.lbass.meas_sleeve != blank %}<div class="pm-i"><span class="k">الكمّ</span><span class="v">{{ product.metafields.lbass.meas_sleeve }} cm</span></div>{% endif %}
-        {% if product.metafields.lbass.meas_inseam != blank %}<div class="pm-i"><span class="k">داخل الرجل</span><span class="v">{{ product.metafields.lbass.meas_inseam }} cm</span></div>{% endif %}
-        {% if product.metafields.lbass.meas_insole != blank %}<div class="pm-i"><span class="k">النعل</span><span class="v">{{ product.metafields.lbass.meas_insole }} cm</span></div>{% endif %}
-      </div>
-      <p class="pm-note">📷 بغيتي صورة ديال القياس بالمتر؟ <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_fit }}" target="_blank" rel="noopener" style="color:var(--green2);text-decoration:underline">سول فالواتساب</a></p>
-    </div>
-    {% endif %}
-
-    {% if product.available and condition_confirmed %}
-    <!-- ═══ 5-STEP ORDER FLOW ═══ -->
+    {% if product.available %}
     <div class="pdp-steps">
       <p class="ps-h">كيفاش يخدم الطلب — ٥ خطوات صافيين</p>
       <ol class="ps-list">
-        <li><span class="ps-n">1</span><span class="ps-t">تختار القطعة وتزيدها للسلة</span></li>
+        <li><span class="ps-n">1</span><span class="ps-t">تختار العطر وتزيدو للسلة</span></li>
         <li><span class="ps-n">2</span><span class="ps-t">تدخل العنوان ديالك</span></li>
         <li><span class="ps-n">3</span><span class="ps-t">نأكدو معاك فالواتساب</span></li>
-        <li><span class="ps-n">4</span><span class="ps-t">نصيفطو ليك القطعة مغلّفة</span></li>
+        <li><span class="ps-n">4</span><span class="ps-t">نصيفطو ليك الكرطونة مغلّفة</span></li>
         <li><span class="ps-n">5</span><span class="ps-t">تخلّص COD ملي توصلك أو ادفع بـ PayPal</span></li>
       </ol>
     </div>
     {% endif %}
-
-    <div class="ptrust-passport" aria-label="Product Trust Passport">
-      <div class="tp-title">
-        <span class="tp-title-main"><img class="tp-seal" src="{{ 'lbass-authenticity-seal.svg' | asset_url }}" alt="" width="240" height="240">Trust Passport</span>
-      </div>
-      <div class="tp-grid">
-        <div class="tp-card"><b>الحالة</b><span>{{ condition_label }}. {{ condition_description }}</span></div>
-        <div class="tp-card"><b>التّيكيت</b><span>{% if ticket_status == 'ticket_attached' %}التّيكيت الأصلي متعلق.{% elsif ticket_status == 'ticket_included' %}التّيكيت الأصلي داخل مع القطعة.{% elsif ticket_status == 'no_ticket' %}ما فيهاش التّيكيت الأصلي ديال البيع.{% else %}المعلومة ما كتبانش حتى يكون المنتج متوفر للطلب.{% endif %}</span></div>
-        <div class="tp-card"><b>الملاحظات</b><span>{% if flaw_note != blank %}{{ flaw_note }}{% elsif condition_confirmed %}راجع الوصف والصور الحقيقية؛ ما كايناش ملاحظة عيب منفصلة مسجلة فهاد الحقل.{% else %}ما غاديش نعرضو ملاحظة غير مؤكدة.{% endif %}</span></div>
-        <div class="tp-card"><b>القياسات</b><span>{% if measurement_note != blank %}{{ measurement_note }}{% else %}استعمل القياس المكتوب فالقطعة، وسول فالواتساب على القياسات بالسنتيمتر إلا ماكانوش ظاهرين.{% endif %}</span></div>
-        <div class="tp-card"><b>الخامة/اللون</b><span>{% if material_note != blank or color_note != blank %}{% if material_note != blank %}{{ material_note }}{% endif %}{% if material_note != blank and color_note != blank %} · {% endif %}{% if color_note != blank %}{{ color_note }}{% endif %}{% else %}الخامة واللون كيبانو فالصور والوصف عند توفر المعلومة.{% endif %}</span></div>
-        <div class="tp-card"><b>الصور</b><span>الصور هي الصور الحقيقية للقطعة بالضبط. نقدر نصيفطو صور إضافية فالواتساب.</span></div>
-      </div>
-    </div>
-
-    <div class="pdp-help-row">
-      <a class="pdp-help" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_fit }}" target="_blank" rel="noopener">📏 سول على القياس</a>
-      <a class="pdp-help" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_cond }}" target="_blank" rel="noopener">🔍 تأكد من الحالة</a>
-      <a class="pdp-help" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_photos }}" target="_blank" rel="noopener">📷 طلب صور أكثر</a>
-      <a class="pdp-help" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_availability }}" target="_blank" rel="noopener">✓ تأكد من التوفر</a>
-    </div>
-
-    <details class="acc" open>
-      <summary>الحالة والتّيكيت</summary>
-      <div class="acc-body">
-        <b style="color:var(--gold2)">{{ condition_label }}</b><br>{{ condition_description }}
-        {% if condition_notes != blank %}<br><br><b style="color:var(--cream)">ملاحظات الفحص:</b> {{ condition_notes }}{% endif %}
-        {% if visible_defects != blank %}<br><br><b style="color:var(--cream)">الملاحظات الظاهرة:</b> {{ visible_defects }}{% endif %}
-        {% unless condition_confirmed %}<br><br><b style="color:#ffad8c">هاد المنتج ماشي متوفر للطلب دابا.</b>{% endunless %}
-      </div>
-    </details>
-
-    <details class="acc" open>
-      <summary>القياس والـ fit</summary>
-      <div class="acc-body">{% if fit_note != blank %}<b style="color:var(--gold2)">{{ fit_note }}</b><br>{% endif %}{% if measurement_note != blank %}{{ measurement_note }}<br><br>{% endif %}راجع القياس المكتوب فهاد الصفحة قبل الطلب. إلا بغيتي تتأكد أكثر، صيفط لينا فـ WhatsApp ونعاونوك تشوف واش القياس مناسب ليك.</div>
-    </details>
 
     <details class="acc">
       <summary>التوصيل والدفع</summary>
@@ -1223,13 +1137,13 @@
     </details>
 
     <details class="acc">
-      <summary>الإرجاع والتبديل</summary>
-      <div class="acc-body">الإرجاع أو التبديل كيتطبق غير حسب <a href="/pages/refund-policy">السياسة المنشورة</a> وحالة القطعة. إلا عندك سؤال قبل الطلب، تواصل معنا فـ <a class="pdp-email" href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a> أو فالواتساب.</div>
+      <summary>الإرجاع</summary>
+      <div class="acc-body">الإرجاع كيتطبق غير حسب <a href="/pages/refund-policy">السياسة المنشورة</a>. إلا عندك سؤال قبل الطلب، تواصل معنا فـ <a class="pdp-email" href="mailto:contact@lbassoriginal.com">contact@lbassoriginal.com</a> أو فالواتساب.</div>
     </details>
 
     <details class="acc">
       <summary>علاش Lbass Original؟</summary>
-      <div class="acc-body">Lbass Original كيجمع ليك قطع branded second-hand وstreetwear مختارة، بصور حقيقية ديال نفس القطعة وحالة واضحة. الهدف هو تشري قطعة مختلفة وأنت فاهم شنو غادي يوصلك؛ الفحص داخلي وماشي شهادة خارجية إلا كانت مذكورة صراحة.</div>
+      <div class="acc-body">Lbass Original معروف بالحوايج branded second-hand الأصلية، بصور حقيقية وحالة واضحة. دابا زدنا عطور عربية مختارة: قرعات كاملة جديدة فالكرطونة ديالها، بنفس المبدأ — تعرف شنو غادي يوصلك قبل ما تخلص.</div>
     </details>
   </section>
 
@@ -1261,8 +1175,8 @@
     {% when 'new-balance-cargo-pants-sage' %}
       {% assign visible_product_description = visible_product_description | replace: 'مستعمل — حالة ممتازة، ما فيه عيوب', 'ما فيهاش التّيكيت · بحالة ممتازة وشبه جديدة، والملاحظات كيبانو فوق' %}
   {% endcase %}
-  {% if visible_product_description != blank and condition_confirmed %}
-  <section class="pdp-body" aria-label="تفاصيل القطعة">
+  {% if visible_product_description != blank %}
+  <section class="pdp-body" aria-label="تفاصيل العطر">
     {{ visible_product_description }}
   </section>
   {% elsif visible_product_description != blank %}
@@ -1294,7 +1208,7 @@
   {%- endcapture -%}
   {% if link_count > 0 %}
   <nav class="pdp-cats" aria-label="أقسام مرتبطة">
-    <p class="pdp-cats-h">شوف تان قطع بحال هادي 👇</p>
+    <p class="pdp-cats-h">شوف عطور أخرى 👇</p>
     {{ collection_links }}
   </nav>
   {% endif %}
@@ -1332,19 +1246,19 @@
     <header class="lbass-reviews__head">
       <p class="lbass-reviews__eyebrow" aria-hidden="true">LBASS COMMUNITY PROOF</p>
       <h2 class="lbass-reviews__title" id="reviews-h"><span aria-hidden="true">★</span> آراء الزبناء</h2>
-      <p class="lbass-reviews__subtitle">شريتي من Lbass Original؟ رأيك كيعاون ناس آخرين يعرفو الحالة، القياس، والتجربة قبل ما يطلبو.</p>
+      <p class="lbass-reviews__subtitle">شريتي عطر من Lbass Original؟ رأيك كيعاون ناس آخرين يعرفو الريحة والتجربة قبل ما يطلبو.</p>
     </header>
     <div class="lbass-reviews__topics" aria-label="شنو تقدر تذكر فالرأي ديالك">
-      <span>الحالة</span><span>القياس</span><span>الصور</span><span>التوصيل</span><span>تجربة الطلب</span>
+      <span>الريحة</span><span>الثبات</span><span>التغليف</span><span>التوصيل</span><span>تجربة الطلب</span>
     </div>
-    <p class="lbass-reviews__guide">قول للناس واش القياس جا مضبوط، واش الحالة كانت بحال الصور، وكيف كانت تجربة التوصيل.</p>
+    <p class="lbass-reviews__guide">قول للناس كيفاش لقيتي الريحة، واش القرعة وصلات مزيانة فالكرطونة، وكيف كانت تجربة التوصيل.</p>
     <!-- Start of Judge.me code -->{% assign has_legacy = false %}{% if product.metafields.judgeme.widget.size > 20 %}{% assign has_legacy = true %}{% endif %}<div style='clear:both'></div><div id='judgeme_product_reviews' class='jdgm-widget jdgm-review-widget' data-product-title='{{ product.title | escape }}' data-id='{{ product.id }}' data-product-id='{{ product.id }}' data-widget='review' data-auto-install='false' data-shop-reviews-count='{{ shop.metafields.judgeme.shop_reviews_count | default: 0 | escape }}' data-entry-point='review_widget.js' data-entry-key='review-widget/main.js'>{% if has_legacy %}<div class='jdgm-legacy-widget-content' style='display: none;'>{{ product.metafields.judgeme.widget }}</div>{% endif %}</div>{% if product.metafields.judgeme.review_widget_data %}<script>jdgm.data ||= {}; jdgm.data.reviewWidget ||= {}; jdgm.data.reviewWidget[{{ product.id }}] = {{ product.metafields.judgeme.review_widget_data }}</script>{% endif %}<!-- End of Judge.me code -->
     <p class="lbass-reviews__trust"><span aria-hidden="true">✓</span> رأيك خاص يكون حقيقي ومبني على تجربة الشراء.</p>
   </section>
 
   <section class="pdp-rel" aria-labelledby="rel-h">
-    <h2 class="pdp-rel-h" id="rel-h">كمّل اللوك — شوف شنو يجي مع هاد القطعة 👇</h2>
-    <p class="look-sub">قطع مختارة كيركبو مع هاد القطعة — وكلهم متوفرين دابا.</p>
+    <h2 class="pdp-rel-h" id="rel-h">كمّل الستايل — حوايج branded متوفرة دابا 👇</h2>
+    <p class="look-sub">قطع second-hand مختارة من الدروب الحالي، كلها متوفرة دابا.</p>
     <div class="pgrid" id="lookGrid">
       {% comment %} 1 · manual merchandising via metafield {% endcomment %}
       {% assign look_manual = product.metafields.lbass.look_products.value %}
@@ -1410,107 +1324,6 @@
       <p class="look-all-note">💵 كتخلّص غير ملي توصلك · راجع المخزون فصفحة كل قطعة</p>
     </div>
     {% endif %}
-
-    {%- comment -%}
-      «كمّل اللوك · Parfums» (2026-09-30, owner: show it where someone wants to buy
-      clothing; the cart drawer covers the moment after adding). Bottles = the in-stock
-      Lattafa best sellers (collection order = lattafa.ma's Moroccan units-sold ranking),
-      matched to the piece: unisex always, men's bottles only on men-only pieces,
-      women's only on women-only pieces. Pick 1 = the best-ranked bottle that takes THIS
-      piece + the bottle to the real 500 MAD free-delivery rate; then by rank, 3 at most.
-      Only on in-stock clothing, never K-beauty, and never part of the «زيد اللوك»
-      button (it sits outside #lookGrid). Adds go through the cart drawer's add()
-      (data-lbdr-up, place pdp_look).
-    {%- endcomment -%}
-    {%- if product.available and product.type != 'Fragrance' and product.type != 'Cosmetics' -%}
-      {%- liquid
-        assign lpf_c = collections['lattafa-best-sellers']
-        assign lpf_men = false
-        assign lpf_women = false
-        if product.tags contains 'gender:men'
-          assign lpf_men = true
-        endif
-        if product.tags contains 'gender:women'
-          assign lpf_women = true
-        endif
-        assign lpf_gap = 50000 | minus: product.price
-        assign lpf_first = ''
-        assign lpf_rest = ''
-      -%}
-      {%- for lpf_b in lpf_c.products -%}
-        {%- liquid
-          assign lpf_ok = false
-          if lpf_b.available
-            if lpf_b.tags contains 'wear:unisex'
-              assign lpf_ok = true
-            elsif lpf_b.tags contains 'wear:men' and lpf_men and lpf_women == false
-              assign lpf_ok = true
-            elsif lpf_b.tags contains 'wear:women' and lpf_women and lpf_men == false
-              assign lpf_ok = true
-            endif
-          endif
-        -%}
-        {%- if lpf_ok -%}
-          {%- liquid
-            assign lpf_fs = false
-            if lpf_gap > 0 and lpf_b.price >= lpf_gap
-              assign lpf_fs = true
-            endif
-            assign lpf_tp = lpf_b.title | split: ' | '
-            assign lpf_lat = lpf_tp.first | remove_first: 'Lattafa ' | split: ' Eau de' | first | strip
-            assign lpf_ar = ''
-            if lpf_tp.size > 1
-              assign lpf_ar = lpf_tp.last | remove_first: 'عطر ' | strip
-            endif
-          -%}
-          {%- capture lpf_item -%}
-            <div class="lpf-it">
-              <a class="lpf-img" href="{{ lpf_b.url }}" data-lpf-link tabindex="-1" aria-hidden="true">{% if lpf_b.featured_image %}<img src="{{ lpf_b.featured_image | image_url: width: 600 }}" alt="" width="600" height="600" loading="lazy" decoding="async">{% endif %}</a>
-              <div class="lpf-main">
-                <a class="lpf-n" href="{{ lpf_b.url }}" data-lpf-link>{% if lpf_ar != blank %}{{ lpf_ar }} · {% endif %}<span dir="ltr">{{ lpf_lat }}</span></a>
-                <div class="lpf-meta"><span class="lpf-p">{{ lpf_b.price | money_without_trailing_zeros }}</span>{% if lpf_fs %}<span class="lpf-fs">+ توصيل مجاني</span>{% endif %}</div>
-              </div>
-              <button type="button" class="lpf-add" data-lbdr-up="{{ lpf_b.selected_or_first_available_variant.id }}" data-lbdr-place="pdp_look" data-fs="{% if lpf_fs %}1{% else %}0{% endif %}" aria-label="زيد للسلة — {{ lpf_b.title | escape }}"><span class="lbqa-txt">+ زيد للسلة</span></button>
-            </div>
-          {%- endcapture -%}
-          {%- if lpf_first == '' and lpf_fs -%}
-            {%- assign lpf_first = lpf_item -%}
-          {%- else -%}
-            {%- assign lpf_rest = lpf_rest | append: lpf_item | append: '<!--lpf-->' -%}
-          {%- endif -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {%- assign lpf_rest_arr = lpf_rest | split: '<!--lpf-->' -%}
-      {%- assign lpf_limit = 3 -%}{%- if lpf_first != '' -%}{%- assign lpf_limit = 2 -%}{%- endif -%}
-      {%- if lpf_first != '' or lpf_rest_arr.size > 0 -%}
-      <div class="lpf" id="lookParfum" aria-labelledby="lookParfumH">
-        <p class="lpf-k">كمّل اللوك · PARFUMS</p>
-        <h3 class="lpf-h" id="lookParfumH">{% if lpf_first != '' %}زيد عطر مع هاد القطعة والتوصيل يولي مجاني{% else %}واللمسة الأخيرة: عطر{% endif %}</h3>
-        <p class="lpf-s">Lattafa الأكثر مبيعاً فالمغرب — قرعة كاملة جديدة فالكرطونة.{% if lpf_first != '' %} التوصيل مجاني من 500 درهم.{% endif %}</p>
-        <div class="lpf-list">
-          {{ lpf_first }}
-          {%- for lpf_it in lpf_rest_arr limit: lpf_limit -%}{{ lpf_it }}{%- endfor -%}
-        </div>
-      </div>
-      <script>
-      (function(){
-        var box = document.getElementById('lookParfum'); if (!box) return;
-        function t(n, p){ try { if (typeof window.lbTrack === 'function') window.lbTrack(n, p); } catch(e){} }
-        var shown = [].map.call(box.querySelectorAll('[data-lbdr-up]'), function(b){ return b.getAttribute('data-lbdr-up'); }).join(',');
-        if ('IntersectionObserver' in window){
-          var io = new IntersectionObserver(function(es){
-            if (es.some(function(e){ return e.isIntersecting; })){ io.disconnect(); t('pdp_upsell_view', { department: 'fragrance', place: 'pdp_look', shown: shown, product_price: {{ product.price | divided_by: 100.0 }} }); }
-          }, { threshold: 0.4 });
-          io.observe(box);
-        }
-        box.addEventListener('click', function(e){
-          var a = e.target && e.target.closest ? e.target.closest('[data-lpf-link]') : null;
-          if (a) t('pdp_upsell_click', { department: 'fragrance', place: 'pdp_look', destination: a.getAttribute('href') });
-        });
-      })();
-      </script>
-      {%- endif -%}
-    {%- endif -%}
   </section>
 
   {% comment %}
@@ -1593,40 +1406,6 @@
 .look-all-btn:active{transform:scale(.98)}
 .look-all-btn.busy{opacity:.7;pointer-events:none}
 .look-all-note{margin:10px 0 0;color:var(--txt3);font-size:12.5px;font-weight:800}
-/* «كمّل اللوك · Parfums» (2026-09-30) — last step of the Look Builder */
-.lpf{margin:26px 0 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--ink2)}
-.lpf-k{margin:0 0 4px;color:var(--gold);font-size:10.5px;font-weight:900;letter-spacing:.16em}
-.lpf-h{margin:0 0 4px;color:var(--cream);font-size:clamp(17px,2vw,21px);font-weight:900;line-height:1.4}
-.lpf-s{margin:0 0 12px;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.7}
-.lpf-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.lpf-it{display:flex;flex-direction:column;gap:10px;min-width:0;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--ink)}
-.lpf-img{display:block;aspect-ratio:5/4;overflow:hidden;border-radius:10px;background:#FFFFFF;border:1px solid var(--line)}
-.lpf-img img{display:block;width:100%;height:100%;object-fit:contain;padding:5%;transition:transform .3s ease}
-.lpf-it:hover .lpf-img img{transform:scale(1.04)}
-.lpf-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.lpf-n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--cream);font-size:14px;font-weight:800;line-height:1.45;text-decoration:none}
-.lpf-n:hover{color:var(--gold)}
-.lpf-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
-.lpf-p{display:inline-block;color:var(--gold);font-size:15px;font-weight:900;direction:ltr;white-space:nowrap}
-.lpf-fs{display:inline-block;padding:1px 7px;border-radius:999px;background:rgba(31,168,85,.14);color:var(--green,#1FA855);font-size:10.5px;font-weight:900;white-space:nowrap}
-.lpf-add{width:100%;min-height:44px;padding:9px 10px;border-radius:10px;border:1px solid var(--gold);background:transparent;color:var(--cream);font-family:inherit;font-size:13.5px;font-weight:900;cursor:pointer;transition:background .2s,color .2s}
-.lpf-add:hover{background:var(--gold);color:var(--ink)}
-.lpf-add:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.lpf-add.busy{opacity:.7;pointer-events:none}
-.lpf-add.busy .lbqa-txt::after{content:"…"}
-.lpf-add.done{background:var(--green,#1FA855);border-color:var(--green,#1FA855);color:#fff}
-/* phones: the same cards as a swipe row, two visible and a peek of the third (like the homepage perfume row) */
-@media(max-width:900px){
-  .lpf-list{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(46%,1fr);gap:10px;
-    overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:thin}
-  .lpf-it{scroll-snap-align:start;padding:8px;gap:8px}
-  .lpf-img{aspect-ratio:1/1}
-  .lpf-n{font-size:13px}
-  .lpf-p{font-size:14px}
-  .lpf-add{min-height:42px;font-size:13px}
-}
-@media(max-width:640px){.lpf{padding:14px 12px}}
-@media(prefers-reduced-motion:reduce){.lpf-img img{transition:none}}
 @media(max-width:640px){.look-all-btn{width:100%;font-size:14.5px}.pdp-rel--discovery{padding:22px 16px}}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
 .pcard{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--ink2);border:1px solid var(--line);transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .25s,box-shadow .35s;display:flex;flex-direction:column;text-decoration:none;color:inherit}
@@ -1852,16 +1631,18 @@
 <!-- mobile sticky CTA -->
 <div class="pdp-sticky" id="pdpSticky">
   <div class="info">
-    <p class="nm">{{ product.vendor }} · <span id="pdpStickySize">{% if product.has_only_default_variant %}{% if is_one_of_one %}قطعة 1/1{% else %}{{ selv.title }}{% endif %}{% else %}اختار القياس{% endif %}</span></p>
+    <p class="nm">{{ product.vendor }} · <span id="pdpStickySize">{{ fr_ml }} ml</span></p>
     {% if condition_confirmed %}<span class="cond">{{ condition_label }}</span>{% endif %}
-    <p class="pr" data-price-mobile>{{ product.selected_or_first_available_variant.price | money }}</p>
+    <p class="pr" data-price-mobile>{% if fr_price_pending %}قريباً{% else %}{{ product.selected_or_first_available_variant.price | money }}{% endif %}</p>
   </div>
-  {% if product.available and condition_confirmed %}
+  {% if product.available %}
     <button type="button" class="pdp-sticky-add" id="pdpStickyAdd" data-cro-event="add_to_cart_click" data-cro-label="pdp_mobile_sticky" data-idle-label="{% if product.has_only_default_variant %}زيد للسلة{% else %}اختار القياس{% endif %}" {% unless product.has_only_default_variant %}disabled{% endunless %}>{% if product.has_only_default_variant %}زيد للسلة{% else %}اختار القياس{% endif %}</button>
   {% elsif product.available %}
     <a href="mailto:contact@lbassoriginal.com?subject={{ display_title | url_encode }}" class="pdp-sticky-add">تواصل معنا</a>
+  {% elsif fr_soon %}
+    <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_notify }}" class="pdp-sticky-add" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_notify_sticky">علمني ملي يوصل</a>
   {% else %}
-    <a href="{% if first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}" class="pdp-sticky-add">قطع مشابهة</a>
+    <a href="/collections/fragrances" class="pdp-sticky-add">عطور أخرى</a>
   {% endif %}
   <a class="pdp-sticky-wa" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="pdp_mobile_sticky" aria-label="سولنا فـ WhatsApp على {{ display_title | escape }}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.04 2a9.84 9.84 0 0 0-8.4 14.96L2.2 22l5.17-1.36A9.9 9.9 0 1 0 12.04 2Zm0 17.98a8.03 8.03 0 0 1-4.1-1.12l-.3-.18-3.07.81.82-2.99-.2-.31a8.06 8.06 0 1 1 6.85 3.79Zm4.42-6.03c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2a7.28 7.28 0 0 1-1.34-1.67c-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z"/></svg></a>
 </div>
@@ -1900,33 +1681,19 @@
   "productID": "shopify:{{ product.id }}",
   "description": {{ product_summary | strip | json }},
   "image": [{% for image in product.images %}"https:{{ image | image_url: width: 1200 }}"{% unless forloop.last %},{% endunless %}{% endfor %}],
-  "category": {{ product.type | default: product.product_type | default: 'Apparel' | json }},
+  "category": "Health & Beauty > Personal Care > Cosmetics > Perfume & Cologne",
   "brand": {"@type": "Brand", "name": {{ product.vendor | json }}},
-  {% if condition_confirmed %}"itemCondition": "{% if is_new_condition %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}",{% endif %}
-  {% if color_note != blank %}"color": {{ color_note | json }},{% endif %}
-  {% if material_note != blank %}"material": {{ material_note | json }},{% endif %}
-  {% if product.metafields.lbass.label_size.value != blank %}"size": {{ product.metafields.lbass.label_size.value | json }},{% elsif selv.title != 'Default Title' %}"size": {{ selv.title | json }},{% endif %}
+  "itemCondition": "https://schema.org/NewCondition",
+  {% if fr_ml != blank %}"size": {{ fr_vol_label | json }},{% endif %}
   "additionalProperty": [
-    {%- comment -%}
-      NEW vs SECOND-HAND (re-applied 2026-08-22). This asserted "second-hand"
-      unconditionally; for a new-with-tags item that is a false statement in
-      structured data. is_new_condition already drives itemCondition — it now
-      drives the wording too.
-    {%- endcomment -%}
-    {"@type": "PropertyValue", "name": "Photos", "value": "{% if is_new_condition %}Photos show the exact item offered for sale{% else %}Photos show the exact second-hand item offered for sale{% endif %}"}
-    {% if is_one_of_one %},{"@type": "PropertyValue", "name": "Inventory status", "value": "One-of-one item; one unit is currently offered"}{% endif %}
-    {% if condition_confirmed %},{"@type": "PropertyValue", "name": "Condition grade", "value": {{ condition_label | json }}}{% endif %}
-    {% if ticket_confirmed %},{"@type": "PropertyValue", "name": "Original retail ticket", "value": {{ ticket_status | json }}}{% endif %}
-    {% if fit_note != blank %},{"@type": "PropertyValue", "name": "Fit guidance", "value": {{ fit_note | json }}}{% endif %}
-    {% if measurement_note != blank %},{"@type": "PropertyValue", "name": "Measurements", "value": {{ measurement_note | json }}}{% endif %}
-    {% if flaw_note != blank %},{"@type": "PropertyValue", "name": "Visible defects", "value": {{ flaw_note | json }}}{% endif %}
-    {% if condition_notes != blank %},{"@type": "PropertyValue", "name": "Inspection notes", "value": {{ condition_notes | strip_newlines | json }}}{% endif %}
-    {% if product.metafields.lbass.meas_length != blank %},{"@type": "PropertyValue", "name": "Length", "value": "{{ product.metafields.lbass.meas_length }} cm"}{% endif %}
-    {% if product.metafields.lbass.meas_chest != blank %},{"@type": "PropertyValue", "name": "Chest", "value": "{{ product.metafields.lbass.meas_chest }} cm"}{% endif %}
-    {% if product.metafields.lbass.meas_waist != blank %},{"@type": "PropertyValue", "name": "Waist", "value": "{{ product.metafields.lbass.meas_waist }} cm"}{% endif %}
-    {% if product.metafields.lbass.meas_sleeve != blank %},{"@type": "PropertyValue", "name": "Sleeve", "value": "{{ product.metafields.lbass.meas_sleeve }} cm"}{% endif %}
-    {% if product.metafields.lbass.meas_inseam != blank %},{"@type": "PropertyValue", "name": "Inseam", "value": "{{ product.metafields.lbass.meas_inseam }} cm"}{% endif %}
-    {% if product.metafields.lbass.meas_insole != blank %},{"@type": "PropertyValue", "name": "Insole", "value": "{{ product.metafields.lbass.meas_insole }} cm"}{% endif %}
+    {"@type": "PropertyValue", "name": "Format", "value": "Full bottle, new in its original box (not a decant)"}
+    {% if fr_conc != blank %},{"@type": "PropertyValue", "name": "Concentration", "value": {{ fr_conc | json }}}{% endif %}
+    {% if fr_ml != blank %},{"@type": "PropertyValue", "name": "Volume", "value": {{ fr_ml }}, "unitCode": "MLT"}{% endif %}
+    {% if fr_family != blank %},{"@type": "PropertyValue", "name": "Scent family", "value": {{ fr_family | json }}}{% endif %}
+    {% if fr_top != blank %},{"@type": "PropertyValue", "name": "Top notes", "value": {{ fr_top | json }}}{% endif %}
+    {% if fr_heart != blank %},{"@type": "PropertyValue", "name": "Heart notes", "value": {{ fr_heart | json }}}{% endif %}
+    {% if fr_base != blank %},{"@type": "PropertyValue", "name": "Base notes", "value": {{ fr_base | json }}}{% endif %}
+    {% if fr_wear != blank %},{"@type": "PropertyValue", "name": "Intended for", "value": {{ fr_wear | json }}}{% endif %}
   ],
   {%- comment -%}
     ═══ AGGREGATE RATING — re-applied 2026-08-19, GATED ON REAL REVIEWS ═══
@@ -1957,15 +1724,15 @@
     "worstRating": {{ rating_obj.scale_min | default: 1 }}
   },
   {%- endif -%}
+  {%- unless fr_price_pending %}
   "offers": {
     "@type": "Offer",
     "url": "{{ shop.url }}{{ product.url }}",
     "priceCurrency": {{ shop.currency | json }},
     "price": {{ selv.price | divided_by: 100.0 | json }},
-    "availability": "{% if selv.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"{% if condition_confirmed %},
-    "itemCondition": "{% if is_new_condition %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}"{% endif %},
-    "inventoryLevel": {"@type": "QuantitativeValue", "value": {{ selv.inventory_quantity | at_least: 0 }}}{% if is_one_of_one %},
-    "eligibleQuantity": {"@type": "QuantitativeValue", "value": 1, "unitText": "One-of-One"}{% endif %},
+    "availability": "{% if selv.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "inventoryLevel": {"@type": "QuantitativeValue", "value": {{ selv.inventory_quantity | at_least: 0 }}},
     {%- comment -%}
       MERCHANT LISTING SHIPPING (re-added 2026-08-09).
       Lost when this branch forked before the shipping work; re-applied onto the
@@ -1987,7 +1754,9 @@
       "description": "Delivery from Marrakech: 20 MAD within Marrakech, 40 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
     },
     "seller": {"@id": "{{ shop.url }}/#store"}
-  }
+  },
+  {%- endunless %}
+  "mainEntityOfPage": "{{ shop.url }}{{ product.url }}"
 }
 </script>
 <script type="application/ld+json">

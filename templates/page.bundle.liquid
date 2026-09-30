@@ -1,0 +1,104 @@
+{%- comment -%}
+  ═══ LBASS — BUNDLE PAGE TEMPLATE (2026-09-28) ═══
+  Pages: /pages/fragrance-bundle and /pages/k-beauty-bundle (template suffix "bundle").
+  The department comes from the handle: a handle containing "beauty" gives
+  K-beauty; anything else gives fragrances.
+  Page title = H1, and the page body (Admin) = intro text. SEO title and
+  description come from the page's Admin SEO fields. These handles are not in
+  the hard-coded pSEO block in layout/theme.liquid.
+  Crawlable support content, the FAQ and JSON-LD come after the builder. The
+  FAQ is one list (q||a@@) that feeds both the visible <details> and the
+  FAQPage schema, so the two can't drift apart.
+{%- endcomment -%}
+{%- liquid
+  if page.handle contains 'beauty'
+    assign dept = 'beauty'
+    assign coll = collections['cosmetics']
+    assign crumb = 'تجميل كوري · K-Beauty'
+    assign faq = 'واش الخصم كيطبق أوتوماتيكياً؟||إيه، بلا كود: جوج منتوجات K-beauty = ⁦−5%⁩، و3 ولفوق = ⁦−10%⁩ على المنتوجات كاملين. الخصم كيبان فالسلة وفالـcheckout، حتى إلا زدتي المنتوجات من صفحة المنتوج.@@واش نقدر نركّب روتين كامل؟||إيه. مثلاً بلسم ديماكياج (تنظيف) + سيروم (علاج) + كريم (ترطيب). إلا ماعرفتيش شنو يناسب بشرتك، دير الاستشارة ديال 60 ثانية ونقترحو عليك روتين.@@واش المنتوجات أصلية؟||إيه: جداد فالعلبة، شريناهم من YesStyle وكيتصيفطو من مراكش. وإلا بان أن شي منتوج ماشي أصلي، فلوسك راجعين كاملين.@@كيفاش نخلص وشحال التوصيل؟||كتخلص عند الاستلام (COD) ولا بـ PayPal. التوصيل مجاني من 500 درهم، وإلا 40 درهم لكل المغرب. مع PayPal عندك 14 يوم باش ترجع المنتوج، حتى إلا حليتيه.'
+  else
+    assign dept = 'fragrance'
+    assign coll = collections['fragrances']
+    assign crumb = 'عطور · Fragrances'
+    assign faq = 'واش الخصم كيطبق أوتوماتيكياً؟||إيه، بلا كود: جوج عطور = ⁦−10%⁩، و3 عطور ولفوق = ⁦−15%⁩ على العطور كاملين. الخصم كيبان فالسلة وفالـcheckout، حتى إلا زدتي العطور من صفحة العطر.@@واش نقدر نخلط الرجالي والنسائي؟||إيه، أي عطور من الكوليكسيون: للراجل، للمرا ولا unisex، لك ولا هدية. العدد هو اللي كيحدد الخصم.@@واش العطور قرعات كاملة؟||إيه: قرعات كاملة جديدة فالكرطونة الأصلية، ماشي ديكانت. النوطات مكتوبين فصفحة كل عطر.@@كيفاش نخلص وشحال التوصيل؟||كتخلص عند الاستلام (COD) ولا بـ PayPal. التوصيل مجاني من 500 درهم، وإلا 40 درهم لكل المغرب. الإرجاع حسب سياسة الإرجاع.'
+  endif
+  assign faq_rows = faq | split: '@@'
+-%}
+<style>
+.lbx-bc{max-width:1280px;margin:0 auto;padding:14px clamp(16px,4vw,32px) 0;font-size:12.5px;color:var(--txt2,#57534E);direction:rtl;text-align:right}
+.lbx-bc a{color:var(--txt2,#57534E)}
+.lbx{max-width:960px;margin:0 auto;padding:10px clamp(16px,4vw,32px) 48px;direction:rtl;text-align:right;color:var(--cream,#0B0B0C)}
+.lbx h2{margin:26px 0 10px!important;font-size:clamp(19px,3.6vw,24px)!important;font-weight:900!important;color:var(--cream,#0B0B0C)!important}
+.lbx p,.lbx li{font-size:14.5px;line-height:1.8;color:var(--txt2,#57534E)}
+.lbx details{border:1px solid var(--line,rgba(11,11,12,.16));border-radius:12px;margin:0 0 8px;background:var(--ink,#fff)}
+.lbx summary{cursor:pointer;padding:14px;font-weight:900;font-size:14.5px;color:var(--cream,#0B0B0C);list-style:none}
+.lbx summary::-webkit-details-marker{display:none}
+.lbx details p{margin:0;padding:0 14px 14px}
+.lbx-links{display:flex;flex-wrap:wrap;gap:6px;padding:0;list-style:none}
+.lbx-links a{display:inline-block;padding:7px 11px;border:1px solid var(--line,rgba(11,11,12,.16));border-radius:999px;font-size:12.5px;font-weight:800;color:var(--cream,#0B0B0C);text-decoration:none}
+</style>
+
+<nav class="lbx-bc" aria-label="مسار التنقل">
+  <a href="{{ routes.root_url }}">الرئيسية</a> ›
+  {% if coll != blank %}<a href="{{ coll.url }}">{{ crumb }}</a> ›{% endif %}
+  <span aria-current="page">{{ page.title }}</span>
+</nav>
+
+{% render 'lbass-bundle', dept: dept %}
+
+<div class="lbx">
+  <h2>كيفاش كيخدم الباك؟</h2>
+  {%- if dept == 'beauty' -%}
+  <p>ختار منتوجات K-beauty اللي بغيتي من الشبكة: كل منتوج فيه الحجم، الثمن والهدف ديالو. الباك كيتحفظ فالتيليفون ديالك، يعني تقدر تخرج تشوف تفاصيل منتوج وترجع بلا ما يضيع ليك والو. ملي تزيد الباك للسلة، Shopify كيطبق الخصم أوتوماتيكياً: جوج منتوجات = ⁦−5%⁩، 3 ولفوق = ⁦−10%⁩.</p>
+  {%- else -%}
+  <p>ختار العطور اللي بغيتي من الشبكة: كل عطر فيه الحجم، التركيز، الثمن والنوطات الأساسية. الباك كيتحفظ فالتيليفون ديالك، يعني تقدر تخرج تشوف تفاصيل عطر وترجع بلا ما يضيع ليك والو. ملي تزيد الباك للسلة، Shopify كيطبق الخصم أوتوماتيكياً: جوج عطور = ⁦−10%⁩، 3 ولفوق = ⁦−15%⁩.</p>
+  {%- endif -%}
+
+  {%- if coll != blank and coll.products_count > 0 -%}
+  <h2>{% if dept == 'beauty' %}المنتوجات اللي تقدر تزيد للباك{% else %}العطور اللي تقدر تزيد للباك{% endif %}</h2>
+  <ul class="lbx-links">
+    {%- for p in coll.products -%}<li><a href="{{ p.url }}">{{ p.title | split: ' | ' | first }}</a></li>{%- endfor -%}
+  </ul>
+  {%- endif -%}
+
+  <h2>أسئلة على الباك</h2>
+  {%- for row in faq_rows -%}
+    {%- assign qa = row | split: '||' -%}
+    <details><summary>{{ qa[0] }}</summary><p>{{ qa[1] }}</p></details>
+  {%- endfor -%}
+  <p><a href="/pages/refund-policy" style="color:var(--cream,#0B0B0C);font-weight:900">سياسة الإرجاع ←</a></p>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}},
+        {"@type": "ListItem", "position": 2, "name": {{ crumb | json }}, "item": {{ shop.url | append: coll.url | json }}},
+        {"@type": "ListItem", "position": 3, "name": {{ page.title | json }}, "item": {{ shop.url | append: page.url | json }}}
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "name": {{ page.title | json }},
+      "itemListElement": [
+        {%- for p in coll.products -%}
+        {"@type": "ListItem", "position": {{ forloop.index }}, "url": {{ shop.url | append: p.url | json }}, "name": {{ p.title | split: ' | ' | first | json }}}{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- for row in faq_rows -%}
+        {%- assign qa = row | split: '||' -%}
+        {"@type": "Question", "name": {{ qa[0] | json }}, "acceptedAnswer": {"@type": "Answer", "text": {{ qa[1] | json }}}}{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    }
+  ]
+}
+</script>

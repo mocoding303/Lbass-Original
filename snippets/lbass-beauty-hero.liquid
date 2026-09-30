@@ -1,0 +1,185 @@
+{%- comment -%}
+  ═══ LBASS — K-BEAUTY HERO (2026-09-26) ═══
+
+  One design, two placements (same contract as snippets/lbass-frag-hero.liquid):
+    mode: 'slide'  a slide of the homepage carousel (snippets/lbass-hero-carousel.liquid).
+                   Heading is an <h2> — the homepage keeps ONE <h1>, the clothing one.
+    mode: 'page'   top of templates/collection.beauty.liquid (/collections/cosmetics
+                   and the concern pages). Heading is the page <h1>.
+
+  Parameters (page mode): title (the H1), latin (display line, e.g. ANTI-TACHES),
+  coll (the collection), demo (true on the preview stand-in).
+
+  Look: a light "clean beauty" plate — warm ivory to blush, one soft rose glow,
+  a faint dot grid — the counterpart of the dark oud plate on the perfume slide,
+  so the three carousel slides read as three departments. The art is a shelf of
+  the owner's OWN boxes (assets/lbass-kb-*.webp, cut from the photos sent on
+  2026-09-26), not brand press shots.
+
+  Claims stay inside what the catalogue says: new in the box, real photos of the
+  stock, ingredients and directions per the brand's official page, COD/PayPal,
+  20/40 shipping. «أصلي» + YesStyle added 2026-09-27 (owner: all current stock was bought
+  from YesStyle and ships from Marrakech) — revisit if a product comes from elsewhere.
+{%- endcomment -%}
+{%- liquid
+  assign lbbh_mode = mode | default: 'slide'
+  assign lbbh_all = collections['cosmetics']
+  assign lbbh_live = lbbh_all.products_count | default: 0 | plus: 0
+  assign lbbh_url = '/collections/cosmetics'
+  if lbbh_live == 0 and theme.role == 'unpublished'
+    assign lbbh_url = '/collections/all?view=beauty'
+  endif
+  assign lbbh_scope = lbbh_all
+  if lbbh_mode == 'page' and coll != blank and demo != true
+    assign lbbh_scope = coll
+  endif
+  assign lbbh_avail = lbbh_scope.products | where: 'available', true | size
+
+  assign lbbh_latin = latin | default: 'K-BEAUTY'
+  assign lbbh_title = title | default: 'سكين كير كوري فالمغرب'
+  assign lbbh_wa_help = 'سلام Lbass Original! بغيت نصيحة فالسكين كير الكوري. البشرة ديالي: ' | url_encode
+  assign lbbh_blank = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+  comment
+    Shelf order is fixed and the widths are the real box proportions (height 440).
+  endcomment
+  assign lbbh_shelf = 'jumiso|178|JUMISO,purito|123|Purito Seoul,mixsoon|157|mixsoon,ksecret|145|K-SECRET,celimax|105|celimax'
+  assign lbbh_rows = lbbh_shelf | split: ','
+-%}
+<section class="lbbh lbbh--{{ lbbh_mode }}" aria-labelledby="lbbhT-{{ lbbh_mode }}" data-lbbh>
+  <style>
+    .lbbh{--ink:#1D1714;--ink2:rgba(29,23,20,.74);--ink3:rgba(29,23,20,.56);--rose:#B35D55;--rose2:#D98F85;
+      position:relative;isolation:isolate;overflow:hidden;color:var(--ink);
+      display:flex;align-items:center;width:100%;
+      font-family:var(--lb-arabic,'Alexandria','Tajawal',system-ui,sans-serif);
+      background:
+        radial-gradient(52% 64% at 26% 58%, rgba(236,196,186,.62) 0%, rgba(236,196,186,.18) 48%, transparent 74%),
+        radial-gradient(40% 46% at 94% 8%, rgba(255,255,255,.9) 0%, transparent 70%),
+        linear-gradient(160deg,#FCF8F4 0%,#F6ECE5 56%,#F0E2D9 100%)}
+    .lbbh--slide{min-height:82svh}
+    .lbbh--page{min-height:clamp(500px,62svh,720px)}
+    .lbbh-dots{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+      background-image:radial-gradient(rgba(179,93,85,.22) 1px,transparent 1.4px);background-size:22px 22px;
+      -webkit-mask-image:radial-gradient(60% 80% at 28% 60%,#000 0%,rgba(0,0,0,.3) 60%,transparent 85%);
+              mask-image:radial-gradient(60% 80% at 28% 60%,#000 0%,rgba(0,0,0,.3) 60%,transparent 85%)}
+    .lbbh-in{position:relative;width:100%;max-width:1320px;margin:0 auto;display:grid;
+      grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);align-items:center;
+      gap:clamp(24px,4vw,64px);padding:clamp(44px,6vw,92px) clamp(20px,4vw,52px)}
+    .lbbh-eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 18px;
+      font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:11px;font-weight:700;
+      letter-spacing:.36em;text-transform:uppercase;color:var(--rose);line-height:1.5}
+    .lbbh-eyebrow::before{content:'';width:34px;height:1px;background:currentColor;opacity:.6;flex:0 0 auto}
+    .lbbh-h{margin:0;display:flex;flex-direction:column;gap:.22em}
+    .lbbh-lat{display:block;font-family:var(--lb-display,'Anton',Impact,sans-serif);font-weight:400;
+      font-size:clamp(42px,6.2vw,96px);line-height:.92;letter-spacing:.015em;text-transform:uppercase;
+      background:linear-gradient(100deg,#8E403A 0%,#D2877C 38%,#A9564E 66%,#E3A99E 100%);
+      -webkit-background-clip:text;background-clip:text;color:transparent}
+    .lbbh-ar{display:block;font-weight:900;font-size:clamp(26px,3.3vw,50px);line-height:1.3;color:var(--ink)}
+    .lbbh-sub{margin:22px 0 0;max-width:56ch;font-size:clamp(14px,1.2vw,16.5px);line-height:1.95;font-weight:500;color:var(--ink2)}
+    .lbbh-ctas{display:flex;flex-wrap:wrap;gap:12px;margin:28px 0 0}
+    .lbbh-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 30px;
+      font-family:inherit;font-size:15.5px;font-weight:900;text-decoration:none;border-radius:0;
+      transition:background .2s,color .2s,border-color .2s,transform .2s,box-shadow .2s}
+    .lbbh-btn--ink{background:#1D1714;color:#FCF8F4;border:1px solid #1D1714;box-shadow:0 10px 28px rgba(29,23,20,.18)}
+    .lbbh-btn--ink:hover{background:#8E403A;border-color:#8E403A;color:#fff;transform:translateY(-2px)}
+    .lbbh-btn--ghost{background:rgba(255,255,255,.55);color:var(--ink);border:1px solid rgba(29,23,20,.28)}
+    .lbbh-btn--ghost:hover{border-color:var(--rose);color:var(--rose)}
+    .lbbh-btn:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+    .lbbh-btn .lbbh-m{display:none}
+    .lbbh-chips{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;list-style:none}
+    .lbbh-chips li{padding:8px 13px;border:1px solid rgba(179,93,85,.28);background:rgba(255,255,255,.62);
+      font-size:12px;font-weight:700;color:var(--ink2);line-height:1.4}
+    .lbbh-chips b{color:#8E403A;font-weight:900}
+    .lbbh-art{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:clamp(8px,1.4vw,18px);
+      width:100%;max-width:640px;margin-inline:auto;padding:0 0 34px}
+    .lbbh-art::before{content:'';position:absolute;left:50%;bottom:10px;width:92%;height:40px;transform:translateX(-50%);
+      background:radial-gradient(closest-side,rgba(120,60,50,.28),transparent);filter:blur(6px);z-index:-1}
+    .lbbh-art::after{content:'';position:absolute;left:2%;right:2%;bottom:24px;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(179,93,85,.55),transparent)}
+    .lbbh-item{margin:0;width:var(--w);flex:0 1 var(--w);min-width:0;display:flex;flex-direction:column;align-items:center;gap:10px;
+      animation:lbbhFloat 8s ease-in-out infinite}
+    .lbbh-item:nth-child(2){animation-delay:-2s}.lbbh-item:nth-child(3){animation-delay:-4s}
+    .lbbh-item:nth-child(4){animation-delay:-6s}.lbbh-item:nth-child(5){animation-delay:-1s}
+    @keyframes lbbhFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .lbbh-box{display:block;width:100%;height:auto;max-width:100%;border-radius:2px;
+      box-shadow:0 22px 34px rgba(90,45,38,.22),0 3px 6px rgba(29,23,20,.12)}
+    .lbbh-item figcaption{font-family:var(--lb-latin,'Epilogue',system-ui,sans-serif);font-size:9.5px;font-weight:700;
+      letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+    @media(max-width:900px){
+      .lbbh-in{grid-template-columns:1fr;gap:18px;padding:34px 20px 30px}
+      .lbbh--slide{min-height:76svh}
+      .lbbh--page{min-height:0}
+      .lbbh-eyebrow{font-size:9.5px;letter-spacing:.24em;margin-bottom:14px}
+      .lbbh-lat{font-size:clamp(36px,11.5vw,58px)}
+      .lbbh-ar{font-size:clamp(22px,6.4vw,32px)}
+      .lbbh-sub{font-size:14px;line-height:1.8;margin-top:16px}
+      .lbbh--slide .lbbh-sub{display:none}
+      .lbbh-ctas{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+      .lbbh-btn{min-height:50px;padding:0 10px;font-size:13.5px;line-height:1.25;text-align:center}
+      .lbbh-btn .lbbh-d{display:none}
+      .lbbh-btn .lbbh-m{display:inline}
+      .lbbh-chips{margin-top:16px;gap:6px}
+      .lbbh-chips li{padding:7px 10px;font-size:11.5px}
+      .lbbh-art{max-width:440px;padding-bottom:28px;gap:8px}
+      .lbbh-item:nth-child(5){display:none}
+      .lbbh-item figcaption{font-size:8px;letter-spacing:.12em}
+      /* in the carousel the phone slide must not outgrow the clothing slide (~595 px),
+         or the whole carousel — and everything under it — moves down */
+      .lbbh--slide .lbbh-in{gap:14px}
+      .lbbh--slide .lbbh-item{width:calc(var(--w) * .62);flex-basis:calc(var(--w) * .62)}
+      .lbbh--slide .lbbh-art{padding-bottom:22px}
+    }
+    @media(max-width:420px){ .lbbh-chips li:nth-child(n+5){display:none} .lbbh-item:nth-child(4){display:none} }
+    @media(prefers-reduced-motion:reduce){ .lbbh-item{animation:none} .lbbh-btn{transition:none} }
+  </style>
+  <div class="lbbh-dots" aria-hidden="true"></div>
+
+  <div class="lbbh-in">
+    <div class="lbbh-copy">
+      <p class="lbbh-eyebrow">{% if lbbh_avail > 0 %}NEW · KOREAN SKINCARE{% else %}COMING SOON · KOREAN SKINCARE{% endif %}</p>
+      {%- if lbbh_mode == 'page' -%}
+      <h1 class="lbbh-h" id="lbbhT-page"><span class="lbbh-lat">{{ lbbh_latin }}</span><span class="lbbh-ar">{{ lbbh_title }}</span></h1>
+      {%- else -%}
+      <h2 class="lbbh-h" id="lbbhT-slide"><span class="lbbh-lat">{{ lbbh_latin }}</span><span class="lbbh-ar">{{ lbbh_title }}</span></h2>
+      {%- endif -%}
+      <p class="lbbh-sub">سيرومات بالريتينال والنياسيناميد، كريمات مرطبة، ديماكيانت وBB كريم من ماركات كورية — أصلية وجداد فالعلبة (من YesStyle)، بتصاور ديال السلعة اللي عندنا، والمكونات وطريقة الاستعمال مكتوبين فكل منتوج. كتخلص ملي توصلك.</p>
+      <div class="lbbh-ctas">
+        {%- if lbbh_mode == 'page' -%}
+        <a class="lbbh-btn lbbh-btn--ink" href="#lbassCollectionProducts" data-cro-event="hero_cta_click" data-cro-label="beauty_page_primary"><span class="lbbh-d">شوف المنتوجات ↓</span><span class="lbbh-m">شوف المنتوجات</span></a>
+        {%- else -%}
+        <a class="lbbh-btn lbbh-btn--ink" href="{{ lbbh_url }}" data-cro-event="hero_cta_click" data-cro-label="beauty_slide_primary"><span class="lbbh-d">اكتشف K-Beauty ←</span><span class="lbbh-m">اكتشف K-Beauty</span></a>
+        {%- endif -%}
+        <a class="lbbh-btn lbbh-btn--ghost" href="https://wa.me/491754264425?text={{ lbbh_wa_help }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="beauty_{{ lbbh_mode }}_help"><span class="lbbh-d">عاونّي نختار للبشرة ديالي</span><span class="lbbh-m">عاونّي نختار</span></a>
+      </div>
+      <ul class="lbbh-chips" aria-label="معلومات مهمة">
+        <li><b>أصلي</b> · من YesStyle</li>
+        <li>جديد فالعلبة</li>
+        <li><span dir="ltr">Retinal · Niacinamide · PDRN</span></li>
+        <li><b>COD</b> · PayPal</li>
+        <li>توصيل لكل المغرب</li>
+      </ul>
+    </div>
+
+    <div class="lbbh-art" aria-hidden="true">
+      {%- for row in lbbh_rows -%}
+        {%- assign bits = row | split: '|' -%}
+        {%- assign lbbh_h = 250 -%}
+        {%- case forloop.index -%}
+          {%- when 2 -%}{%- assign lbbh_h = 300 -%}
+          {%- when 3 -%}{%- assign lbbh_h = 268 -%}
+          {%- when 4 -%}{%- assign lbbh_h = 238 -%}
+          {%- when 5 -%}{%- assign lbbh_h = 226 -%}
+        {%- endcase -%}
+        {%- assign lbbh_w = bits[1] | times: lbbh_h | divided_by: 440 -%}
+        {%- assign lbbh_file = 'lbass-kb-' | append: bits[0] | append: '.webp' -%}
+        <figure class="lbbh-item" style="--w:{{ lbbh_w }}px">
+          {%- if lbbh_mode == 'slide' -%}
+          <img class="lbbh-box" src="{{ lbbh_blank }}" data-src="{{ lbbh_file | asset_url }}" alt="" width="{{ bits[1] }}" height="440" style="aspect-ratio:{{ bits[1] }}/440" decoding="async">
+          {%- else -%}
+          <img class="lbbh-box" src="{{ lbbh_file | asset_url }}" alt="" width="{{ bits[1] }}" height="440" style="aspect-ratio:{{ bits[1] }}/440" loading="eager" decoding="async">
+          {%- endif -%}
+          <figcaption>{{ bits[2] }}</figcaption>
+        </figure>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>

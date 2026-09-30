@@ -1,0 +1,193 @@
+{%- comment -%}
+  ═══ LBASS — HOMEPAGE FRAGRANCE ROW · BEST SELLERS ONLY (rewritten 2026-09-30) ═══
+
+  Strategic assessment 2026-09-30 (Lbass/expansion/2026-09-30-strategic-assessment.md),
+  approved by the owner: Lbass Original is a second-hand streetwear house first;
+  fragrance is an accessory line for the same customer. So the homepage carries ONE
+  row, placed after «لوك كامل» (#shoplook) by snippets/lbass-home-density.liquid
+  (main > .lbfr{order:10}), with ONLY the best sellers: collection lattafa-best-sellers,
+  in manual order = lattafa.ma's public units-sold ranking (Moroccan market,
+  2026-09-28). That is the only best-seller evidence available — Lbass had no
+  fragrance sales yet — so no other bottle is called a best seller.
+
+  The other bottles stay buyable on /collections/fragrances (sell-through of stock
+  already paid for) but are not featured here. Removed from the homepage: the big
+  fragrance head block, the "all fragrances" grid and the 3-tile discovery strip
+  (the strip still renders on the fragrance collection pages).
+
+  Heading renamed later on 2026-09-30 from «كمّل اللوك بعطر» to «Lattafa الأكثر مبيعاً
+  فالمغرب»: the owner keeps «كمّل اللوك» for the moment someone buys or wants to buy
+  clothing (cart drawer + product-page Look Builder), not for general browsing.
+
+  id="fragrances" keeps old /#fragrances links landing on this row.
+  Colours are literal (this page's tokens are inverted at runtime; see the PAGE
+  POLARITY note in lbass-home-collections.liquid). Nothing renders when no best
+  seller is in stock.
+{%- endcomment -%}
+{%- assign lbfr_c = collections['lattafa-best-sellers'] -%}
+{%- assign lbfr_av = lbfr_c.products | where: 'available', true -%}
+{%- assign lbfr_n = lbfr_av.size -%}
+{%- liquid
+  # Live stock line, same rule and wording as snippets/lbass-discover-strip.liquid:
+  # real inventory of the shown, stock-tracked bottles only. No timers, no invented scarcity.
+  assign lbfr_min = 9999
+  assign lbfr_max = 0
+  assign lbfr_last = 0
+  assign lbfr_cnt = 0
+  for lbfr_p in lbfr_av limit: 8
+    assign lbfr_q = 0
+    assign lbfr_trk = false
+    for lbfr_v in lbfr_p.variants
+      if lbfr_v.available and lbfr_v.inventory_management == 'shopify'
+        assign lbfr_trk = true
+        assign lbfr_q = lbfr_q | plus: lbfr_v.inventory_quantity
+      endif
+    endfor
+    if lbfr_trk and lbfr_q > 0
+      assign lbfr_cnt = lbfr_cnt | plus: 1
+      if lbfr_q < lbfr_min
+        assign lbfr_min = lbfr_q
+      endif
+      if lbfr_q > lbfr_max
+        assign lbfr_max = lbfr_q
+      endif
+      if lbfr_q == 1
+        assign lbfr_last = lbfr_last | plus: 1
+      endif
+    endif
+  endfor
+  assign lbfr_live = ''
+  if lbfr_cnt > 0
+    if lbfr_last >= 2
+      assign lbfr_live = 'بقات غير قرعة وحدة ف' | append: lbfr_last | append: ' عطور'
+    elsif lbfr_max <= 3
+      if lbfr_max == 1
+        assign lbfr_live = 'ستوك محدود: قرعة وحدة من كل عطر'
+      elsif lbfr_min == lbfr_max
+        assign lbfr_live = 'ستوك محدود: ' | append: lbfr_max | append: ' قرعات من كل عطر'
+      else
+        # "2 ولا 3" when the counts are neighbours, "بين 1 و3" otherwise (no dash: ranges flip in RTL)
+        assign lbfr_gap = lbfr_max | minus: lbfr_min
+        if lbfr_gap == 1
+          assign lbfr_live = 'ستوك محدود: ' | append: lbfr_min | append: ' ولا ' | append: lbfr_max | append: ' قرعات من كل عطر'
+        else
+          assign lbfr_live = 'ستوك محدود: بين ' | append: lbfr_min | append: ' و' | append: lbfr_max | append: ' قرعات من كل عطر'
+        endif
+      endif
+    elsif lbfr_last == 1
+      assign lbfr_live = 'بقات غير قرعة وحدة ف عطر واحد'
+    endif
+  endif
+-%}
+{%- if lbfr_n > 0 -%}
+<section class="lbfr lbfr--best" id="fragrances" aria-labelledby="lbfr-h" data-lbfr>
+  <style>
+    .lbfr{padding:clamp(22px,3.5vw,40px) var(--pad,20px)}
+    .lbfr__in{max-width:var(--max,1100px);margin:0 auto;padding:clamp(18px,2.6vw,26px);
+      border:1px solid rgba(11,11,12,.12);border-radius:16px;background:#FAF7F2}
+    .lbfr__head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px 18px;margin:0 0 14px;flex-wrap:wrap}
+    .lbfr__kick{margin:0 0 6px;font-size:11px;font-weight:800;letter-spacing:.16em;color:#BF2E15;direction:ltr;text-align:right}
+    .lbfr h2{margin:0 0 6px;font-size:clamp(20px,2.4vw,26px);line-height:1.35;color:#0B0B0C}
+    .lbfr__lede{margin:0;font-size:14px;line-height:1.8;color:#2E2E31;max-width:60ch}
+    .lbfr__links{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+    .lbfr__cta{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:9px 16px;border-radius:999px;
+      background:#0B0B0C;color:#F4EFE6!important;font-size:13.5px;font-weight:900;text-decoration:none!important;white-space:nowrap;
+      transition:background-color .18s,transform .18s}
+    .lbfr__cta:hover,.lbfr__cta:focus-visible{background:#BF2E15;transform:translateY(-1px)}
+    .lbfr__cta:focus-visible{outline:3px solid #BF2E15;outline-offset:2px}
+    .lbfr__sub{color:#0B0B0C!important;font-size:13.5px;font-weight:900;text-decoration:underline!important;text-underline-offset:4px;white-space:nowrap}
+    .lbfr__sub b{color:#BF2E15}
+    .lbfr__live{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-size:12.5px;font-weight:800;line-height:1.35;color:#BF2E15}
+    .lbfr__live i{flex:none;position:relative;width:8px;height:8px;border-radius:50%;background:#BF2E15}
+    .lbfr__live i::after{content:"";position:absolute;inset:0;border-radius:50%;background:#BF2E15;animation:lbfrLive 1.6s ease-out infinite}
+    @keyframes lbfrLive{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.6);opacity:0}}
+    @media (prefers-reduced-motion:reduce){ .lbfr__live i::after{animation:none} }
+    /* one row: swipe on phones (about 2.2 cards visible), four columns from 900px */
+    .lbfr__row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(42%,1fr);gap:12px;overflow-x:auto;
+      scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:thin}
+    .lbfr__row > *{scroll-snap-align:start}
+    /* desktop mouse users cannot scroll a row sideways with a wheel: arrows from 900px on fine pointers,
+       each shown only when there is more to scroll in its direction (script below) */
+    .lbfr__rowwrap{position:relative}
+    .lbfr__arr{position:absolute;top:28%;z-index:2;width:40px;height:40px;border-radius:50%;border:1px solid rgba(11,11,12,.16);
+      background:#FFFFFF;color:#0B0B0C;font-size:18px;font-weight:900;line-height:1;cursor:pointer;display:grid;place-items:center;
+      box-shadow:0 4px 14px rgba(11,11,12,.14);transition:background-color .18s,color .18s}
+    .lbfr__arr:hover,.lbfr__arr:focus-visible{background:#BF2E15;color:#FFFFFF;border-color:#BF2E15}
+    .lbfr__arr:focus-visible{outline:3px solid #BF2E15;outline-offset:2px}
+    .lbfr__arr--prev{inset-inline-start:-14px}
+    .lbfr__arr--next{inset-inline-end:-14px}
+    .lbfr__arr[hidden]{display:none}
+    @media(min-width:600px){ .lbfr__row{grid-auto-columns:minmax(30%,1fr)} }
+    @media(min-width:900px){ .lbfr__row{grid-auto-columns:minmax(23%,1fr)} }
+    /* card base (index.liquid uses {% layout none %}, so theme.liquid card rules never load here) */
+    .lbfr .card{border:1px solid rgba(11,11,12,.12);border-radius:14px;overflow:hidden;background:#fff;transition:transform .2s,border-color .2s;display:block;text-decoration:none;color:inherit}
+    .lbfr .card:hover{transform:translateY(-3px);border-color:#BF2E15}
+    .lbfr .card-img{position:relative;aspect-ratio:4/5;background:#F6F2EA;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .lbfr .card-img img{width:100%;height:100%;object-fit:cover}
+    .lbfr .card-body{padding:12px;display:flex;flex-direction:column;gap:5px}
+    .lbfr .card-title{font-weight:800;color:#0B0B0C;font-size:14px;margin:2px 0;line-height:1.45}
+    .lbfr .card-vendor{color:#BF2E15;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+    .lbfr .card-price{font-weight:800;color:#BF2E15;font-size:16px;direction:ltr;margin-top:2px}
+    /* compact cards in this row only: every bottle here is a Lattafa 100 ml in stock, so the vendor line,
+       the «شوف النوطات» hint and the chips repeat what the row already says. The title keeps up to 3 lines:
+       on a phone card (~126px) the 1st line is just "Lattafa", so 3 lines are needed to show the bottle's name */
+    .lbfr .card-vendor,.lbfr .card-body > p,.lbfr .card-body .chip,.lbfr .card-body > div:has(> .chip){display:none}
+    .lbfr .card-title{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    @media(max-width:600px){ .lbfr .card-body{padding:10px} .lbfr .card-title{font-size:13px} .lbfr__cta{flex:1 1 auto;justify-content:center} }
+  </style>
+  <div class="lbfr__in">
+    <div class="lbfr__head">
+      <div>
+        <p class="lbfr__kick">LBASS ORIGINAL · PARFUMS</p>
+        <h2 id="lbfr-h">Lattafa الأكثر مبيعاً فالمغرب</h2>
+        <p class="lbfr__lede">مرتبين حسب أرقام المبيعات العمومية ديال السوق المغربي (شتنبر 2026) — قرعات كاملة جديدة فالكرطونة، وخلّص ملي توصلك.</p>
+        {%- if lbfr_live != '' -%}<p class="lbfr__live"><i aria-hidden="true"></i><span>{{ lbfr_live }}</span></p>{%- endif -%}
+      </div>
+      <div class="lbfr__links">
+        <a class="lbfr__cta" href="{{ lbfr_c.url }}" data-lbfr-go="collection" data-cro-event="home_collection_click" data-cro-label="lattafa_best_sellers">شوف الأكثر مبيعاً ←</a>
+        <a class="lbfr__sub" href="/pages/fragrance-bundle" data-lbfr-go="bundle" data-cro-event="home_collection_click" data-cro-label="fragrance_bundle">باك 3 عطور = <b>&#8294;−15%&#8297;</b></a>
+      </div>
+    </div>
+    <div class="lbfr__rowwrap">
+      <button type="button" class="lbfr__arr lbfr__arr--prev" data-lbfr-arr="prev" aria-label="اللي قبل" hidden>&rarr;</button>
+      <div class="lbfr__row" role="list" aria-label="Lattafa — الأكثر مبيعاً">
+        {%- for p in lbfr_av limit: 8 -%}
+          <div role="listitem">{% render 'lbass-product-card', product: p, placement: 'home_fragrance_best' %}</div>
+        {%- endfor -%}
+      </div>
+      <button type="button" class="lbfr__arr lbfr__arr--next" data-lbfr-arr="next" aria-label="اللي من بعد" hidden>&larr;</button>
+    </div>
+  </div>
+  <script>
+  (function(){
+    var root = document.querySelector('[data-lbfr]');
+    if (!root) return;
+    root.addEventListener('click', function(e){
+      var a = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!a || !root.contains(a)) return;
+      var p = { department: 'fragrance', place: 'home_best_sellers', target: a.getAttribute('data-lbfr-go') || 'product', destination: a.getAttribute('href') || '' };
+      try { if (typeof window.lbTrack === 'function') window.lbTrack('home_fragrance_click', p); } catch (err) {}
+    });
+    var row = root.querySelector('.lbfr__row');
+    var prev = root.querySelector('[data-lbfr-arr="prev"]');
+    var next = root.querySelector('[data-lbfr-arr="next"]');
+    if (!row || !prev || !next || !window.matchMedia) return;
+    var mq = window.matchMedia('(min-width: 900px) and (hover: hover) and (pointer: fine)');
+    // RTL rows scroll towards negative scrollLeft, so "next" (the end side) is -1 there
+    function dir() { return getComputedStyle(row).direction === 'rtl' ? -1 : 1; }
+    function update() {
+      var max = row.scrollWidth - row.clientWidth;
+      var x = Math.abs(row.scrollLeft);
+      var on = mq.matches && max > 4;
+      prev.hidden = !on || x < 4;
+      next.hidden = !on || x > max - 4;
+    }
+    prev.addEventListener('click', function () { row.scrollBy({ left: -dir() * row.clientWidth * 0.8, behavior: 'smooth' }); });
+    next.addEventListener('click', function () { row.scrollBy({ left: dir() * row.clientWidth * 0.8, behavior: 'smooth' }); });
+    row.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+  </script>
+</section>
+{%- endif -%}

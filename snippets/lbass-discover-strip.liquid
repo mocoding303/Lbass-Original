@@ -1,0 +1,282 @@
+{%- comment -%}
+  ═══ LBASS — CONSULTATION + BUNDLE ENTRY STRIP (2026-09-28 · CTA rework 2026-09-29) ═══
+  Usage: {% render 'lbass-discover-strip', dept: 'fragrance'|'beauty', place: 'home'|'collection' %}
+  Helper tiles for visitors who aren't ready to pick from the grid: the bundle offer,
+  the consultation and, for fragrances, Find Your Similar Scent. Rendered on the
+  homepage department blocks and the department collection pages. Hidden while the
+  department has no product on the Online Store.
+
+  2026-09-29 rework. Why: on phones the 3-tile swipe row showed one tile and hid the
+  other two, the discount sat in 12 px grey text, and clicks reached Shopify customer
+  events only, not GA4.
+  - One outlined "main" tile with a black button: the bundle for fragrances (−15% is the strongest hook), the
+    consultation for K-beauty (not knowing what suits the skin is the main barrier).
+    When the visitor already has items in that department's bundle, the bundle tile
+    becomes the main tile and shows their progress to the next tier.
+  - Phones and tablets: main tile full width, the others side by side under it.
+    Three columns from 900 px. No sideways scrolling.
+  - Clicks and a once-per-page strip view go through window.lbTrack (GA4 + Shopify
+    customer events). Click event names are unchanged (consultation_entry_click,
+    bundle_entry_click, similar_scent_entry_click); new: discover_strip_view.
+  Tier numbers match snippets/lbass-bundle-core.liquid and the automatic discounts in
+  Admin; the personalised state reads them from window.LbassBundle.cfg.
+
+  2026-09-29 (b), owner request "urgency + red CTAs": action buttons are red (#BF2E15),
+  the % badge is outlined so the button is the only solid red in a tile, and a live stock
+  line above the tiles states the real stock (computed from inventory, e.g. "2 or 3 bottles
+  of each fragrance"). It disappears by itself when stock is not low. No timers or
+  invented scarcity: the tools have no deadline.
+{%- endcomment -%}
+{%- liquid
+  assign lbds_s = false
+  if dept == 'beauty'
+    assign lbds_c = collections['cosmetics']
+    assign lbds_q = '/pages/k-beauty-consultation'
+    assign lbds_b = '/pages/k-beauty-bundle'
+    assign lbds_main = 'consult'
+    assign lbds_qt = 'روتين على قد بشرتك ف5 أسئلة'
+    assign lbds_qs = '60 ثانية · بلا تسجيل'
+    assign lbds_bp = '−10%'
+    assign lbds_bt = 'على 3 منتوجات ولفوق'
+    assign lbds_bs = 'جوج = &#8294;−5%&#8297; · بلا كود برومو'
+  else
+    assign lbds_c = collections['fragrances']
+    assign lbds_q = '/pages/find-your-fragrance'
+    assign lbds_b = '/pages/fragrance-bundle'
+    assign lbds_main = 'bundle'
+    assign lbds_qt = 'لقى عطرك ف60 ثانية'
+    assign lbds_qs = '5 أسئلة · نسبة التطابق'
+    assign lbds_bp = '−15%'
+    assign lbds_bt = 'على 3 عطور ولفوق'
+    assign lbds_bs = 'جوج = &#8294;−10%&#8297; · بلا كود برومو'
+    # Third tile = Find Your Similar Scent (2026-09-28). On /collections/fragrances the
+    # tool is on the same page (anchor); elsewhere it opens /pages/similar-scent.
+    # Hidden when no scent reference exists (the tool would not render).
+    if shop.metaobjects.lbass_scent_reference.values.size > 0
+      assign lbds_s = '/pages/similar-scent'
+      if template.name == 'collection' and collection.handle == 'fragrances'
+        assign lbds_s = '#lbss'
+      endif
+    endif
+  endif
+  assign lbds_n = lbds_c.products_count | default: 0 | plus: 0
+
+  # Live stock line: real inventory of the available, stock-tracked products only.
+  assign lbds_min = 9999
+  assign lbds_max = 0
+  assign lbds_last = 0
+  assign lbds_cnt = 0
+  for lbds_p in lbds_c.products
+    if lbds_p.available
+      assign lbds_q = 0
+      assign lbds_trk = false
+      for lbds_v in lbds_p.variants
+        if lbds_v.available and lbds_v.inventory_management == 'shopify'
+          assign lbds_trk = true
+          assign lbds_q = lbds_q | plus: lbds_v.inventory_quantity
+        endif
+      endfor
+      if lbds_trk and lbds_q > 0
+        assign lbds_cnt = lbds_cnt | plus: 1
+        if lbds_q < lbds_min
+          assign lbds_min = lbds_q
+        endif
+        if lbds_q > lbds_max
+          assign lbds_max = lbds_q
+        endif
+        if lbds_q == 1
+          assign lbds_last = lbds_last | plus: 1
+        endif
+      endif
+    endif
+  endfor
+  if dept == 'beauty'
+    assign lbds_u1 = 'حبة'
+    assign lbds_un = 'حبات'
+    assign lbds_p1 = 'منتوج'
+    assign lbds_pn = 'منتوجات'
+  else
+    assign lbds_u1 = 'قرعة'
+    assign lbds_un = 'قرعات'
+    assign lbds_p1 = 'عطر'
+    assign lbds_pn = 'عطور'
+  endif
+  assign lbds_live = ''
+  if lbds_cnt > 0
+    if lbds_last >= 2
+      assign lbds_live = 'بقات غير ' | append: lbds_u1 | append: ' وحدة ف' | append: lbds_last | append: ' ' | append: lbds_pn
+    elsif lbds_max <= 3
+      if lbds_max == 1
+        assign lbds_live = 'ستوك محدود: ' | append: lbds_u1 | append: ' وحدة من كل ' | append: lbds_p1
+      elsif lbds_min == lbds_max
+        assign lbds_live = 'ستوك محدود: ' | append: lbds_max | append: ' ' | append: lbds_un | append: ' من كل ' | append: lbds_p1
+      else
+        # "2 ولا 3" when the counts are neighbours, "بين 1 و3" otherwise (no dash: ranges flip in RTL)
+        assign lbds_gap = lbds_max | minus: lbds_min
+        if lbds_gap == 1
+          assign lbds_live = 'ستوك محدود: ' | append: lbds_min | append: ' ولا ' | append: lbds_max | append: ' ' | append: lbds_un | append: ' من كل ' | append: lbds_p1
+        else
+          assign lbds_live = 'ستوك محدود: بين ' | append: lbds_min | append: ' و' | append: lbds_max | append: ' ' | append: lbds_un | append: ' من كل ' | append: lbds_p1
+        endif
+      endif
+    elsif lbds_last == 1
+      assign lbds_live = 'بقات غير ' | append: lbds_u1 | append: ' وحدة ف' | append: lbds_p1 | append: ' واحد'
+    endif
+  endif
+-%}
+{%- if lbds_n > 0 -%}
+{%- capture lbds_tb -%}
+  <a class="lbds__t{% if lbds_main == 'bundle' %} is-main{% endif %}" href="{{ lbds_b }}" data-lbds-tile="bundle" data-event="bundle_entry_click">
+    <span class="lbds__txt"><b class="lbds__h"><span class="lbds__badge" data-lbds-badge>&#8294;{{ lbds_bp }}&#8297;</span><span data-lbds-h>{{ lbds_bt }}</span></b><span class="lbds__s" data-lbds-s>{{ lbds_bs }}</span></span>
+    <span class="lbds__go" aria-hidden="true"><span class="lbds__gt" data-lbds-gt>ركّب الباك</span><span class="lbds__ga">←</span></span>
+    <span class="lbds__prog" data-lbds-prog aria-hidden="true" hidden><i></i></span>
+  </a>
+{%- endcapture -%}
+{%- capture lbds_tq -%}
+  <a class="lbds__t{% if lbds_main == 'consult' %} is-main{% endif %}" href="{{ lbds_q }}" data-lbds-tile="consult" data-event="consultation_entry_click">
+    <span class="lbds__txt"><b class="lbds__h">{{ lbds_qt }}</b><span class="lbds__s">{{ lbds_qs }}</span></span>
+    <span class="lbds__go" aria-hidden="true"><span class="lbds__gt">بدا</span><span class="lbds__ga">←</span></span>
+  </a>
+{%- endcapture -%}
+<div class="lbds{% if lbds_s %} lbds--3{% endif %}" data-lbds data-dept="{{ dept }}" data-place="{{ place }}" data-page="{{ template.name }}" role="group" aria-label="مساعدة فالاختيار">
+  <style>
+    .lbds{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 18px;direction:rtl;text-align:right}
+    .lbds .lbds__t{position:relative;overflow:hidden;display:flex;align-items:center;gap:10px;min-height:60px;padding:10px 11px;border-radius:14px;border:1px solid rgba(11,11,12,.14);background:#fff;color:#0B0B0C!important;text-decoration:none!important;-webkit-tap-highlight-color:transparent;transition:transform .2s ease,box-shadow .2s ease}
+    .lbds .lbds__t.is-main{order:-1;grid-column:1/-1;min-height:64px;padding:12px 14px;border:1.5px solid #0B0B0C}
+    .lbds:not(.lbds--3) .lbds__t{grid-column:1/-1}
+    .lbds .lbds__txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+    .lbds .lbds__h{display:block;margin:0;font-size:14px;font-weight:900;line-height:1.3;text-wrap:balance}
+    .lbds .lbds__s{display:block;font-size:11.5px;font-weight:700;line-height:1.35;opacity:.72}
+    .lbds .lbds__badge{display:inline-block;margin-inline-end:6px;padding:1px 7px 2px;border-radius:999px;background:#fff;color:#BF2E15;box-shadow:inset 0 0 0 1.5px #BF2E15;font-size:12px;font-weight:900;line-height:1.4;white-space:nowrap;vertical-align:1px}
+    .lbds .lbds__badge[hidden],.lbds .lbds__prog[hidden]{display:none}
+    .lbds .lbds__go{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:900;line-height:1;white-space:nowrap}
+    .lbds .lbds__gt{display:none}
+    .lbds .lbds__ga{display:inline-block;transition:transform .2s ease}
+    /* secondary tiles: a red round button in the top corner, the headline keeps room for it */
+    .lbds .lbds__t:not(.is-main) .lbds__go{position:absolute;top:9px;inset-inline-end:9px;width:26px;height:26px;border-radius:50%;background:#BF2E15;color:#fff;font-size:13px}
+    .lbds .lbds__t:not(.is-main) .lbds__h{padding-inline-end:32px}
+    /* main tile: dark outline + red button (red = action; the block's black "Discover" button stays the main path) */
+    .lbds .lbds__t.is-main .lbds__go{height:36px;padding:0 14px;border-radius:999px;background:#BF2E15;color:#fff}
+    /* live stock line above the tiles */
+    .lbds .lbds__live{grid-column:1/-1;order:-2;display:flex;align-items:center;gap:8px;margin:0 0 -2px;font-size:12px;font-weight:800;line-height:1.35;color:#BF2E15}
+    .lbds .lbds__live i{flex:none;position:relative;width:8px;height:8px;border-radius:50%;background:#BF2E15}
+    .lbds .lbds__live i::after{content:"";position:absolute;inset:0;border-radius:50%;background:#BF2E15;animation:lbdsLive 1.6s ease-out infinite}
+    @keyframes lbdsLive{from{transform:scale(1);opacity:.55}to{transform:scale(2.6);opacity:0}}
+    .lbds .lbds__t.is-main .lbds__gt{display:inline}
+    /* bundle progress to the top tier, along the bottom edge */
+    .lbds .lbds__prog{position:absolute;inset-inline:0;bottom:0;height:3px;background:rgba(11,11,12,.08)}
+    .lbds .lbds__prog i{display:block;height:100%;width:0;background:#BF2E15;transition:width .6s ease}
+    /* once, when the strip first comes on screen: the offer badge pulses and the main arrow nudges */
+    .lbds.is-seen .lbds__t.is-main .lbds__badge{animation:lbdsPulse .7s .3s ease-in-out 2}
+    .lbds.is-seen .lbds__t.is-main .lbds__ga{animation:lbdsNudge .7s .3s ease-in-out 2}
+    .lbds.is-seen .lbds__t.is-main .lbds__go{animation:lbdsRing 1.1s .3s ease-out 2}
+    @keyframes lbdsRing{from{box-shadow:0 0 0 0 rgba(191,46,21,.45)}to{box-shadow:0 0 0 10px rgba(191,46,21,0)}}
+    @keyframes lbdsPulse{50%{transform:scale(1.12)}}
+    @keyframes lbdsNudge{50%{transform:translateX(-4px)}}
+    .lbds .lbds__t:focus-visible{outline:2px solid #BF2E15;outline-offset:2px}
+    .lbds .lbds__t:active{transform:scale(.985)}
+    @media (hover:hover){
+      .lbds .lbds__t:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(11,11,12,.10)}
+      .lbds .lbds__t:hover .lbds__ga{transform:translateX(-3px)}
+      .lbds .lbds__t:hover .lbds__go{background:#A42611}
+    }
+    @media (max-width:374px){ .lbds .lbds__t.is-main .lbds__gt{display:none} .lbds .lbds__t.is-main .lbds__go{width:36px;padding:0} }
+    @media (min-width:640px){ .lbds:not(.lbds--3){grid-template-columns:1.25fr 1fr} .lbds:not(.lbds--3) .lbds__t{grid-column:auto} }
+    @media (min-width:900px){ .lbds--3{grid-template-columns:1.5fr 1fr 1fr} .lbds--3 .lbds__t.is-main{grid-column:auto} }
+    @media (prefers-reduced-motion:reduce){ .lbds .lbds__t,.lbds .lbds__ga,.lbds .lbds__prog i{transition:none} .lbds.is-seen .lbds__t.is-main .lbds__badge,.lbds.is-seen .lbds__t.is-main .lbds__ga,.lbds.is-seen .lbds__t.is-main .lbds__go,.lbds .lbds__live i::after{animation:none} }
+  </style>
+  {%- if lbds_live != '' -%}<p class="lbds__live" data-lbds-live><i aria-hidden="true"></i><span>{{ lbds_live }}</span></p>{%- endif -%}
+  {%- if lbds_main == 'consult' -%}{{ lbds_tq }}{{ lbds_tb }}{%- else -%}{{ lbds_tb }}{{ lbds_tq }}{%- endif -%}
+  {%- if lbds_s -%}
+  <a class="lbds__t" href="{{ lbds_s }}" data-lbds-tile="similar" data-event="similar_scent_entry_click">
+    <span class="lbds__txt"><b class="lbds__h">كتلبس عطر عالمي؟</b><span class="lbds__s">عطر عربي بنفس الاتجاه</span></span>
+    <span class="lbds__go" aria-hidden="true"><span class="lbds__gt">جرّب</span><span class="lbds__ga">←</span></span>
+  </a>
+  {%- endif -%}
+  <script>
+  (function(){
+    if (window.__lbdsBoot) return;
+    window.__lbdsBoot = true;
+    var ALL = '[data-lbds]';
+
+    function send(name, p){
+      try {
+        if (typeof window.lbTrack === 'function') { window.lbTrack(name, p); return; }
+        if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_' + name, p);
+      } catch (e) {}
+    }
+    function params(root, extra){
+      var dept = root.getAttribute('data-dept'), place = root.getAttribute('data-place');
+      var p = { department: dept, place: place, label: dept + '_' + place, page_type: root.getAttribute('data-page') || '', bundle_state: root.getAttribute('data-state') || 'empty' };
+      for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) p[k] = extra[k];
+      return p;
+    }
+    function setMain(root, el){
+      [].forEach.call(root.querySelectorAll('[data-lbds-tile]'), function(t){ t.classList.toggle('is-main', t === el); });
+    }
+
+    /* Bundle tile: default offer, or the visitor's own progress once the bundle has items. */
+    function paint(root){
+      var t = root.querySelector('[data-lbds-tile="bundle"]');
+      if (!t) return;
+      var H = t.querySelector('[data-lbds-h]'), S = t.querySelector('[data-lbds-s]'), BG = t.querySelector('[data-lbds-badge]'), G = t.querySelector('[data-lbds-gt]'), P = t.querySelector('[data-lbds-prog]');
+      if (!root.__lbdsDef) root.__lbdsDef = { main: root.querySelector('.is-main'), h: H.innerHTML, s: S.innerHTML, b: BG.innerHTML, g: G.textContent };
+      var d = root.__lbdsDef, B = window.LbassBundle, dept = root.getAttribute('data-dept');
+      var c = B && B.cfg ? B.cfg[dept] : null, n = 0;
+      try { n = c ? (parseInt(B.count(dept), 10) || 0) : 0; } catch (e) {}
+      if (!n) {
+        H.innerHTML = d.h; S.innerHTML = d.s; BG.innerHTML = d.b; BG.hidden = false; G.textContent = d.g; P.hidden = true;
+        setMain(root, d.main);
+        root.setAttribute('data-state', 'empty');
+        return;
+      }
+      var tiers = c.tiers || [], goal = tiers.length ? tiers[tiers.length - 1].min : n;
+      var cur = B.tier(dept, n), nx = B.next(dept, n);
+      H.textContent = n === 1 ? (c.one + ' واحد فالباك') : (n + ' ' + c.unit + ' فالباك');
+      if (cur) { BG.textContent = B.pct(cur); BG.hidden = false; } else { BG.hidden = true; }
+      S.textContent = nx
+        ? 'زيد ' + (nx.need === 1 ? c.one + ' واحد' : nx.need + ' ' + c.unit) + (cur ? ' وطلع لـ' : ' وخود ') + B.pct(nx.pct)
+        : 'صيفطو للسلة وكمّل الطلب';
+      G.textContent = nx ? 'كمّل الباك' : 'شوف الباك';
+      P.hidden = false;
+      P.querySelector('i').style.width = Math.min(100, Math.round(n / goal * 100)) + '%';
+      setMain(root, t);
+      root.setAttribute('data-state', 'n' + Math.min(n, goal));
+    }
+    function paintAll(){ [].forEach.call(document.querySelectorAll(ALL), paint); }
+
+    /* One view per strip and page, once half of it is on screen: the base for click rates. */
+    function watch(root){
+      if (!('IntersectionObserver' in window)) { root.classList.add('is-seen'); return; }
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (!en.isIntersecting || en.intersectionRatio < 0.5) return;
+          io.disconnect();
+          root.classList.add('is-seen');
+          send('discover_strip_view', params(root, { tiles: root.querySelectorAll('[data-lbds-tile]').length }));
+        });
+      }, { threshold: [0.5] });
+      io.observe(root);
+    }
+
+    document.addEventListener('click', function(e){
+      var a = e.target && e.target.closest ? e.target.closest('[data-lbds] [data-lbds-tile]') : null;
+      if (!a) return;
+      send(a.getAttribute('data-event'), params(a.closest(ALL), {
+        tile: a.getAttribute('data-lbds-tile'),
+        main_tile: a.classList.contains('is-main') ? 'yes' : 'no',
+        destination: a.getAttribute('href') || ''
+      }));
+    });
+
+    function boot(){
+      [].forEach.call(document.querySelectorAll(ALL), function(root){ paint(root); watch(root); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+    document.addEventListener('lbass:bundle', paintAll);
+    window.addEventListener('storage', function(e){ if (!e.key || e.key === 'lbass_bundle_v1') paintAll(); });
+    window.addEventListener('pageshow', function(e){ if (e.persisted) paintAll(); });
+  })();
+  </script>
+</div>
+{%- endif -%}

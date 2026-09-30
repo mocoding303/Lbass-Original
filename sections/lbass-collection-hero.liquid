@@ -1,9 +1,20 @@
 {% liquid
   assign hero_handle = collection.handle
   assign hero_product_count = collection.products_count | default: 0 | plus: 0
-  if hero_handle == 'audited-drop-p001-p012'
-    assign hero_product_count = collections.all.products_count | default: 0 | plus: 0
+  comment
+    2026-09-26: /collections/all shows clothing only (templates/collection.liquid hides
+    the fragrance and cosmetics departments), so its count leaves them out as well.
+    Before this the live hero said «85 قطعة» above a 73-card grid.
+  endcomment
+  if hero_handle == 'all' and current_tags == blank
+    assign hero_nw_frag = collections['fragrances'].products_count | default: 0 | plus: 0
+    assign hero_nw_bt = collections['cosmetics'].products_count | default: 0 | plus: 0
+    assign hero_product_count = hero_product_count | minus: hero_nw_frag | minus: hero_nw_bt | at_least: 0
   endif
+  comment
+    2026-09-26: the audited drop now lists its own members (see templates/collection.liquid),
+    so its count is simply collection.products_count, set above.
+  endcomment
   assign hero_is_empty = false
   if hero_product_count == 0
     assign hero_is_empty = true

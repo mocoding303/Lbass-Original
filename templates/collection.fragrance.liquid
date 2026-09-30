@@ -1,0 +1,358 @@
+{%- comment -%}
+  ═══ FRAGRANCE COLLECTION — templates/collection.fragrance.liquid (2026-09-26) ═══
+
+  Assigned per collection through template_suffix "fragrance": /collections/fragrances
+  and the seven house collections (brand-lattafa … brand-bait-al-bakhoor).
+
+  WHY A SEPARATE TEMPLATE. templates/collection.liquid is written for
+  second-hand clothing from top to bottom — the hero, the trust bar ("selected
+  in Germany, checked in Marrakech, real photos"), the intent cards, the FAQ and
+  its FAQPage schema all describe condition, size and one-of-one pieces. None
+  of that is true of a new boxed bottle. This page keeps the same grid, product
+  card, native filters and styles, and swaps the copy, FAQ and schema.
+  Clothing collections are untouched.
+
+  EVERY CLAIM HERE IS BACKED: full bottles, not decants (owner decision
+  2026-09-25); sourced from a distributor in Dubai (owner); notes per each
+  fragrance's published pyramid (catalogue build 2026-09-26); shipping 20/40,
+  free from 500, COD or PayPal (store policy). Returns defer to the published
+  policy page — no perfume-specific promise is made here.
+
+  2026-09-30 (owner request): the bottles sit right under the guides links —
+  hero → discover strip → guides → breadcrumb → FRAGRANCES head → filters →
+  grid. The house chips and the collection description moved below the grid
+  (section .fr-more). Because the description carried the source of the
+  best-seller ranking, lattafa-best-sellers states that source in the
+  FRAGRANCES head instead, next to the claim.
+{%- endcomment -%}
+{%- liquid
+  assign fr_is_all = false
+  if collection.handle == 'fragrances'
+    assign fr_is_all = true
+  endif
+  if fr_is_all
+    assign fr_h1 = 'عطور عربية أصلية فالمغرب'
+  else
+    assign fr_h1 = 'عطور ' | append: collection.title | append: ' فالمغرب'
+  endif
+  assign fr_houses = 'brand-lattafa,brand-armaf,brand-swiss-arabian,brand-maison-alhambra,brand-orientica,brand-the-spirit-of-dubai,brand-bait-al-bakhoor' | split: ','
+  assign fr_title = collection.title
+
+  comment
+    PREVIEW STAND-IN (2026-09-26). While /collections/fragrances is unpublished,
+    the preview theme links to /collections/all?view=fragrance instead of a 404.
+    On a collection that is not a fragrance collection, on an unpublished theme,
+    this page renders as the Arabic-fragrances landing with a placeholder where
+    the bottles go. On the live theme the stand-in never triggers.
+  endcomment
+  assign fr_is_frag = false
+  if collection.handle == 'fragrances' or fr_houses contains collection.handle
+    assign fr_is_frag = true
+  endif
+  # 2026-09-29: any collection assigned this template is a fragrance collection
+  # (lattafa-best-sellers, parfums-arabes-homme/femme…), so it never falls into
+  # the preview stand-in below.
+  if collection.template_suffix == 'fragrance'
+    assign fr_is_frag = true
+  endif
+  assign fr_demo = false
+  if fr_is_frag == false and theme.role == 'unpublished'
+    assign fr_demo = true
+    assign fr_is_all = true
+    assign fr_h1 = 'عطور عربية أصلية فالمغرب'
+    assign fr_title = 'عطور · Fragrances'
+  endif
+  assign fr_latin = 'ARABIC FRAGRANCES'
+  if fr_is_all == false
+    assign fr_latin = collection.title | upcase
+  endif
+  # 2026-09-29: optional per-collection heading from metafields lbass.h1 / lbass.latin
+  # (e.g. parfums-arabes-homme → «عطور عربية للرجال»), instead of «عطور <title> فالمغرب».
+  if collection.metafields.lbass.h1 != blank and fr_demo == false
+    assign fr_h1 = collection.metafields.lbass.h1.value
+  endif
+  if collection.metafields.lbass.latin != blank and fr_demo == false
+    assign fr_latin = collection.metafields.lbass.latin.value
+  endif
+
+  comment
+    Single source for the visible FAQ AND the FAQPage schema ("question||answer",
+    rows joined by @@), so the two cannot drift.
+  endcomment
+  assign fr_faq = 'واش هادو ديكانت ولا قرعات كاملة؟||قرعات كاملة جديدة فالكرطونة الأصلية ديالها. Lbass Original ما كيبيعش ديكانت.@@منين جايين هاد العطور؟||كنجيبوهم من موزع فدبي، وكيوصلو فالكرطونة الأصلية ديال كل دار.@@واش النوطات المكتوبة مضبوطة؟||النوطات فصفحة كل عطر مكتوبة حسب اللائحة المنشورة ديال العطر: الافتتاحية، القلب والقاعدة. الريحة كتقدر تبان شوية مختلفة من بشرة لبشرة.@@كيفاش نخلص؟||الدفع عند الاستلام (COD) فكل المغرب، أو PayPal أونلاين.@@شحال التوصيل؟||20 درهم داخل مراكش و40 درهم لباقي مدن المغرب، ومجاني ملي يوصل الطلب 500 درهم أو أكثر.@@واش نقدر نرجع العطر؟||الإرجاع كيتطبق حسب شروط الإرجاع المنشورة فصفحة الإرجاع. مع الدفع عند الاستلام كتشوف الكرطونة فالباب قبل ما تخلص.'
+  assign fr_faq_rows = fr_faq | split: '@@'
+-%}
+{% paginate collection.products by 250 %}
+{%- comment -%} In-stock first, same rule as the clothing grid; order within each group is the collection's own sort. {%- endcomment -%}
+{% assign _in_stock = collection.products | where: 'available', true %}
+{% assign _sold_out = collection.products | where: 'available', false %}
+{% assign fr_source = _in_stock | concat: _sold_out %}
+{% assign fr_ids = ',' %}
+{% for fr_item in collection.products %}{% assign fr_ids = fr_ids | append: fr_item.id | append: ',' %}{% endfor %}
+<style>
+/* .chip-uniq removed 2026-08-29 — it never painted: .chip{...!important} in
+   lbass-stamp outranked it at any specificity. The pièce-unique plate now
+   lives in snippets/lbass-unique-badge.liquid, anchored so it cannot lose. */
+.chip-sold{background:rgba(255,107,107,.10);border-color:rgba(255,107,107,.30);color:#ff8a8a}
+.chip-cond{background:rgba(200,154,14,.10);border-color:rgba(200,154,14,.30);color:var(--gold)}
+.chip-sz{background:rgba(255,255,255,.045)}
+.coll-shop-head{scroll-margin-top:92px;display:flex;align-items:end;justify-content:space-between;gap:20px;padding:34px 0 20px;border-bottom:1px solid var(--line)}
+.coll-shop-head__label{display:block;margin:0 0 6px;color:var(--gold);font-family:var(--lt);font-size:10px;font-weight:800;letter-spacing:.18em;direction:ltr}
+.coll-shop-head h2{margin:0;color:var(--cream);font-size:clamp(25px,3vw,40px);line-height:1.2}
+.coll-shop-head p{max-width:650px;margin:8px 0 0;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.7}
+.coll-shop-head__count{flex:none;color:var(--txt3)!important;font-family:var(--lt);font-size:11px!important;letter-spacing:.08em;direction:rtl}
+.coll-query-links{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.coll-discovery{margin:58px 0 24px;padding-top:38px;border-top:1px solid var(--line)}
+.coll-discovery__intro{max-width:860px;margin:0 0 18px}
+.coll-discovery__intro h2{font-size:clamp(24px,3vw,38px);margin:0 0 10px}
+.coll-discovery__intro p,.coll-discovery__description{color:var(--txt2);margin:0;line-height:1.85}
+.coll-discovery__description{max-width:760px;margin:10px 0 0}
+.coll-experience{max-width:860px;margin:14px 0 18px;padding:14px 16px;border-inline-start:3px solid var(--gold);border-radius:10px;background:rgba(200,154,14,.06);color:var(--txt2);line-height:1.8}
+.coll-experience strong{color:var(--cream)}
+.coll-help-links{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.coll-intent{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:1080px;margin:0 0 20px}
+.coll-intent-card{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.032);padding:13px 14px;min-height:132px}
+.coll-intent-card i{display:block;font-style:normal;font-family:var(--lt);font-size:10px;letter-spacing:.18em;color:var(--gold);direction:ltr;font-weight:800;margin-bottom:6px}
+.coll-intent-card b{display:block;color:var(--cream);font-size:14.5px;line-height:1.35;margin-bottom:5px}
+.coll-intent-card p{color:var(--txt2);font-size:12.5px;font-weight:700;line-height:1.65;margin:0}
+.coll-faq{max-width:980px;margin:0 0 24px;display:grid;gap:8px}
+.coll-faq details{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);overflow:hidden}
+.coll-faq summary{list-style:none;cursor:pointer;padding:12px 14px;color:var(--cream);font-weight:900}
+.coll-faq summary::-webkit-details-marker{display:none}
+.coll-faq p{padding:0 14px 13px;margin:0;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.75}
+.coll-decision{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 20px;padding:14px 16px;border:1px solid rgba(200,154,14,.26);border-radius:14px;background:rgba(200,154,14,.07)}
+.coll-decision p{margin:0;color:var(--cream);font-size:13.5px;font-weight:800;line-height:1.7}
+.coll-decision a{flex:none;color:var(--ink);background:var(--gold);border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:900;text-decoration:none}
+@media(max-width:820px){.coll-intent{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.coll-shop-head{align-items:start;flex-direction:column;padding-top:26px}.coll-shop-head__count{margin-top:0!important}.coll-discovery{margin-top:42px;padding-top:28px}.coll-intent{grid-template-columns:1fr}.coll-intent-card{min-height:auto}.coll-decision{align-items:stretch;flex-direction:column}.coll-decision a{text-align:center;min-height:44px;display:grid;place-items:center}}
+</style>
+<style>
+.fr-houses{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.fr-desc{max-width:780px;margin:16px 0 0;color:var(--txt2);line-height:1.85;font-size:14.5px}
+.fr-desc p{margin:0 0 6px}
+.fr-houses .chip.is-on{border-color:var(--gold);color:var(--gold)}
+.fr-more{margin:40px 0 0;padding-top:26px;border-top:1px solid var(--line)}
+.fr-more__h{margin:0;color:var(--txt2);font-size:13px;font-weight:800}
+.fr-more .fr-houses{margin-top:10px}
+.fr-more .fr-desc{margin-top:18px}
+.grid>.lbqa-wrap{order:1}
+.grid>.lb-sold{order:9;opacity:.75}
+</style>
+{% render 'lbass-frag-hero', mode: 'page', title: fr_h1, latin: fr_latin, coll: collection, demo: fr_demo %}
+<div style="max-width:1280px;margin:0 auto;padding:0 clamp(16px,4vw,32px)">{% render 'lbass-discover-strip', dept: 'fragrance', place: 'collection' %}{% render 'lbass-guide-links', dept: 'fragrance', place: 'collection' %}</div>
+<div class="wrap">
+  <nav class="crumb" aria-label="مسار التصفح">
+    <a href="{{ routes.root_url }}">الرئيسية</a> ›
+    {% unless fr_is_all %}<a href="/collections/fragrances">العطور</a> ›{% endunless %}
+    <span aria-current="page">{{ fr_title }}</span>
+  </nav>
+
+  <section class="coll-shop-head" id="lbassCollectionProducts" aria-labelledby="collShopTitle" tabindex="-1">
+    <div>
+      <span class="coll-shop-head__label">FRAGRANCES</span>
+      <h2 id="collShopTitle">{{ fr_title }} — كل العطور</h2>
+      {%- if collection.handle == 'lattafa-best-sellers' -%}
+      <p>مرتبين حسب أرقام المبيعات العمومية ديال السوق المغربي (شتنبر 2026). العطور المتوفرة كيبانو أولاً؛ دخل للعطر باش تشوف النوطات، التركيز والحجم.</p>
+      {%- else -%}
+      <p>العطور المتوفرة كيبانو أولاً. فلتر حسب الدار والثمن، ودخل للعطر باش تشوف النوطات، التركيز والحجم.</p>
+      {%- endif -%}
+    </div>
+    <p class="coll-shop-head__count">{% if fr_demo %}قريباً{% else %}{{ collection.products_count }} عطر{% endif %}</p>
+  </section>
+
+  {% if fr_demo %}
+    <section class="coll-decision" aria-label="معاينة">
+      <p><strong>معاينة (preview theme):</strong> هاد الصفحة كتبان هكا ملي تنشر الكوليكشن ديال العطور. العطور غادي يبانو هنا بلاصة هاد الرسالة.</p>
+    </section>
+  {% elsif _in_stock.size == 0 and collection.products_count > 0 %}
+    <section class="coll-decision" aria-label="قريباً">
+      <p><strong>العطور جايين قريباً من دبي.</strong><br>دخل لأي عطر وضغط «علمني ملي يوصل» — نعلموك فالواتساب أول واحد، مع الثمن.</p>
+      <a href="https://wa.me/491754264425?text={{ 'سلام Lbass Original! مهتم بالعطور العربية، علموني ملي يوصلو. كيعجبوني: ' | url_encode }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_notify_collection">علمني ملي يوصلو</a>
+    </section>
+  {% endif %}
+
+{%- comment -%} Card CSS (price, campaign) — same as the clothing grid; see templates/collection.liquid. {%- endcomment -%}
+{% render 'lbass-promo-css' %}
+  {% unless fr_demo %}{% render 'lbass-collection-filters', collection: collection, count_override: collection.products_count %}{% endunless %}
+
+  <div class="grid" id="lbfGrid">
+    {% if fr_demo %}
+      <div style="grid-column:1/-1;border:1px dashed var(--line);border-radius:14px;padding:26px;text-align:center;color:var(--txt2);font-weight:700">هنا غادي يبانو العطور ملي تنشر الكوليكشن.</div>
+    {% else %}
+    {% for product in fr_source %}
+      {% render 'lbass-product-card', product: product, placement: 'fragrance_collection' %}
+    {% else %}
+      <div style="grid-column:1/-1;border:1px solid var(--line);border-radius:14px;padding:22px;background:var(--ink2)">
+        <p class="coll-empty-msg" role="status" style="margin-top:0;font-weight:600">ما كاينش عطور دابا فهاد القسم.</p>
+        <a class="btn btn-c" href="/collections/fragrances">شوف كل العطور</a>
+      </div>
+    {% endfor %}
+    {% endif %}
+  </div>
+
+  {% render 'lbass-pagination', paginate: paginate %}
+
+  {%- comment -%} 2026-09-30: house chips + description follow the grid (the bottles come first). {%- endcomment -%}
+  <section class="fr-more" aria-label="تصفّح العطور حسب الدار">
+    <p class="fr-more__h">تصفّح حسب الدار</p>
+    <nav class="fr-houses" aria-label="الديور">
+      <a class="chip{% if fr_is_all %} is-on{% endif %}" href="/collections/fragrances">كل العطور</a>
+      {%- comment -%} 2026-09-29: men / women first (published + non-empty only), then the houses. {%- endcomment -%}
+      {%- assign fr_wear = 'parfums-arabes-homme,parfums-arabes-femme' | split: ',' -%}
+      {%- for h in fr_wear -%}
+        {%- assign hc = collections[h] -%}{%- assign hcn = hc.products_count | default: 0 | plus: 0 -%}
+        {%- if hcn > 0 -%}<a class="chip{% if hc.handle == collection.handle %} is-on{% endif %}" href="{{ hc.url }}">{{ hc.title }} <span dir="ltr">{{ hcn }}</span></a>{%- endif -%}
+      {%- endfor -%}
+      {%- for h in fr_houses -%}
+        {%- assign hc = collections[h] -%}{%- assign hcn = hc.products_count | default: 0 | plus: 0 -%}
+        {%- if hcn > 0 -%}<a class="chip{% if hc.handle == collection.handle %} is-on{% endif %}" href="{{ hc.url }}">{{ hc.title }} <span dir="ltr">{{ hcn }}</span></a>{%- endif -%}
+      {%- endfor -%}
+    </nav>
+    {% if collection.description != blank and fr_demo == false %}<div class="fr-desc">{{ collection.description }}</div>{% endif %}
+  </section>
+
+  {%- comment -%} Find Your Similar Scent (2026-09-28): main fragrances collection only, after the grid so the bottles stay first. {%- endcomment -%}
+  {% if fr_is_all and fr_demo == false %}{% render 'lbass-similar-scent', place: 'collection', heading: 'h2' %}{% endif %}
+
+  <section class="coll-discovery" aria-labelledby="collDiscoveryTitle">
+    <div class="coll-discovery__intro">
+      <h2 id="collDiscoveryTitle">شنو خاصك تعرف قبل ما تختار عطر؟</h2>
+      <p>{{ fr_title }} فـ Lbass Original: قرعات كاملة جديدة فالكرطونة، مع النوطات، التركيز والحجم مكتوبين فصفحة كل عطر. التوصيل لكل المغرب مع الدفع عند الاستلام.</p>
+    </div>
+    <p class="coll-experience"><strong>نصيحة:</strong> قرا النوطات ديال الافتتاحية، القلب والقاعدة فصفحة كل عطر. إلا عندك سؤال على شي ريحة، سولنا فالواتساب قبل الطلب.</p>
+
+    <div class="coll-help-links" aria-label="معلومات مساعدة">
+      <a class="chip" href="/pages/shipping-and-payment">التوصيل والخلاص</a>
+      <a class="chip" href="/pages/refund-policy">شروط الإرجاع</a>
+      <a class="chip" href="https://wa.me/491754264425?text={{ 'سلام Lbass Original! محتاج مساعدة نختار عطر من ' | append: collection.title | url_encode }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_collection_guide">سولنا فالواتساب</a>
+    </div>
+
+    <div class="coll-decision" aria-label="مساعدة قبل الاختيار">
+      <p>ما عارفش شنو يجيك؟ قولينا شنو كتحب — حلو، خشبي، منعش ولا شرقي — ونعاونوك تختار من العطور المتوفرة.</p>
+      <a href="https://wa.me/491754264425?text={{ 'سلام، محتاج مساعدة نختار عطر. كنحب ريحة: ' | url_encode }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="fragrance_collection_help">عاونّي نختار</a>
+    </div>
+
+    <section class="coll-intent" aria-label="دليل اختيار العطر">
+      <article class="coll-intent-card">
+        <i>KNOW</i>
+        <b>شنو هي النوطات؟</b>
+        <p>الافتتاحية هي اللي كتشم فالدقائق الأولى، القلب كيبان من بعد، والقاعدة هي اللي كتبقى فالآخر.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>GO</i>
+        <b>{{ fr_title }} فالمغرب</b>
+        <p>قرعات كاملة جديدة فالكرطونة، كتوصلك لكل مدينة فالمغرب.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>DO</i>
+        <b>شنو الفرق فالتركيز؟</b>
+        <p>Eau de Toilette غالباً أخف، Eau de Parfum أركز، وExtrait de Parfum هو الأركز. التركيز مكتوب فصفحة كل عطر.</p>
+      </article>
+      <article class="coll-intent-card">
+        <i>BUY</i>
+        <b>لقيتي العطر؟</b>
+        <p>دخل لصفحة العطر، راجع النوطات والحجم والثمن، وكمّل بـ COD أو PayPal.</p>
+      </article>
+    </section>
+
+    <section class="coll-faq" id="collectionFaq" aria-label="أسئلة حول {{ collection.title | escape }}">
+      {%- for row in fr_faq_rows -%}
+        {%- assign qa = row | split: '||' -%}
+        {%- if qa[1] != blank -%}
+          <details>
+            <summary>{{ qa[0] }}</summary>
+            <p>{{ qa[1] }}</p>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+    </section>
+
+    <nav aria-label="أقسام أخرى">
+      <p style="color:var(--txt3);font-size:12.5px;font-weight:800;margin:0 0 8px">تصفح حسب الدار</p>
+      {% unless fr_is_all %}<a class="chip" href="/collections/fragrances">كل العطور</a>{% endunless %}
+      {%- for h in fr_houses -%}
+        {%- assign hc = collections[h] -%}{%- assign hcn = hc.products_count | default: 0 | plus: 0 -%}
+        {%- if hcn > 0 and hc.handle != collection.handle -%}<a class="chip" href="{{ hc.url }}">{{ hc.title }}</a>{%- endif -%}
+      {%- endfor -%}
+      <a class="chip" href="{{ collections['audited-drop-p001-p012'].url | default: '/collections/audited-drop-p001-p012' }}">حوايج Lbass · second-hand</a>
+    </nav>
+  </section>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": {{ fr_h1 | json }},
+  "description": {{ collection.description | strip_html | strip | json }},
+  "url": "{{ shop.url }}{{ collection.url }}",
+  "isPartOf": {"@id":"{{ shop.url }}/#website"},
+  "publisher": {"@id":"{{ shop.url }}/#organization"}
+}
+</script>
+{% unless fr_demo %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": {{ collection.title | json }},
+  "itemListElement": [
+    {% for product in fr_source limit: 48 %}
+      {
+        "@type": "ListItem",
+        "position": {{ forloop.index }},
+        "item": {
+          "@type": "Product",
+          "name": {{ product.title | split: ' | ' | first | json }},
+          "url": "{{ shop.url }}{{ product.url }}",
+          {% if product.featured_image %}"image": "https:{{ product.featured_image | image_url: width: 600 }}",{% endif %}
+          {% if product.price > 0 %}"offers": {
+            "@type": "Offer",
+            "priceCurrency": "MAD",
+            "price": {{ product.price | divided_by: 100.0 }},
+            "itemCondition": "https://schema.org/NewCondition",
+            "availability": "{% if product.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+          },{% endif %}
+          "brand": {"@type": "Brand", "name": {{ product.vendor | json }}}
+        }
+      }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endunless %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "الرئيسية", "item": {{ shop.url | json }}}{% unless fr_is_all %},
+    {"@type": "ListItem", "position": 2, "name": "العطور", "item": "{{ shop.url }}/collections/fragrances"},
+    {"@type": "ListItem", "position": 3, "name": {{ collection.title | json }}}{% else %},
+    {"@type": "ListItem", "position": 2, "name": {{ fr_title | json }}}{% endunless %}
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "{{ shop.url }}{{ collection.url }}#faq",
+  "mainEntity": [
+    {%- assign fq_n = 0 -%}
+    {%- for row in fr_faq_rows -%}
+      {%- assign qa = row | split: '||' -%}
+      {%- if qa[1] != blank -%}
+        {%- if fq_n > 0 -%},{%- endif -%}
+        {%- assign fq_n = fq_n | plus: 1 %}
+    {
+      "@type": "Question",
+      "name": {{ qa[0] | json }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ qa[1] | json }} }
+    }
+      {%- endif -%}
+    {%- endfor %}
+  ]
+}
+</script>
+{% endpaginate %}
