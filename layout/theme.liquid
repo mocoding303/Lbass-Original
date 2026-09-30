@@ -856,6 +856,7 @@ strong{color:var(--cream)}
 .lb-bar-sep{color:rgba(200,154,14,.5);font-size:10px}
 @keyframes lbMarquee{0%{transform:translateX(0)}100%{transform:translateX(50%)}}
 @media(max-width:480px){.lb-bar-item{padding:0 20px;font-size:11.5px}}
+@media(prefers-reduced-motion:reduce){.lb-bar-track{animation:none}}
 </style>
 {% render 'lbass-stamp' %}
 {%- comment -%} Must come AFTER lbass-stamp: that sheet sets .chip{...!important}

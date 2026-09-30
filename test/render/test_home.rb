@@ -191,7 +191,7 @@ puts
 puts '=' * 78
 puts 'ANNOUNCEMENT BAR — identical in index.liquid and layout/theme.liquid'
 puts '=' * 78
-bar_css   = ->(s) { s.lines.map(&:strip).grep(/\A(\.lb-bar|@keyframes lbMarquee|@media\(max-width:480px\)\{\.lb-bar)/) }
+bar_css   = ->(s) { s.lines.map(&:strip).grep(/\A(\.lb-bar|@keyframes lbMarquee|@media\([^)]*\)\{\.lb-bar)/) }
 bar_items = ->(s) { s[%r{<div class="lb-bar-track">(.*?)</div>}m, 1].to_s.scan(%r{<span class="lb-bar-item"[^>]*>(.*?)</span>}).flatten }
 check "same CSS (#{bar_css.(SRC).size} rules)", !bar_css.(SRC).empty? && bar_css.(SRC) == bar_css.(LAYOUT)
 check "same items (#{bar_items.(SRC).size})",   !bar_items.(SRC).empty? && bar_items.(SRC) == bar_items.(LAYOUT)

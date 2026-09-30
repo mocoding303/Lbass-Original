@@ -75,6 +75,7 @@ input,select{font-family:inherit}
 .lb-bar-sep{color:rgba(200,154,14,.5);font-size:10px}
 @keyframes lbMarquee{0%{transform:translateX(0)}100%{transform:translateX(50%)}}
 @media(max-width:480px){.lb-bar-item{padding:0 20px;font-size:11.5px}}
+@media(prefers-reduced-motion:reduce){.lb-bar-track{animation:none}}
 .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .brand-logo{display:block;width:clamp(154px,15vw,196px);height:auto;transition:transform .35s ease,filter .35s ease}
 .brand-monogram{display:none;width:38px;height:38px;transition:transform .35s ease,filter .35s ease}
