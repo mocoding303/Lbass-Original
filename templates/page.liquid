@@ -9,7 +9,7 @@
   {% when 'authenticity' %}
     {% capture short_answer %}Lbass Original كيراجع البراند والتفاصيل الظاهرة قبل ما يعرض القطعة، ولكن ماكنوعدوش بشهادة خارجية إلا إلا كانت مذكورة صراحة. الصور الحقيقية، الكود، الحالة، والتفاصيل القريبة كيساعدوك تشري بثقة وبلا مفاجآت.{% endcapture %}
   {% when 'shipping-and-payment' %}
-    {% capture short_answer %}التوصيل والدفع عند الاستلام مع Lbass Original واضح: 20 درهم داخل مراكش، 40 درهم لباقي المغرب، والخلاص بـ COD ملي توصلك أو PayPal أونلاين. مدة التوصيل كنأكدوها حسب المدينة قبل الإرسال.{% endcapture %}
+    {% capture short_answer %}التوصيل والدفع عند الاستلام مع Lbass Original واضح: 20 درهم داخل مراكش، 50 درهم لباقي المغرب، والخلاص بـ COD ملي توصلك أو PayPal أونلاين. مدة التوصيل كنأكدوها حسب المدينة قبل الإرسال.{% endcapture %}
   {% when 'sell-your-clothes' %}
     {% capture short_answer %}إلى عندك حوايج براند مستعملة وباغي تبيعها، صيفط الصور، البراند، القياس، الحالة، والثمن المتوقع. Lbass كيشوف واش القطعة مناسبة، كيعطي تقييم، وكيقدر يقترح كاش، store credit، أو طريقة أخرى حسب الحالة والطلب.{% endcapture %}
 {% endcase %}
@@ -26,13 +26,13 @@
     {% capture short_answer %}Second-hand clothing Morocco: Lbass Original sells branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.{% endcapture %}
   {% when 'second-hand-clothing-marrakech' %}
     {% assign query_page_h1 = 'Friperie Marrakech' %}
-    {% capture short_answer %}Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 40 MAD ailleurs au Maroc.{% endcapture %}
+    {% capture short_answer %}Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 50 MAD ailleurs au Maroc.{% endcapture %}
   {% when 'about' %}
     {% assign query_page_h1 = 'Lbass Original Marrakech' %}
     {% capture short_answer %}Lbass Original Marrakech هو متجر مغربي أونلاين كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، مفحوصة ومصورة قطعة بقطعة فمراكش.{% endcapture %}
   {% when 'faq' %}
     {% assign query_page_h1 = 'أسئلة على Lbass Original' %}
-    {% capture short_answer %}هنا كتلقى أجوبة واضحة على الحالة، القياس، الصور الحقيقية، COD، PayPal والتوصيل: 20 درهم داخل مراكش و40 درهم لباقي المغرب.{% endcapture %}
+    {% capture short_answer %}هنا كتلقى أجوبة واضحة على الحالة، القياس، الصور الحقيقية، COD، PayPal والتوصيل: 20 درهم داخل مراكش و50 درهم لباقي المغرب.{% endcapture %}
 {% endcase %}
 
 <style>
@@ -134,7 +134,7 @@
 {%- if page.handle == 'shipping-and-payment' -%}
   <div style="max-width:860px;margin:28px 0;padding:20px 22px;background:rgba(200,154,14,.08);border:1px solid rgba(200,154,14,.3);border-radius:12px;text-align:center">
     <p style="margin:0 0 6px;color:var(--cream,#F4EFE6);font-weight:800;font-size:15px">مفهوم التوصيل والخلاص — دابا جاهز تتسوق؟</p>
-    <p style="margin:0 0 16px;color:var(--txt2,#97928A);font-size:13px">COD متوفر — كتخلص ملي توصلك. التوصيل: 20 درهم مراكش · 40 درهم باقي المغرب.</p>
+    <p style="margin:0 0 16px;color:var(--txt2,#97928A);font-size:13px">COD متوفر — كتخلص ملي توصلك. التوصيل: 20 درهم مراكش · 50 درهم باقي المغرب.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
       <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" style="padding:12px 20px;background:var(--gold,#c89a0e);color:#000;border-radius:8px;text-decoration:none;font-weight:800;font-size:14px">تسوق الصبابط ←</a>
       <a href="/collections/all" style="padding:12px 20px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">شوف الكولكسيون</a>
@@ -155,7 +155,7 @@
       <article class="entity-card"><h2>من ألمانيا لمراكش</h2><p>القطع كتتختار من ألمانيا، وكنراجعو الحالة والتفاصيل المتاحة فمراكش قبل العرض.</p></article>
       <article class="entity-card"><h3>نفس القطعة فالصور</h3><p>الصور ديال نفس القطعة المعروضة، ماشي catalogue photos. الحالة، التّيكيت والملاحظات كيبانو غير حسب التأكيد.</p></article>
       <article class="entity-card"><h3>مخزون محدود بصح</h3><p>القطع غالباً محدودة. شارة 1/1 كتبان غير ملي Shopify كيأكد وحدة وحدة فالمخزون.</p></article>
-      <article class="entity-card"><h3>توصيل وخلاص واضح</h3><p>20 درهم داخل مراكش، 40 درهم لباقي المغرب، وكاين COD أو PayPal حسب طريقة الطلب.</p></article>
+      <article class="entity-card"><h3>توصيل وخلاص واضح</h3><p>20 درهم داخل مراكش، 50 درهم لباقي المغرب، وكاين COD أو PayPal حسب طريقة الطلب.</p></article>
     </section>
     <section class="about-process" aria-labelledby="about-process-title">
       <h2 id="about-process-title">كيفاش كتدوز القطعة قبل العرض؟</h2>

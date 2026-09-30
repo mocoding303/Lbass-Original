@@ -270,7 +270,7 @@
 واش المنتوج جديد؟||{% if bt_box != blank %}إيه، المنتوج جديد. {{ bt_box }}{% else %}إيه، جديد فالعلبة ديالو.{% endif %}{% if bt_exp != blank %} صالح حتى {{ bt_exp | date: '%m/%Y' }}.{% endif %}@@
 {%- if bt_src != blank -%}واش المنتوج أصلي؟ ومنين جا؟||إيه، أصلي: شريناه من {{ bt_src }} وكيتصيفط من مراكش. وإلا بان أنه ماشي أصلي، فلوسك راجعين كاملين (ضمان الأصالة ديال Lbass Original).@@{%- endif -%}
 واش نقدر نرجعو؟||إيه. إلا خلصتي بـ PayPal عندك 14 يوم باش ترجعو، حتى إلا حليتيه. مع الدفع عند الاستلام كتشوف العلبة فالباب قبل ما تخلص، وإلا ما عجبكش ما تخلصش.@@
-كيفاش نخلص وشحال التوصيل؟||الدفع عند الاستلام (COD) فكل المغرب أو PayPal أونلاين. التوصيل 20 درهم داخل مراكش و40 درهم لباقي المدن، ومجاني من 500 درهم.
+كيفاش نخلص وشحال التوصيل؟||الدفع عند الاستلام (COD) فكل المغرب أو PayPal أونلاين. التوصيل 20 درهم داخل مراكش و50 درهم لباقي المدن، ومجاني من 500 درهم.
 {%- endcapture -%}
 {%- assign bt_faq_rows = bt_faq | strip_newlines | split: '@@' -%}
 {%- comment -%}
@@ -278,7 +278,7 @@
   rate cannot be detected at checkout — Shopify exposes no provinces for MA.
   This message is where the correct rate gets confirmed before dispatch.
 {%- endcomment -%}
-{% assign wa_msg_buy = 'سلام Lbass Original! بغيت ' | append: display_title | append: '. المدينة ديالي: [اكتب المدينة]. واش التوصيل داخل مراكش 20 درهم وخارج مراكش 40 درهم؟' | url_encode %}
+{% assign wa_msg_buy = 'سلام Lbass Original! بغيت ' | append: display_title | append: '. المدينة ديالي: [اكتب المدينة]. واش التوصيل داخل مراكش 20 درهم وخارج مراكش 50 درهم؟' | url_encode %}
 {% assign wa_msg_fit = 'سلام، محتاج مساعدة فالقياس ديال ' | append: display_title | url_encode %}
 {% assign wa_msg_cond = 'سلام، بغيت نتأكد من الحالة والعيوب ديال ' | append: display_title | url_encode %}
 {% assign wa_msg_photos = 'سلام، بغيت صور/فيديو إضافي ديال ' | append: display_title | url_encode %}
@@ -931,7 +931,7 @@
       {%- endcomment -%}
       {% render 'lbass-promo-css' %}
       {% render 'lbass-promo-badge', product: product, format: 'pdp' %}
-      <p class="pdp-ship-line">🚚 التوصيل: <b>20 درهم داخل مراكش</b> (اختار «التوصيل المحلي» فالشيكاوت) · <b>40 درهم خارج مراكش</b> · مجاني من 500 درهم</p>
+      <p class="pdp-ship-line">🚚 التوصيل: <b>20 درهم داخل مراكش</b> (اختار «التوصيل المحلي» فالشيكاوت) · <b>50 درهم خارج مراكش</b> · مجاني من 500 درهم</p>
       {% comment %}
         ═══ PAYMENT CHOICE (2026-08-10) ═══
         Frames PayPal as the flexible option WITHOUT downgrading COD, which is
@@ -1009,9 +1009,9 @@
 
       {%- comment -%}
         COD reassurance sits ABOVE the button on purpose (re-applied 2026-08-19).
-        Report §12: "Move the COD line and the 20/40 MAD figure above the
+        Report §12: "Move the COD line and the 20/50 MAD figure above the
         Add-to-Cart button — COD is the decisive trust factor for first-time
-        Moroccan buyers." The 20/40 figure is already above (.pdp-ship-line);
+        Moroccan buyers." The 20/50 figure is already above (.pdp-ship-line);
         this line was not — it rendered underneath, i.e. after the decision.
         The door-inspection clause matches /pages/faq and /pages/refund-policy
         in substance; nothing new is promised. aria-describedby still resolves.
@@ -1097,7 +1097,7 @@
         <input class="pdpx-in" name="xcity" type="text" placeholder="المدينة *" autocomplete="address-level2" required aria-label="المدينة">
         <p class="pdpx-err" id="pdpxErr" role="alert" hidden></p>
         <button type="submit" class="pdpx-btn">✅ أكّد الطلب — خلّص ملي توصلك</button>
-        <p class="pdpx-note">غادي نوجّهوك لصفحة التأكيد والمعلومات ديالك معمّرة أوتوماتيكياً · التوصيل 20 درهم داخل مراكش · 40 درهم خارج مراكش — مجاني من 500 درهم</p>
+        <p class="pdpx-note">غادي نوجّهوك لصفحة التأكيد والمعلومات ديالك معمّرة أوتوماتيكياً · التوصيل 20 درهم داخل مراكش · 50 درهم خارج مراكش — مجاني من 500 درهم</p>
       </form>
     </details>
     {% endif %}
@@ -1147,7 +1147,7 @@
         {% if bt_box != blank %}<li class="pp-row"><span class="pp-ic">▢</span><div><b>حالة العلبة</b><span>{{ bt_box }}</span></div></li>{% endif %}
         {% if bt_exp != blank %}<li class="pp-row"><span class="pp-ic">EXP</span><div><b>صالح حتى</b><span dir="ltr">{{ bt_exp | date: '%m/%Y' }}</span></div></li>{% endif %}
         <li class="pp-row"><span class="pp-ic">MAD</span><div><b>الثمن</b><span>{% if bt_price_pending %}الثمن غادي يتعلن قريباً — ضغط «علمني ملي يوصل» ونصيفطوه ليك.{% else %}{{ selv.price | money }} هو الثمن الحالي والنهائي قبل التوصيل. نفس الثمن كيبقى فالسلة والـ checkout.{% endif %}</span></div></li>
-        <li class="pp-row"><span class="pp-ic">🚚</span><div><b>التوصيل</b><span>20 درهم داخل مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم. كنأكدو معاك فالواتساب قبل ما نصيفطو.</span></div></li>
+        <li class="pp-row"><span class="pp-ic">🚚</span><div><b>التوصيل</b><span>20 درهم داخل مراكش · 50 درهم خارج مراكش · مجاني من 500 درهم. كنأكدو معاك فالواتساب قبل ما نصيفطو.</span></div></li>
         <li class="pp-row"><span class="pp-ic">💳</span><div><b>الخلاص</b><span>اختار <b>COD</b> وتخلّص ملي توصلك بلا مقدّم، أو ادفع أونلاين بـ PayPal.</span></div></li>
         <li class="pp-row"><span class="pp-ic">↩</span><div><b>الإرجاع</b><span>حسب <a href="/pages/refund-policy" target="_blank" rel="noopener">شروط الإرجاع كاملة</a>. مع COD كتشوف العلبة فالباب قبل ما تخلص.</span></div></li>
       </ul>
@@ -1801,8 +1801,8 @@
       Lost when this branch forked before the shipping work; re-applied onto the
       newer offers block rather than overwriting it.
 
-      Declares 40 MAD deliberately — the HIGHER of the two Morocco rates
-      (Marrakech 20 / elsewhere 40). Google shows one figure, and under-promising
+      Declares 50 MAD deliberately — the HIGHER of the two Morocco rates
+      (Marrakech 20 / elsewhere 50). Google shows one figure, and under-promising
       means a Marrakech buyer is never charged more than advertised. Free over
       500 MAD depends on CART TOTAL, which a per-product offer cannot express.
 
@@ -1811,10 +1811,10 @@
     {%- endcomment -%}
     "shippingDetails": {
       "@type": "OfferShippingDetails",
-      "shippingRate": {"@type": "MonetaryAmount", "value": "40", "currency": "MAD"},
+      "shippingRate": {"@type": "MonetaryAmount", "value": "50", "currency": "MAD"},
       "shippingDestination": {"@type": "DefinedRegion", "addressCountry": "MA"},
       "shippingSettingsLink": "{{ shop.url }}/pages/shipping-and-payment",
-      "description": "Delivery from Marrakech: 20 MAD within Marrakech, 40 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
+      "description": "Delivery from Marrakech: 20 MAD within Marrakech, 50 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
     },
     "seller": {"@id": "{{ shop.url }}/#store"}
   },

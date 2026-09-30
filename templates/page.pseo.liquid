@@ -7,7 +7,7 @@
   no hard-coded product IDs, sold items excluded automatically.
 
   2026-08-13: the H1 follows the Admin page title and verified shipping is
-  20 MAD inside Marrakech / 40 MAD outside Marrakech,
+  20 MAD inside Marrakech / 50 MAD outside Marrakech,
   and parent links point at the canonical brand-* collections.
   See snippets/lbass-pseo-h1.liquid for the full rationale.
 {% endcomment %}
@@ -40,8 +40,8 @@
   {%- assign ps_mode = 'all' -%}
   {%- assign ps_kick = 'FRIPERIE EN LIGNE — COD' -%}
   {%- assign ps_h1 = 'Friperie en ligne فالمغرب بالدفع عند الاستلام' -%}
-  {%- capture ps_answer -%}<strong>Friperie en ligne Maroc avec paiement à la livraison:</strong> commandez une pièce photographiée individuellement chez Lbass Original, puis payez à la réception selon l’option COD disponible. التوصيل 20 درهم داخل مراكش و40 درهم خارج مراكش.{%- endcapture -%}
-  {%- capture ps_mirror -%}Lbass Original est une friperie en ligne marocaine avec paiement à la livraison. Livraison 20 MAD dans Marrakech et 40 MAD ailleurs au Maroc.{%- endcapture -%}
+  {%- capture ps_answer -%}<strong>Friperie en ligne Maroc avec paiement à la livraison:</strong> commandez une pièce photographiée individuellement chez Lbass Original, puis payez à la réception selon l’option COD disponible. التوصيل 20 درهم داخل مراكش و50 درهم خارج مراكش.{%- endcapture -%}
+  {%- capture ps_mirror -%}Lbass Original est une friperie en ligne marocaine avec paiement à la livraison. Livraison 20 MAD dans Marrakech et 50 MAD ailleurs au Maroc.{%- endcapture -%}
   {%- capture ps_intro -%}الفرق هو أن كل منتج عندو صور القطعة نفسها. الحالة والتّيكيت والملاحظات كيبانو غير حسب التأكيد، وتقدر تختار الدفع عند الاستلام حسب خيارات الطلب. الإرجاع والتبديل كيتطبقو حسب السياسة المنشورة.{%- endcapture -%}
   {%- assign ps_parent_url = '/collections/all' -%}
   {%- assign ps_parent_txt = 'كل القطع المتوفرة' -%}
@@ -293,7 +293,7 @@
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش الثمن ديال Nike second-hand يستاهل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها.</p></details>
     {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش خاصني نخلص شي حاجة قبل التوصيل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح.</p></details>
-      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شحال التوصيل وشحال المدة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">20 درهم داخل مراكش و40 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شحال التوصيل وشحال المدة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">20 درهم داخل مراكش و50 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال.</p></details>
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو الفرق بينكم وبين الفريب العادية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء.</p></details>
     {% when 'adidas-second-hand-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش قطع Adidas أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج.</p></details>
@@ -392,7 +392,7 @@
 {"@type":"Question","name":"واش الثمن ديال Nike second-hand يستاهل؟","acceptedAnswer":{"@type":"Answer","text":"كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها."}}
 {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
 {"@type":"Question","name":"واش خاصني نخلص شي حاجة قبل التوصيل؟","acceptedAnswer":{"@type":"Answer","text":"لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح."}},
-{"@type":"Question","name":"شحال التوصيل وشحال المدة؟","acceptedAnswer":{"@type":"Answer","text":"20 درهم داخل مراكش و40 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال."}},
+{"@type":"Question","name":"شحال التوصيل وشحال المدة؟","acceptedAnswer":{"@type":"Answer","text":"20 درهم داخل مراكش و50 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال."}},
 {"@type":"Question","name":"شنو الفرق بينكم وبين الفريب العادية؟","acceptedAnswer":{"@type":"Answer","text":"كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء."}}
 {% when 'adidas-second-hand-maroc' %}
 {"@type":"Question","name":"واش قطع Adidas أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج."}},

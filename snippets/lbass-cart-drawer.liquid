@@ -182,7 +182,7 @@
   </div>
   <div class="lbdr-foot" id="lbdrFoot" hidden>
     <div class="lbdr-total"><span>المجموع</span><b id="lbdrTotal"></b></div>
-    <p class="lbdr-ship" style="margin:0 0 12px;font-size:11.5px">🚚 20 درهم مراكش · 40 درهم باقي المغرب · مجاني من 500 · 💳 COD أو PayPal</p>
+    <p class="lbdr-ship" style="margin:0 0 12px;font-size:11.5px">🚚 20 درهم مراكش · 50 درهم باقي المغرب · مجاني من 500 · 💳 COD أو PayPal</p>
     <a class="lbdr-btn lbdr-btn-g" id="lbdrCheckout" href="/checkout" data-cro-event="checkout_start" data-cro-label="cart_drawer">كمّل الطلب ←</a>
     <div class="lbdr-row2">
       <button class="lbdr-btn lbdr-btn-wa" id="lbdrWa" type="button">💬 كمّل فالواتساب</button>
@@ -643,10 +643,10 @@
       return '▸ ' + (it.vendor ? it.vendor + ' ' : '') + stripCode(it.product_title) + sz + ' = ' + (it.final_line_price / 100) + ' درهم';
     }).join('\n');
     /* City is asked for explicitly: Shopify has no Moroccan provinces, so the
-       20 / 40 split cannot be resolved automatically at checkout. The WhatsApp
+       20 / 50 split cannot be resolved automatically at checkout. The WhatsApp
        confirmation is where the real city is established and the correct rate
-       applied — see the delivery profile (Marrakech 20 / elsewhere 40 / free 500+). */
-    var msg = 'سلام Lbass Original! 👋\n\nبغيت نطلب:\n\n' + lines + '\n\nالمجموع: ' + (cart.total_price / 100) + ' درهم\nالمدينة ديالي: [اكتب المدينة]\nطريقة الخلاص المفضلة: COD أو PayPal\n\nالتوصيل: 20 درهم داخل مراكش · 40 درهم خارج مراكش · مجاني من 500 درهم\n\nشكراً ليك! 🙏';
+       applied — see the delivery profile (Marrakech 20 / elsewhere 50 / free 500+). */
+    var msg = 'سلام Lbass Original! 👋\n\nبغيت نطلب:\n\n' + lines + '\n\nالمجموع: ' + (cart.total_price / 100) + ' درهم\nالمدينة ديالي: [اكتب المدينة]\nطريقة الخلاص المفضلة: COD أو PayPal\n\nالتوصيل: 20 درهم داخل مراكش · 50 درهم خارج مراكش · مجاني من 500 درهم\n\nشكراً ليك! 🙏';
     var vault = vaultAttribution();
     if (vault) track('lbass_vault_checkout_start', { channel: 'whatsapp', payment_hint: 'cod_or_paypal', value: cart.total_price / 100, currency: 'MAD', source: vault.source || 'vault', category: vault.category || 'unknown' });
     

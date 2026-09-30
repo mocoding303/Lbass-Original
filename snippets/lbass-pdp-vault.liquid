@@ -403,7 +403,7 @@
       </div>
 
       <div class="vault-price">{{ product.price | money }}</div>
-      <div class="vault-shipping">🚚 20 د.م. مراكش · 40 د.م. باقي المدن · مجاني +500 د.م.</div>
+      <div class="vault-shipping">🚚 20 د.م. مراكش · 50 د.م. باقي المدن · مجاني +500 د.م.</div>
 
       {% if product.available %}
         {% form 'product', product, id: 'vaultAddToCartForm' %}
@@ -459,7 +459,7 @@
           <div class="vault-acc-content">
             <b>🚚 التوصيل</b><br>
             20 د.م. داخل مراكش<br>
-            40 د.م. باقي المدن<br>
+            50 د.م. باقي المدن<br>
             مجاني ابتداءً من 500 د.م.<br><br>
             <b>💵 COD</b><br>
             تقدر تخلص ملي توصلك القطعة وتشوفها.<br><br>
@@ -648,17 +648,17 @@ document.addEventListener('DOMContentLoaded', function() {
     "inventoryLevel": {"@type": "QuantitativeValue", "value": {{ current_variant.inventory_quantity | at_least: 0 }}}{% if is_one_of_one %},
     "eligibleQuantity": {"@type": "QuantitativeValue", "value": 1, "unitText": "One-of-One"}{% endif %},
     {%- comment -%}
-      Declares 40 MAD — the HIGHER of the two Morocco rates — so a Marrakech
+      Declares 50 MAD — the HIGHER of the two Morocco rates — so a Marrakech
       buyer is never charged more than advertised. Free over 500 MAD depends on
       cart total, which a per-product offer cannot express. deliveryTime omitted
       on purpose: no transit figure is published.
     {%- endcomment -%}
     "shippingDetails": {
       "@type": "OfferShippingDetails",
-      "shippingRate": {"@type": "MonetaryAmount", "value": "40", "currency": "MAD"},
+      "shippingRate": {"@type": "MonetaryAmount", "value": "50", "currency": "MAD"},
       "shippingDestination": {"@type": "DefinedRegion", "addressCountry": "MA"},
       "shippingSettingsLink": "{{ shop.url }}/pages/shipping-and-payment",
-      "description": "Delivery from Marrakech: 20 MAD within Marrakech, 40 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
+      "description": "Delivery from Marrakech: 20 MAD within Marrakech, 50 MAD elsewhere in Morocco, free for orders of 500 MAD or more. Cash on delivery available."
     },
     "seller": {"@id": "{{ shop.url }}/#store"}
   }
