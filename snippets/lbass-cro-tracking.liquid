@@ -27,34 +27,22 @@
 {% render 'lbass-pseo-links' %}
 
 {%- comment -%}
-  HOMEPAGE BRAND PROOF BLOCK (2026-08-05) — the multilingual "شنو هو" section.
-  Rendered from here for the same structural reason as the menu above: this is
-  one of the only snippets that reaches templates/index.liquid, which declares
-  {% layout none %} and so never runs layout/theme.liquid. Without this hook
-  the homepage would be the only page on the site with no entity statement.
-  Full rationale in snippets/lbass-cro-tracking-hook.liquid.
-
-  Gated to the homepage: every other template already gets the four-language
-  lbass-entity-block in the footer via theme.liquid, and two "what is Lbass
-  Original" blocks on one page is padding, not SEO.
+  ENTITY BLOCK: WHERE IT RENDERS (checked 2026-09-30; this note used to say the
+  opposite). templates/index.liquid renders lbass-entity-block itself, in its own
+  footer, so nothing is rendered from here for it. layout/theme.liquid does NOT
+  render it: in this repo the four-language "what is Lbass Original" block is on
+  the homepage only. Adding it to the theme.liquid footer is an open decision.
 {%- endcomment -%}
 
 
 {%- comment -%}
-  Above-the-fold density: hero height + visual reorder so products appear
-  sooner. CSS only, no markup moved. See snippets/lbass-home-density.liquid.
+  lbass-home-density and lbass-home-answer are retired (2026-09-30): the
+  homepage template now renders its own sections in order, and both snippets
+  render nothing. The two calls below are kept only so this tracking file did
+  not change behaviour; they can go in any later clean-up.
 {%- endcomment -%}
 {% if template == 'index' %}{% render 'lbass-home-density' %}{% endif %}
 
-{%- comment -%}
-  HOMEPAGE DIRECT-ANSWER + ACCESSORIES ENTRY ROW (2026-08-10).
-  See snippets/lbass-home-answer.liquid.
-
-  MUST stay AFTER lbass-home-density: it re-declares the `main > *` flex order
-  to make room for two new sections, and those overrides win on equal
-  specificity only by loading later. Moving this line above the density render
-  silently reverts the homepage order.
-{%- endcomment -%}
 {% if template == 'index' %}{% render 'lbass-home-answer' %}{% endif %}
 
 {%- comment -%}

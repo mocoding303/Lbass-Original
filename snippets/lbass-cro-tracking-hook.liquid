@@ -32,16 +32,12 @@
   JavaScript would work for Googlebot but is fragile, and content that only
   exists after JS runs is exactly the pattern this project has been avoiding.
 
-  ══ THE GATE ══
-  {% if template == 'index' %} — on every other page theme.liquid already
-  renders lbass-entity-block in the footer, and two "what is Lbass Original"
-  blocks on one page is padding, not SEO.
+  ══ STATUS (checked 2026-09-30) ══
+  Superseded: templates/index.liquid now renders lbass-entity-block itself, in
+  its own footer. And layout/theme.liquid does NOT render it, whatever earlier
+  notes said: in this repo the entity block is on the homepage only. Putting
+  it in the theme.liquid footer too is an open decision for the owner.
 
-  ══ STILL OWED ══
-  The homepage <title> and meta description remain hardcoded in index.liquid
-  and STILL carry no French or English discovery term:
-      "Lbass Original | براند أصلي بثمن يناسبك 🇲🇦"
-  A <title> cannot be injected from body-level Liquid, and rewriting it in JS
-  would be a genuinely bad idea for a title tag. Fixing it requires editing
-  index.liquid. The replacement strings are ready in the owner-action list.
+  The homepage <title> item once listed here is done: it now reads
+  "Lbass Original | Friperie en ligne Maroc | Second-Hand من مراكش".
 {%- endcomment -%}
