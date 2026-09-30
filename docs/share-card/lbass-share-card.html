@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar-MA" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Lbass share card</title>
+<!--
+  Source of assets/lbass-share-1200x630.jpg: the share image (og:image, twitter:image)
+  for the homepage and the default for other pages, and the OnlineStore schema image.
+
+  Every line on it is copy already published on the site (hero eyebrow, H1, the French
+  hero line, three announcement-bar facts), so it adds no new promise. Keep prices and
+  stock out of it: link previews are cached for weeks, so a figure here outlives a change.
+  Keep the headline and the red chip inside the centre 630px: small WhatsApp previews
+  crop to a square.
+
+  To export: open in Chrome, DevTools device toolbar at 1200 x 630, DPR 1, then
+  "Capture screenshot" and save as JPEG (about 70 KB at quality 88).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@700;900&family=Anton&family=Epilogue:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0A0A0B;--cream:#F4EFE6;--gold:#C89A0E;--gold2:#E0B52A;--red:#BF2E15}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;background:var(--ink)}
+.card{position:relative;width:1200px;height:630px;overflow:hidden;background:var(--ink);color:var(--cream);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+/* the theme's own 8-point star motif, as quiet side ornaments outside the centre square */
+.star{position:absolute;top:50%;width:520px;height:520px;color:var(--gold2);opacity:.065;transform:translateY(-50%)}
+.star.l{left:-250px}.star.r{right:-250px}
+/* stamp-like frame, square corners like the lbass-stamp system */
+.frame{position:absolute;inset:22px;border:1.5px solid rgba(224,181,42,.28);pointer-events:none}
+.brand{display:flex;align-items:center;gap:16px;direction:ltr}
+.mark{width:66px;height:55px;color:var(--cream)}
+.name{font-family:Anton;font-size:30px;letter-spacing:.16em;color:var(--cream);line-height:1}
+.eyebrow{margin-top:30px;font-family:Alexandria;font-weight:700;font-size:23px;color:var(--gold2);display:flex;align-items:center;gap:12px}
+.eyebrow i{display:block;width:11px;height:11px;background:var(--red)}
+h1{margin-top:14px;font-family:Alexandria;font-weight:900;font-size:61px;line-height:1.32;color:var(--cream)}
+h1 .lat{color:var(--gold2);white-space:nowrap}
+.fr{margin-top:18px;font-family:Epilogue;font-weight:500;font-size:19px;color:rgba(244,239,230,.62);direction:ltr}
+.facts{margin-top:30px;display:flex;gap:12px;justify-content:center}
+.fact{font-family:Alexandria;font-weight:700;font-size:21px;line-height:1;padding:12px 18px;border:1.5px solid rgba(244,239,230,.34);color:var(--cream)}
+.fact.cod{background:var(--red);border-color:var(--red);color:#fff}
+.url{position:absolute;bottom:44px;left:0;right:0;font-family:Epilogue;font-weight:600;font-size:19px;letter-spacing:.04em;color:rgba(244,239,230,.55);direction:ltr}
+</style>
+</head>
+<body>
+<div class="card">
+  <svg class="star l" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 0 L61 27 L88 12 L73 39 L100 50 L73 61 L88 88 L61 73 L50 100 L39 73 L12 88 L27 61 L0 50 L27 39 L12 12 L39 27 Z" fill="currentColor"/></svg>
+  <svg class="star r" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 0 L61 27 L88 12 L73 39 L100 50 L73 61 L88 88 L61 73 L50 100 L39 73 L12 88 L27 61 L0 50 L27 39 L12 12 L39 27 Z" fill="currentColor"/></svg>
+  <div class="frame"></div>
+
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 240 200" aria-hidden="true">
+      <path d="M44 18h152c14 0 26 12 26 26v112c0 14-12 26-26 26H44c-14 0-26-12-26-26V44c0-14 12-26 26-26z" fill="none" stroke="currentColor" stroke-width="8"/>
+      <path d="M43 55h24M173 145h24" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="square" opacity=".42"/>
+      <g fill="none" stroke="currentColor" stroke-linecap="square" stroke-linejoin="round">
+        <path d="M68 48v104h50" stroke-width="17"/>
+        <path d="M152 47c31 0 52 22 52 53s-21 53-52 53-52-22-52-53 21-53 52-53z" stroke-width="17"/>
+        <path d="M118 54v92" stroke-width="5" opacity=".55"/>
+      </g>
+    </svg>
+    <span class="name">LBASS ORIGINAL</span>
+  </div>
+
+  <p class="eyebrow"><i></i>مختارة من ألمانيا · تشيك فمراكش</p>
+  <h1>حوايج <bdi class="lat" dir="ltr">Second-Hand</bdi><br>أصلية فالمغرب</h1>
+  <p class="fr">Friperie en ligne — vêtements de marque second hand, partout au Maroc</p>
+
+  <div class="facts">
+    <span class="fact">صور حقيقية · حالة واضحة</span>
+    <span class="fact cod">دفع عند الاستلام</span>
+    <span class="fact">توصيل لكل المغرب</span>
+  </div>
+
+  <p class="url">lbassoriginal.com</p>
+</div>
+</body>
+</html>
