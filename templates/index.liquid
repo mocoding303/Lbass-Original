@@ -118,63 +118,54 @@ input,select{font-family:inherit}
 .mmenu-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;font-weight:800;padding:17px;border-radius:var(--r-md);font-size:16px}
 .mmenu-note{text-align:center;font-size:12.5px;color:var(--txt2)}
 
-/* ════════════════ HERO ════════════════ */
-.hero{position:relative;height:175svh;min-height:0;background:var(--ink)}
-/* The tighter track keeps the film immersive without leaving a black tail. */
-.hero-sticky{position:sticky;top:0;height:100svh;display:grid;align-items:end;overflow:hidden;isolation:isolate;background:var(--ink)}
-.hero-media{position:absolute;inset:0;z-index:-2}
-.hero-frames{position:absolute;inset:-24px -14px;z-index:0;transform:translate3d(0,0,0) scale(1.045);transform-origin:center center;will-change:transform}
-.hero-poster,.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;backface-visibility:hidden;transform:none}
-.hero-poster{image-orientation:from-image}
-.hero-poster{z-index:0}
-.hero-video{z-index:1;opacity:0;will-change:opacity}
-.hero-video.is-ready{opacity:1}
-.hero-sticky::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(10,10,11,.46) 0%,rgba(10,10,11,.12) 38%,rgba(10,10,11,.52) 72%,rgba(10,10,11,.78) 100%)}
-.hero-star-bg{position:absolute;top:8%;left:-6%;width:min(46vw,520px);opacity:.07;color:var(--gold);z-index:-1;animation:slowspin 90s linear infinite}
-@keyframes slowspin{to{transform:rotate(360deg)}}
-.hero-in{position:relative;z-index:1;padding:0 var(--pad) clamp(36px,7vh,84px);max-width:1500px;width:100%;margin:0 auto;will-change:transform,opacity}
-.hero-scroll{position:absolute;z-index:2;left:clamp(12px,2.2vw,32px);top:50%;display:flex;align-items:center;gap:10px;writing-mode:vertical-rl;color:rgba(244,239,230,.72);font-family:var(--lt);font-size:9px;font-weight:700;letter-spacing:.28em;pointer-events:none;will-change:opacity}
-.hero-scroll i{display:block;width:1px;height:48px;background:linear-gradient(180deg,var(--gold2),rgba(242,208,96,.12))}
-.hero-kicker{display:inline-flex;align-items:center;gap:10px;background:rgba(10,10,11,.55);border:1px solid var(--gold-br);color:var(--gold2);font-weight:800;font-size:13px;padding:8px 18px;border-radius:50px;backdrop-filter:blur(8px);margin-bottom:22px}
-.hero-h{font-size:clamp(42px,9vw,118px);line-height:1.02;font-weight:900;color:var(--cream);margin-bottom:10px}
-.hero-h .ln{display:block;overflow:hidden}
-.hero-h .ln>span{display:inline-block;will-change:transform}
-.hero-h em{font-style:normal;color:var(--gold)}
-.hero-lt{font-family:var(--lt);font-weight:700;letter-spacing:.3em;font-size:clamp(11px,1.4vw,15px);color:var(--txt);text-transform:uppercase;direction:ltr;text-align:right;margin-bottom:26px;opacity:.9}
-.hero-sub{max-width:560px;font-size:clamp(15px,1.8vw,18.5px);color:var(--txt);margin-bottom:30px}
-.hero-sub strong{color:var(--gold2)}
-.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:15.5px;padding:17px 38px;border-radius:50px;transition:var(--tr);position:relative;overflow:hidden}
-.btn-gold{background:var(--gold);color:var(--ink)}
-.btn-gold:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 14px 40px rgba(200,154,14,.3)}
-.btn-line{border:1px solid rgba(244,239,230,.35);color:var(--cream);backdrop-filter:blur(6px)}
-.btn-line:hover{border-color:var(--cream);background:rgba(244,239,230,.08)}
-.btn-wa{background:var(--green);color:#fff}
-.btn-wa:hover{background:var(--green2)}
-.hero-proof{display:flex;gap:0;flex-wrap:wrap;border-top:1px solid rgba(244,239,230,.16)}
-.hp-item{padding:18px clamp(16px,3vw,40px) 0;border-left:1px solid rgba(244,239,230,.14)}
-.hp-item:last-child{border-left:none}
-.hp-item:first-child{padding-right:0}
-.hp-num{font-family:var(--lt);font-weight:700;font-size:clamp(22px,3vw,32px);color:var(--cream);direction:ltr;text-align:right}
-.hp-num b{color:var(--gold)}
-.hp-lbl{font-size:12.5px;color:var(--txt2);font-weight:700}
-@media(max-width:640px){
-  .hero{height:175svh;min-height:0}
-  .hero-proof{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .hp-item{padding:14px 14px 0;border-left:none!important}
-  .hero-ctas .btn{flex:1;min-width:150px;padding:16px 18px}
+/* ════════════════ HERO (server-rendered, 2026-09-30) ════════════════
+   Colours come from the lbass-stamp --lb-* tokens, not --ink/--cream: this page
+   inverts the legacy tokens at runtime (see snippets/lbass-home-collections).
+   h1 needs (0,2,1) + !important to beat lbass-stamp's global h1 size rule. */
+.lbx-hero{background:radial-gradient(120% 70% at 50% 0%,#FFFFFF 0%,#FBFAF7 55%,#F1EEE7 100%);border-bottom:1px solid rgba(11,11,12,.12)}
+.lbx-hero-in{max-width:1240px;margin:0 auto;padding:clamp(18px,4vw,52px) clamp(16px,4vw,48px) clamp(22px,4vw,56px);display:grid;gap:clamp(18px,4vw,64px);align-items:center}
+.lbx-eyebrow{margin:0 0 10px;display:flex;align-items:center;gap:8px;font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif);font-size:13px;font-weight:700;line-height:1.5;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-eyebrow::before{content:"";flex:none;width:8px;height:8px;background:var(--lb-red,#BF2E15)}
+.lbx-hero h1.lbx-h1{margin:0;font-size:clamp(31px,5.4vw,66px)!important;line-height:1.16!important;letter-spacing:normal!important;color:var(--lb-ink,#0B0B0C)!important;text-wrap:balance}
+.lbx-h1-brand{display:block;font-size:.52em;line-height:1.35;margin-bottom:.12em}
+.lbx-h1-main{display:block;color:var(--lb-red,#BF2E15)}
+.lbx-lead{margin:14px 0 0;max-width:48ch;font-size:clamp(14.5px,1.45vw,17px);line-height:1.8;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-latin{margin:6px 0 0;max-width:48ch;font-family:var(--lb-body,'Epilogue',sans-serif);font-size:12px;line-height:1.6;color:var(--lb-ink-3,#6B6B6E);text-align:end}
+.lbx-ctas{display:flex;flex-wrap:wrap;align-items:center;gap:6px 20px;margin-top:20px}
+.lbx-btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;border:1px solid var(--lb-red,#BF2E15);background:var(--lb-red,#BF2E15);color:#fff;font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif);font-size:16px;font-weight:900;text-decoration:none;transition:background .2s,border-color .2s}
+.lbx-btn:hover{background:var(--lb-red-deep,#8F1F0D);border-color:var(--lb-red-deep,#8F1F0D)}
+.lbx-btn:active{transform:translateY(1px)}
+.lbx-link{display:inline-flex;align-items:center;min-height:44px;font-family:var(--lb-arabic,'Alexandria','Tajawal',sans-serif);font-size:14.5px;font-weight:800;color:var(--lb-ink,#0B0B0C);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px}
+.lbx-link:hover{color:var(--lb-red,#BF2E15)}
+.lbx-btn:focus-visible,.lbx-link:focus-visible,.lbx-piece:focus-visible{outline:3px solid var(--lb-ink,#0B0B0C);outline-offset:3px}
+.lbx-facts{list-style:none;margin:18px 0 0;padding:14px 0 0;display:grid;gap:7px;border-top:1px solid rgba(11,11,12,.14)}
+.lbx-facts li{position:relative;padding-inline-start:16px;font-size:14px;line-height:1.65;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-facts li::before{content:"";position:absolute;inset-inline-start:0;top:.66em;width:6px;height:6px;background:var(--lb-red,#BF2E15)}
+.lbx-facts b{font-weight:800;color:var(--lb-ink,#0B0B0C)}
+/* the real piece: a horizontal card on phones so the whole hero fits one screen */
+.lbx-piece{display:grid;grid-template-columns:128px minmax(0,1fr);width:100%;background:#fff;border:1px solid var(--lb-ink,#0B0B0C);color:inherit;text-decoration:none;transition:transform .24s,box-shadow .24s}
+.lbx-piece-img{position:relative;display:block;aspect-ratio:4/5;background:var(--lb-bone-2,#F4F2ED);overflow:hidden}
+.lbx-piece-img img{width:100%;height:100%;object-fit:cover;display:block}
+.lbx-piece-img .lb-stamp{min-width:44px;height:28px;font-size:16px!important;bottom:8px}
+.lbx-piece-info{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-inline-start:1px solid var(--lb-ink,#0B0B0C);min-width:0}
+.lbx-piece-kick{font-size:12px;font-weight:800;color:var(--lb-red,#BF2E15)}
+.lbx-piece-brand{font-family:var(--lb-display,'Anton',sans-serif);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--lb-ink-2,#3A3A3C);text-align:end}
+.lbx-piece-name{font-size:14px;font-weight:700;line-height:1.45;color:var(--lb-ink,#0B0B0C);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lbx-piece-cond{font-size:12.5px;font-weight:700;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-piece-row{display:flex;align-items:baseline;gap:8px;margin-top:auto}
+.lbx-piece-row b{font-family:var(--lb-display,'Anton',sans-serif);font-weight:400;font-size:22px;color:var(--lb-ink,#0B0B0C);direction:ltr;font-variant-numeric:tabular-nums}
+.lbx-piece-size{border:1px solid rgba(11,11,12,.2);padding:1px 7px;font-family:var(--lb-body,'Epilogue',sans-serif);font-size:11px;font-weight:600;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-piece-go{font-size:13px;font-weight:900;color:var(--lb-red,#BF2E15)}
+@media(hover:hover){.lbx-piece:hover{transform:translate(-3px,-3px);box-shadow:6px 6px 0 0 var(--lb-ink,#0B0B0C)}}
+@media(max-width:599px){.lbx-btn{flex:1 1 100%}}
+@media(min-width:900px){
+  .lbx-hero-in{grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr)}
+  .lbx-piece{grid-template-columns:1fr;max-width:340px;justify-self:end}
+  .lbx-piece-info{border-inline-start:0;border-top:1px solid var(--lb-ink,#0B0B0C);padding:14px 16px 16px}
+  .lbx-piece-name{font-size:15px}
+  .lbx-piece-row b{font-size:24px}
 }
-@media(min-width:768px){.hero{height:195vh}}
-@media(prefers-reduced-motion:reduce){
-  /* Reduced motion keeps the accessible poster and removes video seeking. */
-  .hero{height:100svh}
-  .hero-sticky{position:relative;top:auto}
-  .hero-frames{transform:none!important}
-  .hero-video{display:none!important}
-  .hero-poster{opacity:1!important}
-  .hero-in{transform:none!important;opacity:1!important}
-  .hero-scroll{display:none}
-}
+@media(prefers-reduced-motion:reduce){.lbx-piece,.lbx-btn{transition:none}.lbx-piece:hover{transform:none;box-shadow:none}}
 
 /* ════════════════ MARQUEE ════════════════ */
 .mq{border-block:1px solid var(--line);background:var(--ink2);overflow:hidden;white-space:nowrap;padding:15px 0}
@@ -921,98 +912,117 @@ input,select{font-family:inherit}
 <main id="main-content">
 
 <!-- ═══ HERO ═══ -->
-<section class="hero" id="top" aria-labelledby="home-h1">
-  <!-- Sticky viewport: the real MP4 timeline is scrubbed by page scroll. -->
-  <div class="hero-sticky">
-    <div class="hero-in">
-      <div class="hero-kicker rev">DROP جديد · قطع محدودة</div>
-      {%- comment -%}
-        This H1 is what crawlers receive in raw HTML. snippets/lbass-hero-swap
-        replaces this whole block with .lbh once JS runs, so the two MUST say
-        the same thing — otherwise the indexed headline is not the one users
-        see. Measured 2026-08-10: raw HTML said "حوايج Second-Hand أصلية
-        فالمغرب." while the rendered page said "…من ألمانيا…". Googlebot renders
-        JS and resolves it; Bing and most LLM crawlers do not.
-        If you change the headline, change it in BOTH places.
-      {%- endcomment -%}
-      <h1 class="hero-h rev-hero" id="home-h1">
-        <span class="ln"><span>Lbass Original —</span></span>
-        <span class="ln"><span><em>حوايج Second-Hand أصلية فالمغرب</em></span></span>
+{%- comment -%}
+  SERVER-RENDERED HERO (2026-09-30). Replaces snippets/lbass-hero-swap.liquid,
+  which built a different hero in JavaScript after DOMContentLoaded. With the
+  swap, crawlers and people read two different heroes, id="home-h1" vanished
+  from the rendered page, the buttons carried no data-cro-event (so
+  hero_cta_click never fired), and the word-by-word reveal wrapped
+  "Lbass Original" in separate inline-blocks that RTL layout displayed as
+  "Original Lbass".
+
+  ONE PROMISE, ONE ACTION, THREE FACTS, ONE REAL PIECE.
+  - The H1 text and id are unchanged. The Latin brand sits in <bdi> so it keeps
+    its own reading order inside the RTL line.
+  - The three facts are quoted from the published shipping and refund policies
+    (27 Sep 2026). If a policy changes, change the line here too.
+  - The piece is the first IN-STOCK product of the curated homepage collection,
+    so the owner chooses it by ordering that collection. Fragrance and cosmetics
+    are skipped: the homepage promise is second-hand clothing. Its photo proves
+    "the photo is the piece" in the first screen instead of claiming it.
+{%- endcomment -%}
+{%- liquid
+  assign hero_pick = nil
+  assign hero_src = collections['audited-drop-p001-p012'].products | where: 'available', true
+  for hp in hero_src
+    assign hp_type = hp.type | downcase
+    if hp_type == 'fragrance' or hp_type == 'cosmetics'
+      continue
+    endif
+    assign hero_pick = hp
+    break
+  endfor
+-%}
+<section class="lbx-hero" id="top" aria-labelledby="home-h1">
+  <div class="lbx-hero-in">
+    <div class="lbx-hero-copy">
+      <p class="lbx-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p>
+      <h1 class="lbx-h1" id="home-h1">
+        <span class="lbx-h1-brand"><bdi>Lbass Original</bdi> —</span>
+        <span class="lbx-h1-main">حوايج Second-Hand أصلية فالمغرب</span>
       </h1>
-      <p class="hero-lt rev">ORIGINAL SECOND-HAND STREETWEAR — MOROCCO</p>
-      <p class="hero-lt rev" style="letter-spacing:.12em;font-size:clamp(10px,1.2vw,13px);opacity:.7;margin-top:-18px">FRIPERIE EN LIGNE — VÊTEMENTS DE MARQUE, PARTOUT AU MAROC</p>
-      <p class="hero-sub rev">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p>
-      <div class="hero-ctas rev">
-        <a class="btn btn-gold" href="#shop" data-cro-event="hero_cta_click" data-cro-label="shop_now">شوف الدروب دابا ←</a>
-        <a class="btn btn-line" href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" data-cro-event="hero_cta_click" data-cro-label="sneakers_hero">تسوق الصبابط</a>
-        <a class="btn btn-line" href="#faq" data-cro-event="hero_cta_click" data-cro-label="condition_proof">كيفاش كنشيّكو القطع؟</a>
+      <p class="lbx-lead">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p>
+      <p class="lbx-latin" lang="fr" dir="ltr">Friperie en ligne — vêtements de marque second hand, partout au Maroc</p>
+      <div class="lbx-ctas">
+        <a class="lbx-btn" href="#shop" data-cro-event="hero_cta_click" data-cro-label="shop_now">شوف القطع المتوفرة ←</a>
+        <a class="lbx-link" href="/pages/how-we-check-items" data-cro-event="hero_cta_click" data-cro-label="condition_proof">كيفاش كنشيّكو القطع؟</a>
       </div>
-      <ul class="hero-chips rev" aria-label="معلومات Lbass">
-        <li>غالباً 1/1</li><li>صور حقيقية</li><li>حالة واضحة</li><li>COD</li><li>توصيل لكل المغرب</li>
+      <ul class="lbx-facts" aria-label="الدفع والتوصيل">
+        <li><b>الدفع عند الاستلام:</b> حل وشوف القطعة قبل ما تخلص.</li>
+        <li><b>التوصيل:</b> 20 درهم مراكش · 40 درهم باقي المغرب · مجاني من 500 درهم</li>
+        <li><b>غالباً 1/1:</b> ملي كتباع القطعة، كتخرج من الكوليكسيون.</li>
       </ul>
-      <p class="hero-scarce rev">ملي كتباع القطعة، كتخرج من الكوليكسيون.</p>
-      <div class="hero-proof rev">
-        <div class="hp-item"><div class="hp-num">CLEAR</div><div class="hp-lbl">الحالة والتّيكيت كيبانو قبل الشراء</div></div>
-        <div class="hp-item"><div class="hp-num">REAL</div><div class="hp-lbl">نفس القطعة فالصور، ماشي صور البراند</div></div>
-        <div class="hp-item"><div class="hp-num">1/1</div><div class="hp-lbl">غالباً قطعة وحدة حسب المخزون</div></div>
-        <div class="hp-item"><div class="hp-num">PAY</div><div class="hp-lbl">COD أو PayPal — فيك الاختيار</div></div>
-      </div>
     </div>
-    {%- comment -%} Split hero: a real in-stock piece, not a stock image.
-        Proves the "صور حقيقية ديال نفس القطعة" promise in the first viewport. {%- endcomment -%}
-    {%- assign hero_avail = collections.all.products | where: 'available', true -%}
-    {%- assign hero_pick = hero_avail | first -%}
     {%- if hero_pick -%}
-      <div class="hero-stack">
-      {%- assign hp_v = hero_pick.selected_or_first_available_variant -%}
-      {%- assign hp_title = hero_pick.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first -%}
-      <a class="hero-drop" href="{{ hero_pick.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_drop_piece">
-        <div class="hero-drop-img">
+      {%- liquid
+        assign hp_v = hero_pick.selected_or_first_available_variant
+        assign hp_title = hero_pick.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first
+        assign hp_ticket = hero_pick.metafields.lbass.ticket_status.value | default: 'unknown'
+        assign hp_status = hero_pick.metafields.lbass.condition_status.value | default: 'unknown'
+        assign hp_has_ticket = hero_pick.metafields.lbass.has_original_ticket.value
+        assign hp_notes = hero_pick.metafields.lbass.condition_notes.value
+        assign hp_defects = hero_pick.metafields.lbass.visible_defects.value
+        assign hp_cond = ''
+        if hero_pick.metafields.lbass.inspection_status.value == 'inspected_confirmed'
+          if hp_has_ticket == true and hp_status == 'new_with_ticket'
+            if hp_ticket == 'ticket_attached' or hp_ticket == 'ticket_included'
+              assign hp_cond = 'جديد بالتّيكيت'
+            endif
+          elsif hp_has_ticket == false and hp_ticket == 'no_ticket' and hp_status == 'new_without_ticket'
+            assign hp_cond = 'جديد بلا تيكيت'
+          elsif hp_has_ticket == false and hp_ticket == 'no_ticket' and hp_status == 'excellent_almost_new'
+            assign hp_cond = 'بحالة ممتازة · شبه جديد'
+          elsif hp_status == 'very_good'
+            assign hp_cond = 'بحالة مزيانة بزاف'
+          elsif hp_status == 'good'
+            assign hp_cond = 'بحالة مزيانة'
+          elsif hp_status == 'needs_note'
+            if hp_notes != blank or hp_defects != blank
+              assign hp_cond = 'بحالة مزيانة · شوف الملاحظات'
+            endif
+          endif
+        endif
+      -%}
+      {% capture hero_one_s %}{% render 'lbass-one-of-one', product: hero_pick %}{% endcapture %}{% assign hero_one_s = hero_one_s | strip %}
+      <a class="lbx-piece" href="{{ hero_pick.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_drop_piece" data-cro-product-card data-cro-placement="hero" data-product-id="{{ hero_pick.id }}" data-product-name="{{ hp_title | escape }}">
+        <span class="lbx-piece-img">
           {%- if hero_pick.featured_image -%}
-            <img src="{{ hero_pick.featured_image | image_url: width: 800 }}" alt="{{ hp_title | escape }}" width="800" height="1000" fetchpriority="high" decoding="async">
+            <img src="{{ hero_pick.featured_image | image_url: width: 720 }}" srcset="{{ hero_pick.featured_image | image_url: width: 360 }} 360w, {{ hero_pick.featured_image | image_url: width: 720 }} 720w" sizes="(min-width: 900px) 340px, 128px" alt="{{ hero_pick.vendor | escape }} {{ hp_title | escape }}" width="720" height="900" fetchpriority="high" decoding="async">
           {%- endif -%}
-          {% capture hero_one_s %}{% render 'lbass-one-of-one', product: hero_pick %}{% endcapture %}{% assign hero_one_s = hero_one_s | strip %}<span class="lb-stamp" aria-hidden="true">{% if hero_one_s == '1' %}1/1{% else %}LIVE{% endif %}</span>
-        </div>
-        <div class="hero-drop-info">
-          <span class="hero-drop-kick">متوفرة دابا</span>
-          <span class="hero-drop-brand">{{ hero_pick.vendor }}</span>
-          <span class="hero-drop-name">{{ hp_title }}</span>
-          <span class="hero-drop-row">
+          {%- if hero_one_s == '1' -%}<span class="lb-stamp" aria-hidden="true">1/1</span>{%- endif -%}
+        </span>
+        <span class="lbx-piece-info">
+          <span class="lbx-piece-kick">متوفرة دابا</span>
+          <span class="lbx-piece-brand" dir="ltr">{{ hero_pick.vendor }}</span>
+          <span class="lbx-piece-name">{{ hp_title }}</span>
+          {%- if hp_cond != blank -%}<span class="lbx-piece-cond">{{ hp_cond }}</span>{%- endif -%}
+          <span class="lbx-piece-row">
             <b>{{ hp_v.price | money }}</b>
-            {%- unless hero_pick.has_only_default_variant -%}<span class="hero-drop-size">{{ hp_v.title }}</span>{%- endunless -%}
-            <span class="hero-drop-go">شوفها ←</span>
+            {%- unless hero_pick.has_only_default_variant -%}<span class="lbx-piece-size" dir="ltr">{{ hp_v.title }}</span>{%- endunless -%}
           </span>
-        </div>
+          <span class="lbx-piece-go">شوفها ←</span>
+        </span>
       </a>
-      {%- comment -%} two more available pieces — compact rows, never sold-out {%- endcomment -%}
-      {%- for hp2 in hero_avail offset: 1 limit: 2 -%}
-        {%- assign hp2_t = hp2.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' — ' | first -%}
-        <a class="hero-mini" href="{{ hp2.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_drop_piece_{{ forloop.index | plus: 1 }}">
-          {%- if hp2.featured_image -%}
-            <img src="{{ hp2.featured_image | image_url: width: 160 }}" alt="{{ hp2_t | escape }}" width="72" height="72" loading="lazy" decoding="async">
-          {%- endif -%}
-          <span class="hero-mini-txt">
-            <span class="hero-mini-brand">{{ hp2.vendor }}</span>
-            <span class="hero-mini-name">{{ hp2_t }}</span>
-          </span>
-          <span class="hero-mini-meta">
-            <b>{{ hp2.selected_or_first_available_variant.price | money }}</b>
-            {%- unless hp2.has_only_default_variant -%}<span class="hero-mini-size">{{ hp2.selected_or_first_available_variant.title }}</span>{%- else -%}{% capture hp2_one_s %}{% render 'lbass-one-of-one', product: hp2 %}{% endcapture %}{% assign hp2_one_s = hp2_one_s | strip %}<span class="hero-mini-11">{% if hp2_one_s == '1' %}1/1{% else %}LIVE{% endif %}</span>{%- endunless -%}
-          </span>
-        </a>
-      {%- endfor -%}
-      </div>
     {%- endif -%}
-    <script>
-    (function(){var h=document.querySelector('.hero');if(!h||!('IntersectionObserver' in window))return;var sent=false;
-      new IntersectionObserver(function(es){es.forEach(function(e){
-        if(!e.isIntersecting&&e.boundingClientRect.top<0&&!sent){sent=true;
-          try{if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish('lbass_hero_scroll_past',{});}catch(x){}
-          try{sessionStorage.setItem('lb_hero_seen','1');}catch(x){}}
-      })},{threshold:0}).observe(h);})();
-    </script>
-    <div class="hero-scroll" aria-hidden="true"><span>SCROLL</span><i></i></div>
   </div>
+  <script>
+  (function(){var h=document.getElementById('top');if(!h||!('IntersectionObserver' in window))return;var sent=false;
+    new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting&&e.boundingClientRect.top<0&&!sent){sent=true;
+        try{if(window.Shopify&&Shopify.analytics&&typeof Shopify.analytics.publish==='function')Shopify.analytics.publish('lbass_hero_scroll_past',{});}catch(x){}
+        try{sessionStorage.setItem('lb_hero_seen','1');}catch(x){}}
+    })},{threshold:0}).observe(h);})();
+  </script>
 </section>
 
 <!-- ═══ MARQUEE ═══ -->
