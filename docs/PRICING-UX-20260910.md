@@ -180,7 +180,7 @@ Ten suites. The four that cover this work:
 |---|---|
 | `test_sale_presentation.rb` | 11 price pairs across the rounding boundary; badge and pill equal on every one; `‑0%` scanned for on all inputs; no-promotion cases emit no promotional markup |
 | `test_pdp_price.rb` | slices the price block out of the live template, executes it, and matches it against the card |
-| `test_home_rails.rb` | slices both homepage rails out of the live template and matches them against the card |
+| `test_home_rails.rb` | slices the homepage grid's price block out of the live template and matches it against the card (the two rails became one grid on 2026-09-30) |
 | `test_variant_switch.js` | extracts the real `applySale()` and drives it in Chromium across marked-down and full-price sizes |
 | `measure_sale.js` | the QA matrix at 360/390/1280px in RTL and LTR: size ratio, badge containment, no overlap with stamp or ribbon, no overflow |
 

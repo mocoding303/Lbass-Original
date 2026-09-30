@@ -1276,7 +1276,7 @@ Best friperie en ligne Maroc: كيفاش نختار؟§§“الأفضل” كي
 {"@context":"https://schema.org","@type":"FAQPage","speakable":{"@type":"SpeakableSpecification","cssSelector":[".home-faq details p",".home-faq details summary"]},"mainEntity":[
 {%- for item in faq_items -%}
 {%- assign qa = item | split: '§§' -%}
-{"@type":"Question","name":{{ qa[0] | strip | strip_html | json }},"acceptedAnswer":{"@type":"Answer","text":{{ qa[1] | strip_html | strip_newlines | strip | json }}}}{% unless forloop.last %},{% endunless %}
+{"@type":"Question","name":{{ qa[0] | strip | strip_html | json }},"acceptedAnswer":{"@type":"Answer","text":{{ qa[1] | strip_html | newline_to_br | replace: '<br />', ' ' | strip_newlines | strip | json }}}}{% unless forloop.last %},{% endunless %}
 {%- endfor -%}
 ]}
 </script>

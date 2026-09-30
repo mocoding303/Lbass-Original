@@ -5,7 +5,7 @@
 cd "$(dirname "$0")/../.." || exit 1
 pass=0; fail=0
 for t in parse_all test_collection_hero test_eligibility_and_price test_card_matrix \
-         test_regression_vs_original test_sale_presentation test_pdp_price test_home_rails; do
+         test_regression_vs_original test_sale_presentation test_pdp_price test_home_rails test_home; do
   out=$(ruby "test/render/$t.rb" 2>&1); rc=$?
   if [ $rc -eq 0 ]; then printf '%-30s PASS  %s\n' "$t" "$(echo "$out" | grep -v DEPRECATION | tail -1)"; pass=$((pass+1))
   else printf '%-30s FAIL\n' "$t"; echo "$out" | grep -v DEPRECATION | tail -8; fail=$((fail+1)); fi
