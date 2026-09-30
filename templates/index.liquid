@@ -247,6 +247,21 @@ input,select{font-family:inherit}
 /* (0,4,x): lbass-cards-fix loads after this sheet with (0,2,x) !important rules */
 .sec.vault-section .vault-card .vault-card-content small,.sec.vault-section .vault-card .vlt-live{color:#E0B52A!important}
 
+/* sell + opinion (one block) and the guides row inside the FAQ (2026-09-30) */
+.sell-card .sell-actions{margin-top:16px}
+.lbx-opinion{padding-top:16px;border-top:1px solid rgba(11,11,12,.14)}
+.lbx-opinion h3{margin:0 0 6px;font-size:17px!important;line-height:1.4}
+.lbx-opinion p{margin:0;font-size:14px;line-height:1.75;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-opinion-links{display:flex;flex-wrap:wrap;gap:0 18px;margin-top:6px!important}
+@media(min-width:900px){.lbx-opinion{padding:0 0 0 0;border-top:0;border-inline-start:1px solid rgba(11,11,12,.14);padding-inline-start:22px}}
+.intent-moments.lbx-guides{max-width:980px;margin:28px auto 0!important;padding:0!important}
+.lbx-guides .intent-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+.lbx-guides .intent-card{min-height:0!important;padding:12px!important;gap:5px!important}
+.lbx-guides .intent-card b{font-size:14px!important}
+.lbx-guides .intent-card p{font-size:12.5px!important;line-height:1.6!important}
+.lbx-guides .intent-card a{display:inline-flex;align-items:center;min-height:44px;padding:0!important}
+@media(min-width:900px){.lbx-guides .intent-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+
 /* ════════════════ SECTION SHELL ════════════════ */
 .sec{padding:clamp(64px,10vw,120px) var(--pad)}
 .sec-in{max-width:1500px;margin:0 auto}
@@ -1058,41 +1073,6 @@ input,select{font-family:inherit}
   </script>
 </section>
 
-<!-- ── AI Referral Welcome Block ─────────────────────────────────────────
-     Appears only when visitor comes from ChatGPT/Perplexity/Gemini etc.
-     GA4 data: 254 ChatGPT sessions → homepage, 1.4% ATC, 0 revenue.
-     Fix: route AI visitors to products immediately.
-     Source: GA4 analysis 2026-08-22.
-───────────────────────────────────────────────────────────────────────── -->
-<div id="lb-ai-block" style="display:none;max-width:var(--max,1100px);margin:0 auto;padding:0 20px">
-  <div style="padding:18px 20px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:12px">
-    <p style="margin:0 0 4px;font-size:11px;font-weight:800;letter-spacing:.15em;color:rgba(37,211,102,.7)">جيت من AI؟</p>
-    <p style="margin:0 0 14px;font-size:15px;font-weight:800;color:var(--cream,#F4EFE6)">هاد القطع اللي كيتحدث عليهم ChatGPT وPerplexity — Second-Hand أصلي من مراكش</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" style="padding:10px 16px;background:var(--gold,#c89a0e);color:#000;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">👟 الصبابط</a>
-      <a href="/collections/adidas-originals" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Adidas</a>
-      <a href="/collections/nike" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Nike</a>
-      <a href="/collections/all" style="padding:10px 16px;background:transparent;border:1px solid #444;color:var(--txt2,#97928A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">كل القطع</a>
-    </div>
-    <p style="margin:10px 0 0;font-size:12px;color:var(--txt3,#66615A)">COD — خلّص ملي توصلك · 40 درهم لكل المغرب · صور حقيقية · حالة واضحة</p>
-  </div>
-</div>
-<script>
-(function(){
-  var ref = document.referrer || '';
-  var ai  = ['chatgpt.com','perplexity.ai','claude.ai','copilot.microsoft.com',
-              'gemini.google.com','you.com','phind.com','kagi.com'];
-  var isAI = ai.some(function(s){ return ref.indexOf(s) > -1; });
-  if(isAI || new URLSearchParams(window.location.search).get('ref') === 'ai'){
-    var el = document.getElementById('lb-ai-block');
-    if(el) el.style.display = 'block';
-    if(typeof gtag === 'function'){
-      gtag('event','ai_referral_detected',{event_category:'acquisition',event_label:ref.split('/')[2]||'ai_param'});
-    }
-  }
-})();
-</script>
-
 <!-- ═══ AVAILABLE NOW ═══ -->
 {%- comment -%}
   AVAILABLE NOW (2026-09-30). Replaces "THE DROP" rail and the "القطع اللي
@@ -1572,75 +1552,33 @@ input,select{font-family:inherit}
 })();
 </script>
 
+<!-- ═══ SELL / PRELIMINARY OPINION ═══ -->
+{%- comment -%}
+  Two WhatsApp photo flows (sell to us / get a first opinion on a piece) were
+  two full sections. One block now; both entry points, texts and links kept.
+{%- endcomment -%}
 <section class="sec" id="sell-clothes" aria-labelledby="sell-h">
   <div class="sec-in">
-    <div class="sell-card rev">
+    <div class="sell-card">
       <div>
         <p class="kick">SELL / TRADE-IN</p>
         <h2 class="h2" id="sell-h">عندك حوايج براند؟ <em>حوّلها لكريدي</em></h2>
         <p class="sec-sub">صيفط لينا صور واضحة، البراند، القياس، والحالة. كنراجعوها ونقترحو عليك: كاش، كريدي فالمحل، أو consignment.</p>
-      </div>
-      <div class="sell-steps" aria-label="خطوات بيع الملابس">
-        <span>1. صوّر القطعة من القدّام والور</span>
-        <span>2. زيد الإتيكيت والعيوب إلا كاينين</span>
-        <span>3. خذ عرض واضح فالواتساب</span>
-      </div>
-      <div class="sell-actions">
-        <a class="btn btn-gold" href="/pages/sell-your-clothes">بيع حوايجك</a>
-        <a class="btn btn-line" href="#story">كيفاش كتخدمو؟</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ PHOTO-BASED PRELIMINARY OPINION ═══ -->
-<section class="sec" id="free-authentication" aria-labelledby="auth-h">
-  <div class="sec-in">
-    <div class="auth-panel rev">
-      <div>
-        <p class="kick">رأي أولي فالصور</p>
-        <h2 class="h2" id="auth-h">شكّيتي فشي قطعة؟ <em>صيفطها نشوفوها.</em></h2>
-        <p class="sec-sub">إلى عندك قطعة براند وبغيتي رأي أولي قبل ما تشريها أو تبيعها، صيفط صور واضحة ديال اللوغو، الإتيكيت، الخياطة، والتفاصيل القريبة.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px">
-          <a class="btn btn-gold" href="https://wa.me/491754264425?text={{ 'سلام Lbass، بغيت رأي أولي على أصالة قطعة. نقدر نصيفط الصور؟' | url_encode }}" target="_blank" rel="noopener">صيفط الصور فالواتساب</a>
-          <a class="btn btn-line" href="/pages/authenticity">كيفاش كنشيّكيو؟</a>
+        <div class="sell-steps" aria-label="خطوات بيع الملابس">
+          <span>1. صوّر القطعة من القدّام والور</span>
+          <span>2. زيد الإتيكيت والعيوب إلا كاينين</span>
+          <span>3. خذ عرض واضح فالواتساب</span>
+        </div>
+        <div class="sell-actions">
+          <a class="btn btn-gold" href="/pages/sell-your-clothes">بيع حوايجك</a>
         </div>
       </div>
-      <div class="auth-steps" aria-label="خطوات الفحص المجاني">
-        <div class="auth-step"><i>01</i><div><b>صوّر التفاصيل</b><span>لوغو، الإتيكيت، الخياطة، السيريال، وأي عيب باين.</span></div></div>
-        <div class="auth-step"><i>02</i><div><b>صيفط فالواتساب</b><span>كنراجعو الصور ونعطيوك رأي أولي واضح بلا وعود زائدة.</span></div></div>
-        <div class="auth-step"><i>03</i><div><b>خد القرار بثقة</b><span>إلى بغيتي تبيعها لينا، نزيدو نطلبو قياسات وصور إضافية.</span></div></div>
+      <div class="lbx-opinion" id="free-authentication">
+        <h3 id="auth-h">شكّيتي فشي قطعة؟ صيفطها نشوفوها.</h3>
+        <p>إلى عندك قطعة براند وبغيتي رأي أولي قبل ما تشريها أو تبيعها، صيفط صور واضحة ديال اللوغو، الإتيكيت، الخياطة، والتفاصيل القريبة.</p>
+        <p class="lbx-opinion-links"><a class="lbx-link" href="https://wa.me/491754264425?text={{ 'سلام Lbass، بغيت رأي أولي على أصالة قطعة. نقدر نصيفط الصور؟' | url_encode }}" target="_blank" rel="noopener">صيفط الصور فالواتساب</a> <a class="lbx-link" href="/pages/authenticity">كيفاش كنشيّكيو؟</a></p>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="intent-moments" aria-label="كيفاش Lbass كيساعدك حسب اللي كتقلب عليه">
-  <div class="intent-grid">
-    <article class="intent-card rev">
-      <i>KNOW</i>
-      <b>كتبحث على second-hand أصلي؟</b>
-      <p>فهم الحالة، الأصالة، القياس، والفرق بين friperie عادية وقطع مختارة قبل ما تختار.</p>
-      <a href="/pages/authenticity">شوف كيفاش كنشيّكيو</a>
-    </article>
-    <article class="intent-card rev">
-      <i>GO</i>
-      <b>باغي friperie en ligne Maroc؟</b>
-      <p>Lbass خدامة أونلاين للمغرب: صور حقيقية، كولكسيون متجدد، وتواصل فالواتساب قبل الطلب.</p>
-      <a href="#shop">شوف الكولكسيون</a>
-    </article>
-    <article class="intent-card rev">
-      <i>DO</i>
-      <b>باغي تعرف واش القياس غادي يجيك؟</b>
-      <p>قارن القياسات مع قطعة عندك، واستعمل دليل القياس أو سولنا على fit قبل ما تكمل الطلب.</p>
-      <a href="/pages/size-guide">دليل القياسات</a>
-    </article>
-    <article class="intent-card rev">
-      <i>BUY</i>
-      <b>وجدتي القطعة؟</b>
-      <p>اختار المنتج، تأكد من الحالة والصور، وكمل الطلب بـ COD أو PayPal حسب الطرق المتاحة.</p>
-      <a href="#drop">Shop the drop</a>
-    </article>
   </div>
 </section>
 
@@ -1654,132 +1592,82 @@ input,select{font-family:inherit}
         <p class="sec-sub">جمعنا الأجوبة اللي كتهمك فآخر الصفحة باش تلقاها قبل ما تسالي التصفح.</p>
       </div>
     </div>
-    <div class="home-faq-list rev">
-      <details>
-        <summary>واش القطعة اللي فالصورة هي اللي غادي توصلني؟</summary>
-        <p>إيه. الصور كتخص نفس القطعة المعروضة للبيع. إلا بغيتي صور أو فيديو أكثر، سولنا فالواتساب قبل الطلب.</p>
-      </details>
-      <details>
-        <summary>كيفاش نعرف واش القياس غادي يجي مزيان؟</summary>
-        <p>قارن القياسات أو القياس المكتوب مع قطعة عندك كاتجيك مزيان. إلا كنت شاك، صيفط لينا الطول/الوزن والfit اللي بغيتي.</p>
-      </details>
-      <details>
-        <summary>شنو هي friperie en ligne وشنو الفرق مع Lbass؟</summary>
-        <p>friperie en ligne كتبيع حوايج second-hand أونلاين. Lbass كتزيد عليها الاختيار، صور نفس القطعة، شرح الحالة، والقدرة تسولنا قبل الطلب باش ما تشريش على العمى.</p>
-      </details>
-      <details>
-        <summary>كيفاش نقلب على Nike, Adidas ولا Jordan مستعمل فالمغرب؟</summary>
-        <p>تقدر تدخل للكولكسيون، تستعمل فلاتر البراند أو القياس، وتشوف غير القطع المتوفرة دابا. كل منتج عندو صفحة فيها الصور والثمن والحالة حسب المتوفر.</p>
-      </details>
-      <details>
-        <summary>شنو نسول فالواتساب قبل ما نطلب؟</summary>
-        <p>سول على fit، صور close-up، الحالة، العيوب، واش القطعة كتجي oversize ولا regular، وطريقة التوصيل لمدينتك. هادشي كينقص المفاجآت قبل ما تختار COD أو PayPal.</p>
-      </details>
-      <details>
-        <summary>كيفاش نخلّص؟</summary>
-        <p>عندك جوج طرق: <b>COD</b> (كاش عند الاستلام) أو <b>PayPal</b> (أونلاين). تختار الطريقة اللي تناسبك ملي كتكمّل الطلب.</p>
-      </details>
-      <details>
-        <summary>إلى كان عيب فالقطعة؟</summary>
-        <p>أي عيب معروف كنحاولو نبيّنوه فالوصف أو الصور. إلا وصلاتك حاجة مختلفة على اللي تواصلنا عليه، تواصل معنا فنهار التوصل باش نراجعو الحالة حسب الشروط.</p>
-      </details>
-      <details>
-        <summary>واش الحوايج أصلية؟</summary>
-        <p>Lbass Original كيعرض قطع branded second-hand أصلية. فصفحة كل منتج كنبيّنو غير التّيكيت والحالة وملاحظات الفحص اللي مؤكدة، وتقدر تطلب صور قريبة فالواتساب قبل الطلب.</p>
-      </details>
-      <details>
-        <summary>كم كياخد التوصيل؟</summary>
-        <p>كنوصّلو من مراكش لكل المغرب: <b>20 درهم داخل مراكش</b> و<b>40 درهم خارج مراكش</b> — و<b>مجاني</b> إلا كان الطلب 500 درهم أو أكثر. المدة كتختلف حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال. التفاصيل فصفحة <a href="/pages/shipping-and-payment" style="color:var(--gold2);text-decoration:underline">التوصيل والخلاص</a>.</p>
-      </details>
-      <details>
-        <summary>واش نقدر نبدّل القطعة؟</summary>
-        <p>التبديل ممكن حسب الشروط المنشورة — خاصها تكون فنفس الحالة اللي وصلاتك. تواصل معنا فنهار التوصل.</p>
-      </details>
-      <details>
-        <summary>علاش الثمن رخيص على أصلي؟</summary>
-        <p>حيت القطعة second-hand — تلبسات من قبل. الحالة، العيوب، والقياس كيبانو بالتفصيل باش تقرر بثقة.</p>
-      </details>
-      <details>
-        <summary>واش نقدر نتأكد من التوفر؟</summary>
-        <p>إيه، سولنا فالواتساب على التوفر قبل الطلب. المخزون الحقيقي كيبان فصفحة المنتج، وما كاين حتى حجز حتى نأكدوه ليك بشكل واضح.</p>
-      </details>
-      <details>
-        <summary>بغيت صور أو فيديو أكثر</summary>
-        <p>صيفط لينا اسم القطعة فالواتساب ونحاولو نصيفطو ليك صور إضافية أو فيديو close-up قبل ما تكمل الطلب.</p>
-      </details>
-      <details>
-        <summary>فين نقدر نشري حوايج second-hand أصلية فالمغرب أونلاين؟</summary>
-        <p>Lbass Original متجر مغربي أونلاين متخصص فحوايج البراند الأصلية second-hand — Nike, Adidas, Jordan, Levi's وغيرهم. القطع مصورة بصور حقيقية، والمخزون والحالة كيبانو فصفحة كل منتج، والتوصيل متاح فالمغرب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original is a Moroccan online store selling original second-hand branded streetwear with delivery across Morocco.</span></p>
-      </details>
-      <details>
-        <summary>شكون فالمغرب كيبيع second-hand بالدفع عند الاستلام (COD)؟</summary>
-        <p>فـ Lbass Original كتخلّص غير ملي توصلك الطلبية — الدفع عند الاستلام (COD) متاح فجميع المدن المغربية، وPayPal متاح إلا بغيتي تخلّص أونلاين. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original offers cash on delivery (COD) across Morocco, plus PayPal for online payment.</span></p>
-      </details>
-      <details>
-        <summary>فين نلقى قطع streetwear وحيدة 1/1 فالمغرب؟</summary>
-        <p>قطع كثيرة فـ Lbass Original كيكون منها غير مخزون واحد، وكنبيّنو شارة 1/1 غير ملي Shopify كيأكد قطعة وحدة. القطع النادرة كتلقاها فصفحة <a href="/pages/vault" style="color:var(--gold2);text-decoration:underline">الـ Vault</a>. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Many Lbass Original pieces have a single unit in stock; the 1/1 label appears only when inventory confirms it.</span></p>
-      </details>
-      <details>
-        <summary>كيفاش Lbass Original كتبيّن حالة القطعة قبل الطلب؟</summary>
-        <p>كل منتج فيه صور حقيقية لنفس القطعة. درجة الحالة، التّيكيت، ملاحظات الفحص، والقياسات كيبانو غير حسب المعلومات المؤكدة — وتقدر تطلب صور أو فيديو إضافي فالواتساب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Each product page uses real item photos and shows condition, ticket status, inspection notes, and measurements when confirmed.</span></p>
-      </details>
-      <details>
-        <summary>كيفاش نعرف واش الحوايج second-hand غادي تجيني فالقياس؟</summary>
-        <p>قارن القياسات المكتوبة فصفحة المنتج مع قطعة عندك كتجيك مزيانة — هادي أضمن طريقة. وإلا بقيتي شاك، صيفط لينا الطول والوزن ديالك فالواتساب ونعاونوك نختارو القياس قبل ما تطلب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Compare the listed measurements with a piece that already fits you, or send us your height and weight on WhatsApp before ordering.</span></p>
-      </details>
-      <details>
-        <summary>فين نشري حوايج براند second-hand فمراكش أو فالمغرب؟</summary>
-        <p>Lbass Original friperie en ligne مغربية من مراكش وكتوصّل للمغرب — Nike, Adidas, Jordan, Levi's وغيرهم. القطع بصور حقيقية، والمخزون كيبان فصفحة المنتج، والخلاص عند الاستلام (COD) حسب خيارات الطلب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original est une friperie en ligne marocaine basée à Marrakech, avec photos réelles, livraison au Maroc et paiement à la livraison selon les options de commande.</span></p>
-      </details>
-      <details>
-        <summary>كيفاش نبيع حوايجي البراند المستعملة لـ Lbass Original؟</summary>
-        <p>إلا عندك حوايج براند أصلية فحالة مزيانة، صيفط لينا صور القطعة والإتيكيت فالواتساب. كنشيّكو الأصالة والحالة، وإلا قبلناها كنتافقو معاك على الثمن أو التبديل. التفاصيل فصفحة <a href="/pages/sell-your-clothes" style="color:var(--gold2);text-decoration:underline">بيع حوايجك</a>.</p>
-      </details>
-      <details>
-        <summary>علاش نتيق فموقع جديد؟</summary>
-        <p>كتقدر تختار <b>الخلاص عند الاستلام</b> حسب الخيارات المتاحة. الصور ديال نفس القطعة، والحالة والتّيكيت والملاحظات كيبانو ملي يكونو مؤكدين؛ وإذا بقى شي سؤال تواصل معنا قبل الطلب.</p>
-      </details>
-      <details>
-        <summary>كيفاش كيدوز الطلب من البداية للنهاية؟</summary>
-        <p><b>١)</b> كتطلب من الموقع — بالسلة أو بالطلب المباشر بلا حساب. <b>٢)</b> كنأكدو معاك التفاصيل فالواتساب قبل الإرسال. <b>٣)</b> كتوصلك القطعة وكتخلص كاش ملي تشوفها. بسيطة.</p>
-      </details>
-      <details>
-        <summary>كيفاش نتبع الطلب ديالي من بعد ما نطلب؟</summary>
-        <p>من بعد التأكيد كنبقاو معاك على الواتساب — كنعلموك ملي كتخرج القطعة مع شركة التوصيل، وتقدر تسول على حالة الطلب فأي وقت فنفس الرقم: <a href="https://wa.me/491754264425" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">+49 175 4264425</a>.</p>
-      </details>
-      <details>
-        <summary>شنو الفرق بين Lbass Original وVinted أو Avito؟</summary>
-        <p>فـ Lbass Original كل منتج عندو صفحة بصور القطعة نفسها، والمعلومات المؤكدة على الحالة والتّيكيت والقياس. تقدر تسولنا فالواتساب وتختار الخلاص عند الاستلام حسب خيارات الطلب.</p>
-      </details>
-      <details>
-        <summary>Is Lbass Original legit؟ واش Lbass Original موثوق؟</summary>
-        <p>ما كنطلبوش منك تيق فكلمة عامة: راجع صور نفس القطعة، الحالة والقياس المؤكدين، الثمن، والتوفر فصفحة المنتج. كاين WhatsApp للأسئلة، COD وPayPal، وصفحات منشورة للتوصيل وشروط الإرجاع. هادو أدلة تقدر تراجعهم، ماشي review أو ضمان مخترع.</p>
-      </details>
-      <details>
-        <summary>Best friperie en ligne Maroc: كيفاش نختار؟</summary>
-        <p>“الأفضل” كيختلف حسب شنو كتقلب. قارن واش المتجر كيوري صور نفس القطعة، كيوضح الحالة والعيوب، كيبين القياس والثمن، وعندو شروط توصيل وإرجاع منشورة. Lbass Original كيتقيّم بهاد المعايير؛ ما كنعطيوش راسنا ترتيب “رقم 1” بلا مصدر مستقل.</p>
-      </details>
-      <details>
-        <summary>علاش نشري second-hand بلاصة الجديد؟</summary>
-        <p>كتلقى قطع براند عندها كاراكتير، وكثير منها محدود حسب المخزون. الحالة ديال كل قطعة كنبينوها بلا تجميل ملي كتكون مؤكدة باش تقرر بثقة.</p>
-      </details>
-      <details>
-        <summary>واش عندكم حوايج نسائية ولا غير رجالية؟</summary>
-        <p>أغلب التشكيلة الحالية unisex أو رجالية — سنيكرز، تيشرتات، جاكيطات، كاسكيطات وسراويل. كنزيدو قطع جديدة مع كل Drop، وإلا كتقلب على شي حاجة محددة <a href="https://wa.me/491754264425" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">سولنا فالواتساب</a>.</p>
-      </details>
-      <details>
-        <summary>واش خامة القطعة (قطن، جلد...) مذكورة؟</summary>
-        <p>ملي الخامة مؤكدة من الإتيكيت، كنكتبوها فصفحة المنتج. إلا ما لقيتيهاش مكتوبة، سولنا فالواتساب ونصورو ليك إتيكيت الخامة ديال نفس القطعة قبل ما تطلب.</p>
-      </details>
-      <details>
-        <summary>كيفاش نعتني بقطعة vintage باش تعمّر؟</summary>
-        <p>غسيل بارد والقطعة مقلوبة (الداخل للخارج)، بلا مجفف — التنشيف فالهوا أحسن. البرينتات القديمة ما تكويهاش مباشرة. وإلا شكيتي فخامة حساسة، سولنا قبل الغسيل الأول. شوف تاني <a href="/pages/condition-guide" style="color:var(--gold2);text-decoration:underline">دليل الحالة</a>.</p>
-      </details>
-      <details>
-        <summary>بشحال كتشريو الحوايج اللي كنبيع ليكم؟</summary>
-        <p>الثمن كيتحدد حسب البراند، الحالة، والطلب على القطعة — ما كايناش تعريفة ثابتة. صيفط صور القطعة والإتيكيت فالواتساب وكنعطيوك عرض، أو تبديل بقطعة من عندنا إلا بغيتي.</p>
-      </details>
+    {%- comment -%}
+      ONE SOURCE FOR THE VISIBLE FAQ AND ITS FAQPage SCHEMA (2026-09-30).
+      The schema used to be a hand-typed copy of 9 of these 31 answers and had
+      drifted from the visible text. Both are now generated from faq_src below,
+      so they cannot disagree. Format: question§§answer, items separated by ¤¤.
+      Answers may hold HTML; the schema receives them with strip_html.
+      Returns answers quote the published refund policy (27 Sep 2026).
+    {%- endcomment -%}
+    {%- capture faq_src -%}
+واش القطعة اللي فالصورة هي اللي غادي توصلني؟§§إيه. الصور كتخص نفس القطعة المعروضة للبيع. إلا بغيتي صور أو فيديو أكثر، سولنا فالواتساب قبل الطلب.¤¤
+كيفاش نعرف واش القياس غادي يجي مزيان؟§§قارن القياسات أو القياس المكتوب مع قطعة عندك كاتجيك مزيان. إلا كنت شاك، صيفط لينا الطول/الوزن والfit اللي بغيتي.¤¤
+شنو هي friperie en ligne وشنو الفرق مع Lbass؟§§friperie en ligne كتبيع حوايج second-hand أونلاين. Lbass كتزيد عليها الاختيار، صور نفس القطعة، شرح الحالة، والقدرة تسولنا قبل الطلب باش ما تشريش على العمى.¤¤
+كيفاش نقلب على Nike, Adidas ولا Jordan مستعمل فالمغرب؟§§تقدر تدخل للكولكسيون، تستعمل فلاتر البراند أو القياس، وتشوف غير القطع المتوفرة دابا. كل منتج عندو صفحة فيها الصور والثمن والحالة حسب المتوفر.¤¤
+شنو نسول فالواتساب قبل ما نطلب؟§§سول على fit، صور close-up، الحالة، العيوب، واش القطعة كتجي oversize ولا regular، وطريقة التوصيل لمدينتك. هادشي كينقص المفاجآت قبل ما تختار COD أو PayPal.¤¤
+كيفاش نخلّص؟§§عندك جوج طرق: <b>COD</b> (كاش عند الاستلام) أو <b>PayPal</b> (أونلاين). تختار الطريقة اللي تناسبك ملي كتكمّل الطلب.¤¤
+إلى كان عيب فالقطعة؟§§أي عيب معروف كنبيّنوه فالوصف أو الصور، والعيوب المبيّنة فصفحة المنتج ما كتدخلش فالإرجاع. إلا القطعة تخسرات فالطريق، فيها عيب ما كانش مبيّن، ولا ماشي هي اللي طلبتي، تواصل معانا دغيا باش نشوفو المشكل ونصلحوه. وفـ <b>COD</b>، حل وشوف القطعة قبل ما تخلص.¤¤
+واش الحوايج أصلية؟§§Lbass Original كيعرض قطع branded second-hand أصلية. فصفحة كل منتج كنبيّنو غير التّيكيت والحالة وملاحظات الفحص اللي مؤكدة، وتقدر تطلب صور قريبة فالواتساب قبل الطلب.¤¤
+كم كياخد التوصيل؟§§كنوصّلو من مراكش لكل المغرب: <b>20 درهم داخل مراكش</b> و<b>40 درهم خارج مراكش</b> — و<b>مجاني</b> إلا كان الطلب 500 درهم أو أكثر. المدة كتختلف حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال. التفاصيل فصفحة <a href="/pages/shipping-and-payment" style="color:var(--gold2);text-decoration:underline">التوصيل والخلاص</a>.¤¤
+واش نقدر نبدّل القطعة؟§§الإرجاع كيتبع طريقة الخلاص: بـ <b>PayPal</b> عندك 14 يوم من وقت ما توصلك القطعة باش تطلب الإرجاع — مالبوساش، مامغسولاش، والإتيكيتات كما هي. بـ <b>COD</b> كتشوف القطعة فالباب قبل ما تخلص؛ ملي كتخلص وكتاخدها، البيعة كتسالى. على التبديل، سولنا فالواتساب قبل ما تصيفط شي حاجة. التفاصيل فصفحة <a href="/pages/refund-policy" style="color:var(--gold2);text-decoration:underline">سياسة الإرجاع</a>.¤¤
+علاش الثمن رخيص على أصلي؟§§حيت القطعة second-hand — تلبسات من قبل. الحالة، العيوب، والقياس كيبانو بالتفصيل باش تقرر بثقة.¤¤
+واش نقدر نتأكد من التوفر؟§§إيه، سولنا فالواتساب على التوفر قبل الطلب. المخزون الحقيقي كيبان فصفحة المنتج، وما كاين حتى حجز حتى نأكدوه ليك بشكل واضح.¤¤
+بغيت صور أو فيديو أكثر§§صيفط لينا اسم القطعة فالواتساب ونحاولو نصيفطو ليك صور إضافية أو فيديو close-up قبل ما تكمل الطلب.¤¤
+فين نقدر نشري حوايج second-hand أصلية فالمغرب أونلاين؟§§Lbass Original متجر مغربي أونلاين متخصص فحوايج البراند الأصلية second-hand — Nike, Adidas, Jordan, Levi's وغيرهم. القطع مصورة بصور حقيقية، والمخزون والحالة كيبانو فصفحة كل منتج، والتوصيل متاح فالمغرب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original is a Moroccan online store selling original second-hand branded streetwear with delivery across Morocco.</span>¤¤
+شكون فالمغرب كيبيع second-hand بالدفع عند الاستلام (COD)؟§§فـ Lbass Original كتخلّص غير ملي توصلك الطلبية — الدفع عند الاستلام (COD) متاح فجميع المدن المغربية، وPayPal متاح إلا بغيتي تخلّص أونلاين. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original offers cash on delivery (COD) across Morocco, plus PayPal for online payment.</span>¤¤
+فين نلقى قطع streetwear وحيدة 1/1 فالمغرب؟§§قطع كثيرة فـ Lbass Original كيكون منها غير مخزون واحد، وكنبيّنو شارة 1/1 غير ملي Shopify كيأكد قطعة وحدة. القطع النادرة كتلقاها فصفحة <a href="/pages/vault" style="color:var(--gold2);text-decoration:underline">الـ Vault</a>. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Many Lbass Original pieces have a single unit in stock; the 1/1 label appears only when inventory confirms it.</span>¤¤
+كيفاش Lbass Original كتبيّن حالة القطعة قبل الطلب؟§§كل منتج فيه صور حقيقية لنفس القطعة. درجة الحالة، التّيكيت، ملاحظات الفحص، والقياسات كيبانو غير حسب المعلومات المؤكدة — وتقدر تطلب صور أو فيديو إضافي فالواتساب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Each product page uses real item photos and shows condition, ticket status, inspection notes, and measurements when confirmed.</span>¤¤
+كيفاش نعرف واش الحوايج second-hand غادي تجيني فالقياس؟§§قارن القياسات المكتوبة فصفحة المنتج مع قطعة عندك كتجيك مزيانة — هادي أضمن طريقة. وإلا بقيتي شاك، صيفط لينا الطول والوزن ديالك فالواتساب ونعاونوك نختارو القياس قبل ما تطلب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Compare the listed measurements with a piece that already fits you, or send us your height and weight on WhatsApp before ordering.</span>¤¤
+فين نشري حوايج براند second-hand فمراكش أو فالمغرب؟§§Lbass Original friperie en ligne مغربية من مراكش وكتوصّل للمغرب — Nike, Adidas, Jordan, Levi's وغيرهم. القطع بصور حقيقية، والمخزون كيبان فصفحة المنتج، والخلاص عند الاستلام (COD) حسب خيارات الطلب. <span style="color:var(--txt3);font-size:12.5px" dir="ltr">Lbass Original est une friperie en ligne marocaine basée à Marrakech, avec photos réelles, livraison au Maroc et paiement à la livraison selon les options de commande.</span>¤¤
+كيفاش نبيع حوايجي البراند المستعملة لـ Lbass Original؟§§إلا عندك حوايج براند أصلية فحالة مزيانة، صيفط لينا صور القطعة والإتيكيت فالواتساب. كنشيّكو الأصالة والحالة، وإلا قبلناها كنتافقو معاك على الثمن أو التبديل. التفاصيل فصفحة <a href="/pages/sell-your-clothes" style="color:var(--gold2);text-decoration:underline">بيع حوايجك</a>.¤¤
+علاش نتيق فموقع جديد؟§§كتقدر تختار <b>الخلاص عند الاستلام</b>: حل وشوف القطعة قبل ما تخلص. الصور ديال نفس القطعة، والحالة والتّيكيت والملاحظات كيبانو ملي يكونو مؤكدين؛ وإذا بقى شي سؤال تواصل معنا قبل الطلب.¤¤
+كيفاش كيدوز الطلب من البداية للنهاية؟§§<b>١)</b> كتطلب من الموقع — بالسلة أو بالطلب المباشر بلا حساب. <b>٢)</b> كنأكدو معاك التفاصيل فالواتساب قبل الإرسال. <b>٣)</b> كتوصلك القطعة وكتخلص كاش ملي تشوفها. بسيطة.¤¤
+كيفاش نتبع الطلب ديالي من بعد ما نطلب؟§§من بعد التأكيد كنبقاو معاك على الواتساب — كنعلموك ملي كتخرج القطعة مع شركة التوصيل، وتقدر تسول على حالة الطلب فأي وقت فنفس الرقم: <a href="https://wa.me/491754264425" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">+49 175 4264425</a>.¤¤
+شنو الفرق بين Lbass Original وVinted أو Avito؟§§فـ Lbass Original كل منتج عندو صفحة بصور القطعة نفسها، والمعلومات المؤكدة على الحالة والتّيكيت والقياس. تقدر تسولنا فالواتساب وتختار الخلاص عند الاستلام حسب خيارات الطلب.¤¤
+Is Lbass Original legit؟ واش Lbass Original موثوق؟§§ما كنطلبوش منك تيق فكلمة عامة: راجع صور نفس القطعة، الحالة والقياس المؤكدين، الثمن، والتوفر فصفحة المنتج. كاين WhatsApp للأسئلة، COD وPayPal، وصفحات منشورة للتوصيل وشروط الإرجاع. هادو أدلة تقدر تراجعهم، ماشي review أو ضمان مخترع.¤¤
+Best friperie en ligne Maroc: كيفاش نختار؟§§“الأفضل” كيختلف حسب شنو كتقلب. قارن واش المتجر كيوري صور نفس القطعة، كيوضح الحالة والعيوب، كيبين القياس والثمن، وعندو شروط توصيل وإرجاع منشورة. Lbass Original كيتقيّم بهاد المعايير؛ ما كنعطيوش راسنا ترتيب “رقم 1” بلا مصدر مستقل.¤¤
+علاش نشري second-hand بلاصة الجديد؟§§كتلقى قطع براند عندها كاراكتير، وكثير منها محدود حسب المخزون. الحالة ديال كل قطعة كنبينوها بلا تجميل ملي كتكون مؤكدة باش تقرر بثقة.¤¤
+واش عندكم حوايج نسائية ولا غير رجالية؟§§أغلب التشكيلة الحالية unisex أو رجالية — سنيكرز، تيشرتات، جاكيطات، كاسكيطات وسراويل. كنزيدو قطع جديدة مع كل Drop، وإلا كتقلب على شي حاجة محددة <a href="https://wa.me/491754264425" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">سولنا فالواتساب</a>.¤¤
+واش خامة القطعة (قطن، جلد...) مذكورة؟§§ملي الخامة مؤكدة من الإتيكيت، كنكتبوها فصفحة المنتج. إلا ما لقيتيهاش مكتوبة، سولنا فالواتساب ونصورو ليك إتيكيت الخامة ديال نفس القطعة قبل ما تطلب.¤¤
+كيفاش نعتني بقطعة vintage باش تعمّر؟§§غسيل بارد والقطعة مقلوبة (الداخل للخارج)، بلا مجفف — التنشيف فالهوا أحسن. البرينتات القديمة ما تكويهاش مباشرة. وإلا شكيتي فخامة حساسة، سولنا قبل الغسيل الأول. شوف تاني <a href="/pages/condition-guide" style="color:var(--gold2);text-decoration:underline">دليل الحالة</a>.¤¤
+بشحال كتشريو الحوايج اللي كنبيع ليكم؟§§الثمن كيتحدد حسب البراند، الحالة، والطلب على القطعة — ما كايناش تعريفة ثابتة. صيفط صور القطعة والإتيكيت فالواتساب وكنعطيوك عرض، أو تبديل بقطعة من عندنا إلا بغيتي.
+    {%- endcapture -%}
+    {%- assign faq_items = faq_src | strip | split: '¤¤' -%}
+    <div class="home-faq-list">
+      {%- for item in faq_items -%}
+        {%- assign qa = item | split: '§§' %}
+      <details><summary>{{ qa[0] | strip }}</summary><p>{{ qa[1] | strip }}</p></details>
+      {%- endfor %}
     </div>
+    <nav class="intent-moments lbx-guides" aria-label="كيفاش Lbass كيساعدك حسب اللي كتقلب عليه">
+    <div class="intent-grid">
+      <article class="intent-card">
+        <i>KNOW</i>
+        <b>كتبحث على second-hand أصلي؟</b>
+        <p>فهم الحالة، الأصالة، القياس، والفرق بين friperie عادية وقطع مختارة قبل ما تختار.</p>
+        <a href="/pages/authenticity">شوف كيفاش كنشيّكيو</a>
+      </article>
+      <article class="intent-card">
+        <i>GO</i>
+        <b>باغي friperie en ligne Maroc؟</b>
+        <p>Lbass خدامة أونلاين للمغرب: صور حقيقية، كولكسيون متجدد، وتواصل فالواتساب قبل الطلب.</p>
+        <a href="#shop">شوف الكولكسيون</a>
+      </article>
+      <article class="intent-card">
+        <i>DO</i>
+        <b>باغي تعرف واش القياس غادي يجيك؟</b>
+        <p>قارن القياسات مع قطعة عندك، واستعمل دليل القياس أو سولنا على fit قبل ما تكمل الطلب.</p>
+        <a href="/pages/size-guide">دليل القياسات</a>
+      </article>
+      <article class="intent-card">
+        <i>BUY</i>
+        <b>وجدتي القطعة؟</b>
+        <p>اختار المنتج، تأكد من الحالة والصور، وكمل الطلب بـ COD أو PayPal حسب الطرق المتاحة.</p>
+        <a href="#drop">Shop the drop</a>
+      </article>
+    </div>
+    </nav>
     <div class="faq-cta">
       <p>مازال عندك سؤال؟</p>
       <a class="btn btn-gold" href="https://wa.me/491754264425?text={{ 'سلام Lbass، عندي سؤال قبل الطلب.' | url_encode }}" target="_blank" rel="noopener">💬 سول فالواتساب</a>
@@ -1837,17 +1725,13 @@ input,select{font-family:inherit}
 </script>
 
 <!-- ═══ FAQ SCHEMA ═══ -->
+{%- comment -%} Generated from faq_items (the visible FAQ above): same questions, same answers. {%- endcomment -%}
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","speakable":{"@type":"SpeakableSpecification","cssSelector":[".home-faq details p",".home-faq details summary"]},"mainEntity":[
-{"@type":"Question","name":"واش القطعة اللي فالصورة هي اللي غادي توصلني؟","acceptedAnswer":{"@type":"Answer","text":"إيه. الصور كتخص نفس القطعة المعروضة للبيع. إلا بغيتي صور أو فيديو أكثر، سولنا فالواتساب قبل الطلب."}},
-{"@type":"Question","name":"كيفاش نعرف واش القياس غادي يجي مزيان؟","acceptedAnswer":{"@type":"Answer","text":"قارن القياسات أو القياس المكتوب مع قطعة عندك كاتجيك مزيان. إلا كنت شاك، صيفط لينا الطول/الوزن والfit اللي بغيتي."}},
-{"@type":"Question","name":"شنو هي friperie en ligne وشنو الفرق مع Lbass؟","acceptedAnswer":{"@type":"Answer","text":"friperie en ligne كتبيع حوايج second-hand أونلاين. Lbass كتزيد عليها الاختيار، صور نفس القطعة، شرح الحالة، والقدرة تسولنا قبل الطلب باش ما تشريش على العمى."}},
-{"@type":"Question","name":"كيفاش نخلّص؟","acceptedAnswer":{"@type":"Answer","text":"عندك جوج طرق: COD (كاش عند الاستلام) أو PayPal (أونلاين). تختار الطريقة اللي تناسبك ملي كتكمّل الطلب."}},
-{"@type":"Question","name":"فين نقدر نشري حوايج second-hand أصلية فالمغرب أونلاين؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original متجر مغربي أونلاين متخصص فحوايج البراند الأصلية second-hand. القطع مصورة بصور حقيقية، والمخزون والحالة كيبانو فصفحة كل منتج، والتوصيل متاح فالمغرب. Lbass Original is a Moroccan online store selling original second-hand branded streetwear with delivery across Morocco."}},
-{"@type":"Question","name":"شكون فالمغرب كيبيع second-hand بالدفع عند الاستلام (COD)؟","acceptedAnswer":{"@type":"Answer","text":"فـ Lbass Original كتخلّص غير ملي توصلك الطلبية — الدفع عند الاستلام (COD) متاح فجميع المدن المغربية، وPayPal متاح إلا بغيتي تخلّص أونلاين. Lbass Original offers cash on delivery (COD) across Morocco, plus PayPal for online payment."}},
-{"@type":"Question","name":"فين نلقى قطع streetwear وحيدة 1/1 فالمغرب؟","acceptedAnswer":{"@type":"Answer","text":"قطع كثيرة فـ Lbass Original كيكون منها غير مخزون واحد، وكنبيّنو شارة 1/1 غير ملي Shopify كيأكد قطعة وحدة. القطع النادرة كتلقاها فصفحة الـ Vault. Many Lbass Original pieces have a single unit in stock; the 1/1 label appears only when inventory confirms it."}},
-{"@type":"Question","name":"Is Lbass Original legit؟ واش Lbass Original موثوق؟","acceptedAnswer":{"@type":"Answer","text":"راجع صور نفس القطعة، الحالة والقياس المؤكدين، الثمن والتوفر فصفحة المنتج. كاين WhatsApp للأسئلة، COD وPayPal، وصفحات منشورة للتوصيل وشروط الإرجاع. هادو أدلة تقدر تراجعهم، ماشي review أو ضمان مخترع."}},
-{"@type":"Question","name":"Best friperie en ligne Maroc: كيفاش نختار؟","acceptedAnswer":{"@type":"Answer","text":"الأفضل كيختلف حسب شنو كتقلب. قارن واش المتجر كيوري صور نفس القطعة، كيوضح الحالة والعيوب، كيبين القياس والثمن، وعندو شروط توصيل وإرجاع منشورة. Lbass Original كيتقيّم بهاد المعايير وما كيعطيش راسو ترتيب رقم 1 بلا مصدر مستقل."}}
+{%- for item in faq_items -%}
+{%- assign qa = item | split: '§§' -%}
+{"@type":"Question","name":{{ qa[0] | strip | strip_html | json }},"acceptedAnswer":{"@type":"Answer","text":{{ qa[1] | strip_html | strip_newlines | strip | json }}}}{% unless forloop.last %},{% endunless %}
+{%- endfor -%}
 ]}
 </script>
 
