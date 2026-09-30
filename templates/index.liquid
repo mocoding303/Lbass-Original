@@ -626,8 +626,9 @@ input,select{font-family:inherit}
 </section>
 
 {%- comment -%} Category strip (snippets/lbass-shop-by-category, 2026-09-26, owner-approved): a
-     one-tap way to pick a department right under the hero. {%- endcomment -%}
-{% render 'lbass-shop-by-category' %}
+     one-tap way to pick a department right under the hero. hero_id keeps its
+     Clothing tile from repeating the hero's photo. {%- endcomment -%}
+{% render 'lbass-shop-by-category', hero_id: hero_pick.id %}
 
 <!-- ═══ AVAILABLE NOW ═══ -->
 {%- comment -%}

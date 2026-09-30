@@ -38,6 +38,29 @@
   assign cat_sn_n = cat_sn.products | where: 'available', true | size
   assign cat_jk = collections['جاكيطات-و-معاطف']
   assign cat_jk_n = cat_jk.products | where: 'available', true | size
+  # 2026-09-30 (merged with the homepage redesign): the clothing tiles show each
+  # department's first IN-STOCK product photo instead of the editorial
+  # cat-*-ed.webp images, which show no piece in stock (CLAUDE.md: imagery must be
+  # real). The Clothing tile skips the hero's piece (hero_id) so the first two
+  # screens never show the same photo twice. No photo, no image: the tile keeps
+  # its dark background.
+  assign cat_cloth_img = nil
+  for p in collections['audited-drop-p001-p012'].products
+    if p.available == false or p.id == hero_id
+      continue
+    endif
+    assign p_type = p.type | downcase
+    if p_type == 'fragrance' or p_type == 'cosmetics'
+      continue
+    endif
+    if p.featured_image
+      assign cat_cloth_img = p.featured_image
+      break
+    endif
+  endfor
+  assign cat_sn_img = cat_sn.products | where: 'available', true | map: 'featured_image' | compact | first
+  assign cat_jk_img = cat_jk.products | where: 'available', true | map: 'featured_image' | compact | first
+  assign cat_acc_img = cat_acc.products | where: 'available', true | map: 'featured_image' | compact | first
 -%}
 <section class="lbcat" aria-labelledby="lbcat-h">
   <style>
@@ -95,27 +118,27 @@
     <h2 class="lbcat-h" id="lbcat-h">تسوق حسب القسم <span>Shop by category</span></h2>
     <div class="lbcat-grid">
       <a class="lbcat-tile" href="{{ routes.all_products_collection_url }}" data-cro-event="home_category_click" data-cro-label="clothing">
-        <img src="{{ 'cat-tshirts-ed.webp' | asset_url }}" alt="" width="1448" height="1086" loading="lazy" decoding="async">
+        {%- if cat_cloth_img -%}<img src="{{ cat_cloth_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>حوايج</b><small>Clothing{% if cat_cloth_n > 0 %} · {{ cat_cloth_n }}{% endif %}</small></span>
       </a>
       {%- if cat_sn_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_sn.url }}" data-cro-event="home_category_click" data-cro-label="sneakers">
-        <img src="{{ 'cat-shoes-ed.webp' | asset_url }}" alt="" width="1448" height="1086" loading="lazy" decoding="async">
+        {%- if cat_sn_img -%}<img src="{{ cat_sn_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>صبابط</b><small>Sneakers · {{ cat_sn_n }}</small></span>
       </a>
       {%- endif -%}
       {%- if cat_jk_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_jk.url }}" data-cro-event="home_category_click" data-cro-label="jackets">
-        <img src="{{ 'cat-jackets-ed.webp' | asset_url }}" alt="" width="1448" height="1086" loading="lazy" decoding="async">
+        {%- if cat_jk_img -%}<img src="{{ cat_jk_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>جاكيطات</b><small>Jackets · {{ cat_jk_n }}</small></span>
       </a>
       {%- endif -%}
       {%- if cat_acc_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_acc.url }}" data-cro-event="home_category_click" data-cro-label="accessories">
-        <img src="{{ 'cat-acc-ed.webp' | asset_url }}" alt="" width="1448" height="1086" loading="lazy" decoding="async">
+        {%- if cat_acc_img -%}<img src="{{ cat_acc_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>إكسسوارات</b><small>Accessories · {{ cat_acc_n }}</small></span>
       </a>
