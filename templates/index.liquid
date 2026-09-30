@@ -237,6 +237,11 @@ input,select{font-family:inherit}
 .h2{font-size:clamp(30px,5.4vw,58px);line-height:1.12;font-weight:900;color:var(--cream)}
 .h2 em{font-style:normal;color:var(--gold)}
 .sec-sub{margin-top:12px;color:var(--txt2);max-width:520px;font-size:15.5px}
+/* Button base (restored: it lived in the old hero block, and the FAQ, Vault and
+   sell buttons still use it; lbass-stamp adds the square corners and the red) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:15.5px;padding:17px 38px;border-radius:50px;transition:var(--tr);position:relative;overflow:hidden}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 14px 40px rgba(200,154,14,.3)}
 
 /* ════════════════ PRICE DETAILS (grid cards) ════════════════ */
 .pold{font-family:var(--lt);font-size:12.5px;color:var(--txt3);text-decoration:line-through;direction:ltr}
@@ -303,14 +308,15 @@ input,select{font-family:inherit}
 /* ════════════════ FOOTER ════════════════ */
 .foot{border-top:1px solid var(--line);padding:clamp(48px,7vw,80px) var(--pad) 0}
 .foot-in{max-width:1500px;margin:0 auto}
+.foot-brand{min-height:44px}
 .foot-grid{display:grid;grid-template-columns:1.4fr repeat(4,minmax(0,1fr));gap:clamp(28px,4vw,60px);padding-bottom:48px}
 .foot-desc{color:var(--txt2);font-size:14.5px;max-width:340px;margin:16px 0 22px}
 .foot-soc{display:flex;gap:10px}
-.fs-b{width:42px;height:42px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:17px;transition:var(--tr)}
+.fs-b{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:17px;transition:var(--tr)}
 .fs-b img{width:30px;height:30px;display:block;border-radius:50%}
 .fs-b:hover{border-color:var(--gold);background:var(--gold-dim)}
 .fcol-t{font-family:var(--lt);font-size:11.5px;font-weight:700;letter-spacing:.26em;color:var(--txt3);text-transform:uppercase;margin-bottom:18px;direction:ltr;text-align:right}
-.fcol a{display:block;padding:7px 0;color:var(--txt2);font-weight:600;font-size:14.5px;transition:var(--tr)}
+.fcol a{display:flex;align-items:center;min-height:44px;padding:0;color:var(--txt2);font-weight:600;font-size:14.5px;transition:var(--tr)}
 .fcol a:hover{color:var(--gold2);transform:translateX(-4px)}
 .foot-bot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:22px 0;border-top:1px solid var(--line);font-size:13px;color:var(--txt3)}
 .foot-pay{display:flex;align-items:center;gap:8px;font-weight:800}
@@ -863,7 +869,7 @@ input,select{font-family:inherit}
     <div class='jdgm-carousel-wrapper' data-auto-install='false'>
       {% assign jm_metafields = shop.metafields.judgeme %}
       <div class='jdgm-carousel-title-and-link'>
-        <h2 class='jdgm-carousel-title' id="reviews-carousel-h">آراء الزبناء · <bdi>Let customers speak for us</bdi></h2>
+        <h2 class='jdgm-carousel-title' id="reviews-carousel-h">آراء الزبناء · Let customers speak for us</h2>
         <span class='jdgm-all-reviews-rating-wrapper' href='javascript:void(0)'>
           <span style='display:block' data-score='{{ jm_metafields.all_reviews_rating }}' class='jdgm-all-reviews-rating' aria-label='{{ jm_metafields.all_reviews_rating }} stars' tabindex='0' role='img'></span>
           <span style='display: block' class='jdgm-carousel-number-of-reviews' data-number-of-reviews='{{ jm_metafields.all_reviews_count }}'>
@@ -1280,10 +1286,10 @@ Best friperie en ligne Maroc: كيفاش نختار؟§§“الأفضل” كي
   <div class="foot-in">
     <div class="foot-grid">
       <div>
-        <a class="brand foot-brand" href="#top"><img class="brand-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64"><img class="brand-monogram" src="{{ 'lbass-monogram.svg' | asset_url }}" alt="Lbass Original" width="128" height="128"></a>
+        <a class="brand foot-brand" href="#top"><img class="brand-logo" src="{{ 'lbass-wordmark-horizontal.svg' | asset_url }}" alt="Lbass Original" width="360" height="64" loading="lazy" decoding="async"><img class="brand-monogram" src="{{ 'lbass-monogram.svg' | asset_url }}" alt="Lbass Original" width="128" height="128" loading="lazy" decoding="async"></a>
         <p class="foot-desc">🇩🇪 قطع مختارة من ألمانيا · تشيك فمراكش · توصيل لكل المغرب<br><span style="font-size:12.5px;color:var(--txt3)">20 درهم داخل مراكش · 40 درهم خارج مراكش</span></p>
         <div class="foot-soc">
-          <a class="fs-b" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener" aria-label="Instagram"><img src="{{ 'lbass-instagram-avatar.svg' | asset_url }}" alt="" width="240" height="240"></a>
+          <a class="fs-b" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener" aria-label="Instagram"><img src="{{ 'lbass-instagram-avatar.svg' | asset_url }}" alt="" width="240" height="240" loading="lazy" decoding="async"></a>
           <a class="fs-b" href="https://www.facebook.com/lbassoriginal" target="_blank" rel="noopener" aria-label="Facebook">📘</a>
           <a class="fs-b" id="footWa" href="https://wa.me/491754264425?text=%D8%B3%D9%84%D8%A7%D9%85%D8%8C%20%D8%A8%D8%BA%D9%8A%D8%AA%20%D9%86%D8%B7%D9%84%D8%A8%20%D9%85%D9%86%20Lbass%20Original" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>
         </div>
