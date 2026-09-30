@@ -221,6 +221,13 @@ input,select{font-family:inherit}
   .lbx-term--key{grid-row:span 2}
 }
 
+/* story + answer (2026-09-30): one text column; the answer block closes the story */
+.story .sec-in{grid-template-columns:minmax(0,1fr)!important;max-width:760px}
+.sec.story{padding-bottom:18px!important}
+.lb-answer{max-width:none!important;margin:0!important;padding:0 var(--pad) clamp(40px,6vw,72px)!important;background:var(--sand,#F4F2ED)}
+.lb-answer p{max-width:760px;margin:0 auto!important}
+.lbx-rev-note{margin:14px 0 0;font-size:13.5px;font-weight:700;color:var(--lb-ink-2,#3A3A3C);text-align:center}
+
 /* ════════════════ SECTION SHELL ════════════════ */
 .sec{padding:clamp(64px,10vw,120px) var(--pad)}
 .sec-in{max-width:1500px;margin:0 auto}
@@ -1317,7 +1324,7 @@ input,select{font-family:inherit}
     <div class='jdgm-carousel-wrapper' data-auto-install='false'>
       {% assign jm_metafields = shop.metafields.judgeme %}
       <div class='jdgm-carousel-title-and-link'>
-        <h2 class='jdgm-carousel-title' id="reviews-carousel-h">آراء الزبناء · Let customers speak for us</h2>
+        <h2 class='jdgm-carousel-title' id="reviews-carousel-h">آراء الزبناء · <bdi>Let customers speak for us</bdi></h2>
         <span class='jdgm-all-reviews-rating-wrapper' href='javascript:void(0)'>
           <span style='display:block' data-score='{{ jm_metafields.all_reviews_rating }}' class='jdgm-all-reviews-rating' aria-label='{{ jm_metafields.all_reviews_rating }} stars' tabindex='0' role='img'></span>
           <span style='display: block' class='jdgm-carousel-number-of-reviews' data-number-of-reviews='{{ jm_metafields.all_reviews_count }}'>
@@ -1328,13 +1335,22 @@ input,select{font-family:inherit}
       {{ jm_metafields.featured_carousel }}
     </div>
     <!-- End of Judge.me code -->
+    <p class="lbx-rev-note">ما كنستعملوش تقييمات مخترعة.</p>
   </div>
 </section>
 
-<section class="lb-answer" aria-label="شنو هو Lbass Original">
-  <p><strong>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج branded second-hand، sneakers، accessories وstreetwear مختارة من ألمانيا.</strong> كل قطعة كتتشيك فمراكش وكتتصور بنفسها، وشارة 1/1 كتبان غير ملي المخزون كيأكد قطعة وحدة. التوصيل 20 درهم داخل مراكش و40 درهم لباقي المغرب، والخلاص بـ COD أو PayPal. <span dir="ltr">Lbass Original is a Moroccan online store based in Marrakech for original second-hand branded clothing, sneakers, accessories and streetwear sourced from Germany and checked in Marrakech.</span></p>
-</section>
 
+<!-- ═══ STORY ═══ -->
+{%- comment -%}
+  Short story + the one-paragraph answer. The stats row repeated the
+  Germany → Marrakech → door path shown in "how we check"; the lifestyle image
+  (hero-lifestyle-2.webp) could not be matched to any piece the store sells.
+  STORY PHOTO (optional, owner to supply): a real photo of the team, the
+  checking table or packing in Marrakech, e.g. lbass-story.webp. Put its file
+  name in story_photo; nothing renders until then.
+  The three .story-p paragraphs are the AboutPage "speakable" selector below.
+{%- endcomment -%}
+{%- assign story_photo = '' -%}
 <section class="sec story" id="story" aria-labelledby="story-h">
   <div class="sec-in">
     <div>
@@ -1342,18 +1358,16 @@ input,select{font-family:inherit}
       <h2 class="story-h" id="story-h">الحكاية <em>بسيطة.</em></h2>
       <p class="story-p">Lbass Original بدا بفكرة بسيطة: بزاف ديال الناس فالمغرب بغاو يلبسو براندات أصلية وستايل مختلف، ولكن ما بغاوش يشريو قطع غامضة أو بصور عامة.</p>
       <p class="story-p">لذلك <strong>كنجيبو قطع مختارة من ألمانيا</strong>، كنشيكو الحالة والقياس فمراكش، وكنصورو نفس القطعة باش تعرف شنو غادي يوصلك.</p>
-      <p class="story-p">second-hand عندنا ماشي عشوائي. هو طريقة باش تلبس حاجة أصلية، مميزة، وثمنها معقول — بلا مفاجآت.</p>
-      <div class="story-stats">
-        <div><div class="ss-num">ألمانيا</div><div class="ss-lbl">كنجيبو القطع من دروب ألمانية</div></div>
-        <div><div class="ss-num">مراكش</div><div class="ss-lbl">كنشيكو الحالة وكنصورو نفس القطعة</div></div>
-        <div><div class="ss-num">كل المغرب</div><div class="ss-lbl">COD أو PayPal · خلّص ملي توصلك</div></div>
-      </div>
+      <p class="story-p"><span class="lbx-nb" dir="ltr">second-hand</span> عندنا ماشي عشوائي. هو طريقة باش تلبس حاجة أصلية، مميزة، وثمنها معقول — بلا مفاجآت.</p>
     </div>
-    <div class="story-visual rev clip-rev">
-      <img src="{{ 'hero-lifestyle-2.webp' | asset_url }}" alt="لوك streetwear بقطعة The North Face — Lbass Original" loading="lazy" decoding="async" width="1200" height="670">
-      <span class="story-tag">❖ قطع مختارة من ألمانيا · تشيكت فمراكش</span>
-    </div>
+    {%- if story_photo != blank -%}
+      <div class="story-visual"><img src="{{ story_photo | asset_url }}" alt="Lbass Original — مراكش" loading="lazy" decoding="async" width="1200" height="900"></div>
+    {%- endif -%}
   </div>
+</section>
+
+<section class="lb-answer" aria-label="شنو هو Lbass Original">
+  <p><strong>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج branded second-hand، sneakers، accessories وstreetwear مختارة من ألمانيا.</strong> كل قطعة كتتشيك فمراكش وكتتصور بنفسها، وشارة 1/1 كتبان غير ملي المخزون كيأكد قطعة وحدة. التوصيل 20 درهم داخل مراكش و40 درهم لباقي المغرب، والخلاص بـ COD أو PayPal. <span dir="ltr">Lbass Original is a Moroccan online store based in Marrakech for original second-hand branded clothing, sneakers, accessories and streetwear sourced from Germany and checked in Marrakech.</span></p>
 </section>
 
 <!-- ═══ VAULT ═══ -->
