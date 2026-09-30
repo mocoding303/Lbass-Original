@@ -176,6 +176,11 @@ puts '=' * 78
   'Vault cards'                         => 'data-vault-card',
   'footer WhatsApp'                     => 'id="footWa" href="https://wa.me/491754264425?text=',
   'floating WhatsApp'                   => 'id="waFloat" href="https://wa.me/491754264425?text=',
+  # owner-approved 2026-09-30 ("clothing-first"), merged from the live theme
+  'category strip under the hero'       => "{% render 'lbass-shop-by-category', hero_id: hero_pick.id %}",
+  'fragrance best-sellers row'          => "{% render 'lbass-home-fragrances' %}",
+  'newsletter men/women preference'     => "value='newsletter,homepage,pref-men'",
+  'exit-popup men/women preference'     => "value='newsletter,exit-intent,pref-men'",
 }.each { |name, needle| check name, SRC.include?(needle) }
 
 foot = between(SRC, '<footer class="foot">', '</footer>')
@@ -185,6 +190,10 @@ guides = %w[/pages/authenticity /pages/condition-guide /pages/size-guide
 missing = guides.reject { |g| foot.include?(%(href="#{g}")) }
 check "footer guide links (#{guides.size - missing.size}/#{guides.size})#{missing.empty? ? '' : ' missing: ' + missing.join(' ')}", missing.empty?
 check 'exactly one H1 in the template', SRC.scan(/<h1\b/).size == 1
+order = ['<section class="lbx-hero"', "{% render 'lbass-shop-by-category'", '<!-- ═══ AVAILABLE NOW ═══ -->',
+         "{% render 'lbass-home-collections' %}", '<!-- ═══ HOW WE CHECK ═══ -->', '<!-- ═══ DELIVERY · PAYMENT · RETURNS ═══ -->',
+         "{% render 'lbass-home-fragrances' %}", '<!-- ═══ REVIEWS (Judge.me Carousel) ═══ -->'].map { |m| SRC.index(m) }
+check 'section order: hero, strip, pieces, browse, check, delivery, fragrance, reviews', order.all? && order == order.sort
 
 # ── 4. BAR ──────────────────────────────────────────────────────────────────
 puts
