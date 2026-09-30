@@ -172,6 +172,10 @@ input,select{font-family:inherit}
 .lbx-quote{margin:26px 0 0;padding:18px 20px;border-inline-start:3px solid var(--lb-red,#BF2E15);background:#fff}
 .lbx-quote blockquote{margin:0;font-size:16px;font-weight:700;line-height:1.8;color:var(--lb-ink,#0B0B0C)}
 .lbx-quote figcaption{margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-cust{margin:12px 0 0}
+.lbx-cust p{margin:0 0 8px;font-size:12.5px;font-weight:800;color:var(--lb-ink-2,#3A3A3C)}
+.lbx-cust ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;max-width:620px}
+.lbx-cust img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;background:#EFECE5;border:1px solid rgba(11,11,12,.12)}
 .lbx-check-more{margin:18px 0 0}
 .lbx-terms-grid{display:grid;gap:10px;margin-top:6px}
 .lbx-term{padding:16px 18px;background:#fff;border:1px solid rgba(11,11,12,.14)}
@@ -777,14 +781,31 @@ input,select{font-family:inherit}
       <li><b>الصور</b><span>صور حقيقية ديال نفس القطعة — ماشي صور البراند. إلا بغيتي شي زاوية محددة سولنا فالواتساب.</span></li>
     </ol>
 
+    {%- comment -%}
+      CUSTOMER PROOF: one real Judge.me review, plus the customers' own photos
+      when reviewers attach them (the owner approved customer photos on
+      2026-09-30). A review with photos beats a longer one without. Photos come
+      only from 4-5 star Judge.me reviews, where the customer uploaded them to be
+      published. A picture entry is read as a plain URL or as an object with
+      compact/small/huge/original/url; anything else is skipped, never guessed.
+    {%- endcomment -%}
     {%- liquid
       assign jm_grid = shop.metafields.judgeme.reviews_grid.value
       assign best_rev = nil
       assign best_len = 0
+      assign best_pics = false
       for r in jm_grid.all_reviews.reviews
         if r.rating >= 4
           assign r_len = r.body | size
-          if r_len > best_len
+          assign r_pics = false
+          if r.pictures_urls.size > 0
+            assign r_pics = true
+          endif
+          if r_pics and best_pics == false
+            assign best_rev = r
+            assign best_len = r_len
+            assign best_pics = true
+          elsif r_pics == best_pics and r_len > best_len
             assign best_rev = r
             assign best_len = r_len
           endif
@@ -797,6 +818,28 @@ input,select{font-family:inherit}
         <blockquote dir="auto">{{ best_rev.body | strip_html | escape }}</blockquote>
         <figcaption><span aria-label="{{ best_rev.rating }} من 5">{% for i in (1..5) %}{% if i <= best_rev.rating %}★{% else %}☆{% endif %}{% endfor %}</span> {{ best_initial | escape }}. · <bdi>{{ best_rev.product_title | split: ' — ' | first | escape }}</bdi> · {{ best_rev.created_at | date: '%d/%m/%Y' }} · تقييم على Judge.me</figcaption>
       </figure>
+    {%- endif -%}
+    {%- capture cust_pics -%}
+      {%- assign n_pics = 0 -%}
+      {%- for r in jm_grid.all_reviews.reviews -%}
+        {%- if r.rating >= 4 -%}
+          {%- for pic in r.pictures_urls -%}
+            {%- if n_pics < 6 -%}
+              {%- assign pic_src = pic.compact | default: pic.small | default: pic.huge | default: pic.original | default: pic.url -%}
+              {%- if pic_src == blank -%}{%- assign pic_src = pic | append: '' -%}{%- endif -%}
+              {%- assign pic_h4 = pic_src | slice: 0, 4 -%}
+              {%- assign pic_h2 = pic_src | slice: 0, 2 -%}
+              {%- if pic_h4 == 'http' or pic_h2 == '//' -%}
+                <li><img src="{{ pic_src | escape }}" alt="صورة من عند زبون · {{ r.product_title | split: ' — ' | first | escape }}" loading="lazy" decoding="async" width="160" height="160"></li>
+                {%- assign n_pics = n_pics | plus: 1 -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if cust_pics != blank -%}
+      <div class="lbx-cust"><p>صور من عند الزبناء</p><ul>{{ cust_pics }}</ul></div>
     {%- endif -%}
 
     {%- if proof_photos.size > 0 -%}

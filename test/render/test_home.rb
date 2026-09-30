@@ -11,6 +11,9 @@
 #               question for question. Both come from one list; until
 #               2026-09-30 the schema carried 9 of the 31 questions and three
 #               of those were paraphrased.
+#   2b. PROOF — the review quote is a real 4-5 star Judge.me review, and
+#               customers' own photos (only from those reviews) appear when
+#               they exist: sized, lazy, at most 6, unknown shapes skipped.
 #   3. HOOKS  — the snippets, ids, tracking attributes and footer guide links
 #               that tracking, schema and the measurement plan depend on.
 #   4. BAR    — the announcement bar is identical to layout/theme.liquid's
@@ -109,6 +112,45 @@ mism.first(3).each { |(v, s), i| puts "        ##{i + 1} visible: #{v[1][0, 90]}
 check 'no duplicate questions',                        visible.map(&:first).uniq.size == visible.size
 check 'no list separators leak into the page',         !out.include?('§§') && !out.include?('¤¤')
 check 'speakable points at the visible FAQ',           Array(ld.dig('speakable', 'cssSelector')).include?('.home-faq details p')
+
+# ── 2b. CUSTOMER PROOF ──────────────────────────────────────────────────────
+puts
+puts '=' * 78
+puts 'CUSTOMER PROOF — a real review, and customers\' own photos when they exist'
+puts '=' * 78
+PROOF = between(SRC, "    {%- liquid\n      assign jm_grid", "</ul></div>\n    {%- endif -%}")
+def rev(rating, body, pics = [], title = 'Zara Jacket — جاكيطة Zara')
+  { 'rating' => rating, 'body' => body, 'pictures_urls' => pics, 'product_title' => title,
+    'reviewer_initial' => 'م', 'reviewer_name' => 'مجهول', 'created_at' => '2026-09-24T16:21:01Z' }
+end
+def proof(reviews)
+  shop = { 'metafields' => { 'judgeme' => { 'reviews_grid' => { 'value' => { 'all_reviews' => { 'reviews' => reviews } } } } } }
+  render_source(PROOF, { 'shop' => shop })
+end
+quote = ->(html) { text(html[%r{<blockquote[^>]*>(.*?)</blockquote>}m, 1].to_s) }
+imgs  = ->(html) { html.scan(/<img [^>]*>/) }
+
+out, errs = proof([rev(5, 'short one'), rev(5, 'the longest review of them all'), rev(3, 'a three star review that is longest by far, really')])
+check 'renders without errors',                          errs.empty?
+check 'no photos: quote is the longest 4-5 star review', quote.(out) == 'the longest review of them all'
+check 'no photos: no photo strip',                       !out.include?('lbx-cust')
+
+out, errs = proof([rev(5, 'the longest review, but without any photo at all'),
+                   rev(4, 'with photos', ['https://judgeme.imgix.net/a.jpg', '//judgeme.imgix.net/b.jpg']),
+                   rev(3, 'three stars', ['https://judgeme.imgix.net/bad.jpg'])])
+check 'renders without errors',                          errs.empty?
+check 'a review with photos wins the quote',             quote.(out) == 'with photos'
+check 'strip shows its 2 photos, not the 3-star one',    imgs.(out).size == 2 && !out.include?('bad.jpg')
+check 'photos are lazy, sized, with alt text',           imgs.(out).all? { |i| i.include?('loading="lazy"') && i.include?('width="160"') && i.include?('height="160"') && i.include?('alt="صورة من عند زبون · Zara Jacket"') }
+
+out, errs = proof([rev(5, 'objects', [{ 'compact' => 'https://judgeme.imgix.net/c.jpg', 'huge' => 'https://judgeme.imgix.net/c-huge.jpg' },
+                                     { 'original' => 'https://judgeme.imgix.net/o.jpg' },
+                                     { 'foo' => 'https://example.com/unknown.jpg' }])])
+check 'object entries use compact, then original',       out.include?('src="https://judgeme.imgix.net/c.jpg"') && out.include?('src="https://judgeme.imgix.net/o.jpg"')
+check 'unknown entry shapes are skipped',                imgs.(out).size == 2 && !out.include?('unknown.jpg')
+
+out, = proof([rev(5, 'many', (1..9).map { |i| "https://judgeme.imgix.net/#{i}.jpg" })])
+check 'at most 6 photos',                                imgs.(out).size == 6
 
 # ── 3. HOOKS ────────────────────────────────────────────────────────────────
 puts
