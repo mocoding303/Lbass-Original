@@ -167,6 +167,16 @@ input,select{font-family:inherit}
 }
 @media(prefers-reduced-motion:reduce){.lbx-piece,.lbx-btn{transition:none}.lbx-piece:hover{transform:none;box-shadow:none}}
 
+/* ════════════════ AVAILABLE NOW (2026-09-30) ════════════════ */
+.sec.lbx-avail{padding-block:clamp(28px,4.4vw,64px) clamp(40px,5vw,72px)!important}
+.real-grid.lbx-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lbx-grid .real-card .real-row{flex-wrap:wrap;row-gap:4px}
+.lbx-grid .real-card .pold{white-space:nowrap}
+.lbx-grid .real-card .real-size{max-width:none}
+.lbx-more{margin:22px 0 0;text-align:center}
+@media(max-width:899px){.lbx-grid > .lbqa-wrap:nth-child(n+7){display:none}}
+@media(min-width:900px){.real-grid.lbx-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}}
+
 /* ════════════════ MARQUEE ════════════════ */
 .mq{border-block:1px solid var(--line);background:var(--ink2);overflow:hidden;white-space:nowrap;padding:15px 0}
 .mq-track{display:inline-flex}
@@ -1060,181 +1070,92 @@ input,select{font-family:inherit}
 })();
 </script>
 
-<!-- ═══ THE DROP ═══ -->
-<section class="sec" id="drop" aria-labelledby="drop-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
+<!-- ═══ AVAILABLE NOW ═══ -->
+{%- comment -%}
+  AVAILABLE NOW (2026-09-30). Replaces "THE DROP" rail and the "القطع اللي
+  متوفرة دابا" grid, which looped the same curated collection twice:
+    • the rail showed about 1.2 cards per phone screen (measured at 390px);
+    • the grid printed up to 50 cards with NO stock filter: 16 were sold out
+      under a heading that says "available now" (catalogue of 2026-09-30),
+      and it was 12,582px tall at 390px, a third of the whole page.
+  One grid now: in-stock only, fragrance/cosmetics skipped (the homepage
+  sells second-hand clothing), the hero's piece skipped so nothing repeats,
+  8 pieces (6 on phones), then one link to the full collection. The
+  collection's manual order still decides what shows first.
+
+  Condition labels use the sitewide vocabulary (snippets/lbass-product-card,
+  templates/product.liquid), so this card, the product page and the legend
+  further down say the same words. The price block is unchanged:
+  test/render/test_home_rails.rb pins it to snippets/lbass-price.
+{%- endcomment -%}
+{%- liquid
+  assign avail_src = collections['audited-drop-p001-p012'].products | where: 'available', true
+  assign avail_count = 0
+-%}
+<section class="sec lbx-avail" id="shop" aria-labelledby="shop-h">
+  <div class="sec-in" id="drop">
+    <div class="sec-head">
       <div>
-        <p class="kick">THE DROP — وصلو هاد السيمانة</p>
-        <h2 class="h2" id="drop-h">قطع جداد، <em>وحدة بوحدة</em></h2>
+        <h2 class="h2" id="shop-h">القطع اللي <em>متوفرة دابا</em></h2>
         <p class="sec-sub">أغلب القطع كتكون وحدة فالمخزون؛ الحالة والتّيكيت كيبانو بوضوح قبل الشراء.</p>
       </div>
-      <a class="see-all" href="/collections/audited-drop-p001-p012" data-cro-event="new_drop_click" data-cro-label="section_header">SHOP THE DROP →</a>
     </div>
-    <div class="drop-rail" id="dropRail">
-      {% assign homepage_collection = collections['audited-drop-p001-p012'] %}
-      {%- comment -%}
-        In-stock only. The rail used to loop the raw collection, so sold-out
-        pieces took slots in the first product row a visitor sees. Measured
-        2026-08-26: 8 of the catalogue's active products had totalInventory 0.
-      {%- endcomment -%}
-      {% assign drop_available = homepage_collection.products | where: 'available', true %}
-      {% for product in drop_available limit: 8 %}
-        {% assign variant = product.selected_or_first_available_variant %}
-        {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
-        {% assign drop_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
-        {% assign drop_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
-        {% assign drop_inspection = product.metafields.lbass.inspection_status.value %}
-        {% assign drop_has_ticket = product.metafields.lbass.has_original_ticket.value %}
-        {% assign drop_notes = product.metafields.lbass.condition_notes.value %}
-        {% assign drop_defects = product.metafields.lbass.visible_defects.value %}
-        {% assign drop_ticket_confirmed = false %}
-        {% if drop_has_ticket == true %}
-          {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_ticket_confirmed = true %}{% endif %}
-        {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' %}
-          {% assign drop_ticket_confirmed = true %}
-        {% endif %}
-        {% assign drop_condition = '' %}
-        {% assign drop_confirmed = false %}
-        {% if drop_inspection == 'inspected_confirmed' %}
-          {% if drop_has_ticket == true and drop_status == 'new_with_ticket' %}
-            {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_condition = 'جديد بالتّيكيت' %}{% assign drop_confirmed = true %}{% endif %}
-          {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' and drop_status == 'excellent_almost_new' %}
-            {% assign drop_condition = 'بحالة ممتازة · شبه جديد' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'very_good' %}
-            {% assign drop_condition = 'بحالة مزيانة بزاف' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'good' %}
-            {% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'needs_note' %}
-            {% if drop_notes != blank or drop_defects != blank %}{% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}{% endif %}
-          {% endif %}
-        {% endif %}
-        {% capture drop_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign drop_one_s = drop_one_s | strip %}{% assign drop_one = false %}{% if drop_one_s == '1' %}{% assign drop_one = true %}{% endif %}
-        {% assign drop_promo = false %}{% if variant.available and drop_confirmed and product.metafields.lbass.promo_eligible.value == true %}{% if drop_status == 'new_with_ticket' or drop_status == 'excellent_almost_new' %}{% assign drop_promo = true %}{% endif %}{% endif %}
-        {% assign drop_image = blank %}
-        {% case product.handle %}
-          {% when 'lbass-p001-striped-shirt-shorts-set' %}{% assign drop_image = 'lbass-preview-p001-striped-set.webp' | asset_url %}
-          {% when 'lbass-p002-zara-khaki-jacket' %}{% assign drop_image = 'lbass-preview-p002-zara-jacket.webp' | asset_url %}
-          {% when 'lbass-p003-nike-calm-flip-flop-beige' %}{% assign drop_image = 'lbass-preview-p003-nike-calm-beige.webp' | asset_url %}
-          {% when 'lbass-p004-adidas-black-crossbody-bag' %}{% assign drop_image = 'lbass-preview-p004-adidas-bag.webp' | asset_url %}
-          {% when 'lbass-p005-nike-black-slides' %}{% assign drop_image = 'lbass-preview-p005-nike-black-slides.webp' | asset_url %}
-          {% when 'lbass-p006-karl-kani-blue-slides' %}{% assign drop_image = 'lbass-preview-p006-blue-slides.webp' | asset_url %}
-          {% when 'lbass-p007-new-balance-black-jersey' %}{% assign drop_image = 'lbass-preview-p007-new-balance-jersey.webp' | asset_url %}
-          {% when 'lbass-p008-nike-air-black-top' %}{% assign drop_image = 'lbass-preview-p008-nike-air-top.webp' | asset_url %}
-          {% when 'lbass-p009-nike-black-waist-bag' %}{% assign drop_image = 'lbass-preview-p009-nike-waist-bag.webp' | asset_url %}
-          {% when 'lbass-p010a-nike-navy-slides' %}{% assign drop_image = 'lbass-preview-p010a-nike-navy-slides.webp' | asset_url %}
-          {% when 'lbass-p010b-adidas-black-slides' %}{% assign drop_image = 'lbass-preview-p010b-adidas-black-slides.webp' | asset_url %}
-          {% when 'lbass-p011-nike-white-cap' %}{% assign drop_image = 'lbass-preview-p011-nike-white-cap.webp' | asset_url %}
-          {% when 'lbass-p012-tommy-hilfiger-black-cap' %}{% assign drop_image = 'lbass-preview-p012-tommy-cap.webp' | asset_url %}
-        {% endcase %}
-        <div class="lbqa-wrap">
-        <a class="pcard drop-card" href="{{ product.url }}" data-cro-product-card data-cro-placement="new_drop" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
-          <div class="pviz">
-            {% if drop_image != blank %}
-              <img src="{{ drop_image }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="640" height="800">
-            {% elsif product.featured_image %}
-              <img src="{{ product.featured_image | image_url: width: 700 }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="700" height="875">
-            {% else %}
-              <div class="pviz-bg" style="background:linear-gradient(150deg,#1f2420,#101312)"></div>
-              <span class="pviz-brand">{{ product.vendor | escape }}</span>
-            {% endif %}
-            <div class="pbadges"><span class="pb">وصل جديد</span>{% if drop_promo %}<span class="pb pb-drop">قطعة مختارة</span>{% endif %}<span class="pb pb-grade">{{ drop_condition }}</span></div>
-          </div>
-          <div class="pinfo">
-            <p class="pinfo-brand">{{ product.vendor | escape }}</p>
-            <h3 class="pname">{{ display_title | escape }}</h3>
-            {%- comment -%}
-              The percentage comes from snippets/lbass-sale so this rail cannot
-              disagree with the collection grid or the product page about the
-              same piece. The .psave slot shows the DISCOUNT when there is one
-              and falls back to 1/1 otherwise — the same rule the JS-rendered
-              card at cardHTML() already follows, so the two card paths on this
-              page stay consistent.
-            {%- endcomment -%}
-            {%- assign drop_sale = false -%}
-            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign drop_sale = true -%}{%- endif -%}
-            {%- capture drop_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
-            {%- assign drop_pct = drop_pct | strip -%}
-            <div class="prow">
-              <span><span class="pprice">{{ variant.price | money_without_trailing_zeros }}</span>{% if drop_sale %} <span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}</span>
-              {% if drop_sale and drop_pct != '0' %}<span class="psave">&minus;{{ drop_pct }}%</span>{% elsif drop_one %}<span class="psave">1/1</span>{% endif %}
-            </div>
-            {% if drop_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
-            <div class="psizes"><span class="psz">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span></div>
-            <div class="pmeta-row"><span>{% if drop_one %}قطعة وحدة{% elsif variant.available %}متوفرة دابا{% else %}تباعت{% endif %}</span><span>COD أو PayPal</span></div>
-            <p class="pdelivery">🚚 توصيل لكل المغرب</p>
-          </div>
-        </a>
-        {% render 'lbass-quick-add', product: product %}
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<!-- ═══ REAL SHOPIFY PRODUCTS ═══ -->
-<section class="sec real-products" id="shop" style="padding-top:20px" aria-labelledby="shop-h">
-  <div class="sec-in">
-    {% assign homepage_collection = collections['audited-drop-p001-p012'] %}
-    <div class="sec-head rev">
-      <div>
-        <p class="kick">الكولكسيون الكامل</p>
-        <h2 class="h2" id="shop-h">القطع اللي <em>متوفرة دابا</em></h2>
-        <p class="sec-sub">هاد المنتجات جاية مباشرة من Shopify: صور المنتج، الثمن، القياس، والرابط ديال كل قطعة.</p>
-      </div>
-      <a class="see-all" href="{{ homepage_collection.url | default: '/collections/audited-drop-p001-p012' }}">{{ homepage_collection.products_count }} قطعة →</a>
-    </div>
-
-    <div class="real-grid" aria-label="منتجات Shopify المتوفرة">
-      {% for product in homepage_collection.products limit: 50 %}
-        {% assign variant = product.selected_or_first_available_variant %}
-        {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
-        {% assign real_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
-        {% assign real_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
-        {% assign real_inspection = product.metafields.lbass.inspection_status.value %}
-        {% assign real_has_ticket = product.metafields.lbass.has_original_ticket.value %}
-        {% assign real_notes = product.metafields.lbass.condition_notes.value %}
-        {% assign real_defects = product.metafields.lbass.visible_defects.value %}
-        {% assign real_ticket_confirmed = false %}
-        {% if real_has_ticket == true %}
-          {% if real_ticket == 'ticket_attached' or real_ticket == 'ticket_included' %}{% assign real_ticket_confirmed = true %}{% endif %}
-        {% elsif real_has_ticket == false and real_ticket == 'no_ticket' %}
-          {% assign real_ticket_confirmed = true %}
-        {% endif %}
-        {% assign real_condition = '' %}
-        {% if real_inspection == 'inspected_confirmed' %}
-          {% if real_has_ticket == true and real_status == 'new_with_ticket' %}
-            {% if real_ticket == 'ticket_attached' or real_ticket == 'ticket_included' %}{% assign real_condition = 'جديد بالتّيكيت' %}{% endif %}
-          {% elsif real_has_ticket == false and real_ticket == 'no_ticket' and real_status == 'excellent_almost_new' %}
-            {% assign real_condition = 'بحالة ممتازة · شبه جديد' %}
-          {% elsif real_ticket_confirmed and real_status == 'very_good' %}
-            {% assign real_condition = 'بحالة مزيانة بزاف' %}
-          {% elsif real_ticket_confirmed and real_status == 'good' %}
-            {% assign real_condition = 'بحالة مزيانة · شوف الملاحظات' %}
-          {% elsif real_ticket_confirmed and real_status == 'needs_note' %}
-            {% if real_notes != blank or real_defects != blank %}{% assign real_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% endif %}
-          {% endif %}
-        {% endif %}
+    <div class="real-grid lbx-grid">
+      {%- for product in avail_src -%}
+        {%- liquid
+          if avail_count >= 8
+            break
+          endif
+          assign av_type = product.type | downcase
+          if av_type == 'fragrance' or av_type == 'cosmetics'
+            continue
+          endif
+          if hero_pick and product.id == hero_pick.id
+            continue
+          endif
+          assign avail_count = avail_count | plus: 1
+          assign variant = product.selected_or_first_available_variant
+          assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first
+          assign real_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown'
+          assign real_status = product.metafields.lbass.condition_status.value | default: 'unknown'
+          assign real_has_ticket = product.metafields.lbass.has_original_ticket.value
+          assign real_notes = product.metafields.lbass.condition_notes.value
+          assign real_defects = product.metafields.lbass.visible_defects.value
+          assign real_condition = ''
+          if product.metafields.lbass.inspection_status.value == 'inspected_confirmed'
+            if real_has_ticket == true and real_status == 'new_with_ticket'
+              if real_ticket == 'ticket_attached' or real_ticket == 'ticket_included'
+                assign real_condition = 'جديد بالتّيكيت'
+              endif
+            elsif real_has_ticket == false and real_ticket == 'no_ticket' and real_status == 'new_without_ticket'
+              assign real_condition = 'جديد بلا تيكيت'
+            elsif real_has_ticket == false and real_ticket == 'no_ticket' and real_status == 'excellent_almost_new'
+              assign real_condition = 'بحالة ممتازة · شبه جديد'
+            elsif real_status == 'very_good'
+              assign real_condition = 'بحالة مزيانة بزاف'
+            elsif real_status == 'good'
+              assign real_condition = 'بحالة مزيانة'
+            elsif real_status == 'needs_note'
+              if real_notes != blank or real_defects != blank
+                assign real_condition = 'بحالة مزيانة · شوف الملاحظات'
+              endif
+            endif
+          endif
+        -%}
         {% capture real_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign real_one_s = real_one_s | strip %}{% assign real_one = false %}{% if real_one_s == '1' %}{% assign real_one = true %}{% endif %}
         <div class="lbqa-wrap">
-        <a class="real-card" href="{{ product.url }}" aria-label="{{ display_title | escape }}" data-cro-product-card data-cro-placement="homepage_collection" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
+        <a class="real-card" href="{{ product.url }}" aria-label="{{ display_title | escape }}" data-cro-product-card data-cro-placement="new_drop" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
           <figure class="real-media">
             {% if product.featured_image %}
-              <img src="{{ product.featured_image | image_url: width: 900 }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="900" height="1125">
+              <img src="{{ product.featured_image | image_url: width: 600 }}" srcset="{{ product.featured_image | image_url: width: 360 }} 360w, {{ product.featured_image | image_url: width: 600 }} 600w" sizes="(min-width: 900px) 280px, 46vw" alt="{{ product.vendor | escape }} {{ display_title | escape }}" loading="lazy" decoding="async" width="600" height="750">
             {% else %}
               <span class="real-empty">{{ product.vendor | escape }}</span>
             {% endif %}
-            <span class="real-badge">{% if real_one %}قطعة 1/1{% elsif variant.available %}متوفرة دابا{% else %}تباعت{% endif %}</span>
+            <span class="real-badge">{% if real_one %}قطعة 1/1{% else %}متوفرة دابا{% endif %}</span>
           </figure>
           <div class="real-info">
             <p class="real-vendor">{{ product.vendor | escape }}</p>
             <h3 class="real-title">{{ display_title | escape }}</h3>
-            {%- comment -%}
-              This rail rendered the price and nothing else, so a genuinely
-              marked-down piece showed FULL PRICE here and a strikethrough on
-              every other surface. Same class of drift that the collection grid
-              had before the shared card: one catalogue, two answers.
-            {%- endcomment -%}
             {%- assign real_sale = false -%}
             {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign real_sale = true -%}{%- endif -%}
             {%- capture real_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
@@ -1246,18 +1167,14 @@ input,select{font-family:inherit}
               <span class="real-size">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span>
             </div>
             {% if real_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
-            <p class="pdelivery">{{ real_condition }}</p>
+            {% if real_condition != blank %}<p class="pdelivery">{{ real_condition }}</p>{% endif %}
           </div>
         </a>
         {% render 'lbass-quick-add', product: product %}
         </div>
-      {% else %}
-        <div class="real-empty-state">
-          <h3>مازال ماكاين حتى منتج فهاد الكولكسيون</h3>
-          <p>زيد المنتجات لكولكسيون Audited Drop P001-P012 باش يبانوا هنا.</p>
-        </div>
-      {% endfor %}
+      {%- endfor -%}
     </div>
+    <p class="lbx-more"><a class="lbx-link" href="/collections/new-in" data-cro-event="new_drop_click" data-cro-label="see_all">شوف كل الكولكسيون ←</a></p>
   </div>
 </section>
 
