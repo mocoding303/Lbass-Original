@@ -2,6 +2,10 @@
 
 Live Shopify storefront (www.lbassoriginal.com) selling second-hand branded clothing and sneakers in Morocco, mostly one-of-one pieces. This repo is a snapshot of the live theme and is not connected to the store (see `README.md`). Read `docs/ARCHITECTURE-AUDIT.md` before changing theme code.
 
+## Design work
+
+When asked to design or restyle something (a new section, page or banner, or a visual upgrade to an existing one), invoke the `redesign-existing-projects` skill first, without waiting to be asked: scan the current page, diagnose, make small targeted changes, and apply the guardrails below. Skip it for exact single-value edits such as "make this 2px larger".
+
 ## Design guardrails
 
 Generic design advice, including the `redesign-existing-projects` skill, is written for left-to-right English SaaS sites. Check it against these before applying it.
