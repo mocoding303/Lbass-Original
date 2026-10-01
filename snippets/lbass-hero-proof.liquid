@@ -1,0 +1,175 @@
+{%- comment -%}
+  ═══ LBASS — HERO PROOF (2026-10-01) ═══
+
+  Two pieces of proof inside the owner's clothing hero
+  (snippets/lbass-hero-carousel). Everything else in that hero stays as designed.
+
+  part: 'wall'  The hero background. It was hero-lifestyle-1.webp, a styled
+                still life (provenance unconfirmed) that shows no piece the
+                shop sells (CLAUDE.md: imagery must be real). It is now a grid
+                of real in-stock product photos under the same light wash
+                (.lbh-scrim): 6 photos on phones, 8 from 768px. The <style>
+                for both parts is printed here, because the wall renders first.
+  part: 'card'  One real in-stock piece (photo, price, condition) as the third
+                item of the hero's call-to-action group, linking to its page.
+
+  hero_pick is chosen in templates/index.liquid: the first in-stock clothing,
+  shoe or accessory piece of the homepage collection, so the owner picks it by
+  ordering that collection. It is passed down so the category strip and THE
+  DROP rail can skip it.
+
+  NOTHING ON THE CARD IS WRITTEN BY HAND. Price and compare-at follow the rule
+  THE DROP rail uses (Shopify's compare_at_price only, never lbass.retail_ref),
+  with the percentage from snippets/lbass-sale. The condition label uses THE
+  DROP rail's mapping of the inspection metafields, and shows only when the
+  inspection is confirmed. «قطعة وحدة» shows only when snippets/lbass-one-of-one
+  says so. No piece in stock: no card. Fewer than 4 photos: no wall, and the
+  hero keeps its plain cream gradient.
+
+  THE WALL SKIPS WHAT IS SHOWN NEARBY. The hero's piece never repeats in it.
+  When the collection has 16 or more eligible pieces, the wall starts after
+  the first 8, which are the ones THE DROP rail shows just below.
+{%- endcomment -%}
+{%- if part == 'wall' -%}
+<style>
+.lbh-bg--wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));background:#F1EEE7}
+.lbh-bg--wall[data-n="4"]{grid-template-rows:repeat(2,minmax(0,1fr))}
+.lbh-bg.lbh-bg--wall img{min-width:0;min-height:0;object-position:center;opacity:.6;filter:grayscale(.3) contrast(1.02)}
+.lbh-bg--wall .lbh-wall-x{display:none}
+@media(min-width:768px){
+  .lbh-bg--wall{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+  .lbh-bg--wall[data-n="4"]{grid-template-rows:minmax(0,1fr)}
+  .lbh-bg--wall .lbh-wall-x{display:block}
+}
+.lbh-piece{display:flex;align-items:center;gap:12px;padding:8px;padding-inline-end:14px;
+  background:rgba(255,255,255,.88);border:1px solid var(--rule);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  color:var(--fg);text-decoration:none;text-align:start;font-family:var(--ar);
+  transition:border-color .2s,transform .2s,box-shadow .2s}
+.lbh-piece:hover{border-color:var(--fg);transform:translateY(-2px);box-shadow:0 10px 26px rgba(11,11,12,.14)}
+.lbh-piece:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.lbh-piece-img{flex:0 0 auto;width:56px;aspect-ratio:4/5;overflow:hidden;background:#EDE9E1}
+.lbh-piece-img img{width:100%;height:100%;object-fit:cover;display:block}
+.lbh-piece-txt{display:flex;flex-direction:column;gap:1px;min-width:0;max-width:230px}
+.lbh-piece-kick{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;line-height:1.45;color:var(--red)}
+.lbh-piece-kick::before{content:'';flex:0 0 auto;width:6px;height:6px;background:currentColor}
+.lbh-piece-name{font-family:var(--lt);font-size:12.5px;font-weight:600;line-height:1.4;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbh-piece-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;line-height:1.35}
+.lbh-piece-price{font-size:16px;font-weight:900;color:var(--fg)}
+.lbh-piece-old{font-size:12px;color:var(--fg3);text-decoration:line-through}
+.lbh-piece-off{font-size:11.5px;font-weight:800;color:var(--red)}
+.lbh-piece-cond{font-size:11px;font-weight:600;line-height:1.45;color:var(--fg3)}
+.lbh-piece-go{flex:0 0 auto;margin-inline-start:auto;padding-inline-start:4px;font-size:18px;color:var(--fg3)}
+@media(max-width:767px){
+  .lbh-piece{grid-column:1/-1;width:100%}
+  .lbh-piece-img{width:60px}
+  .lbh-piece-txt{max-width:none}
+}
+@media(prefers-reduced-motion:reduce){ .lbh-piece{transition:none} .lbh-piece:hover{transform:none} }
+</style>
+{%- liquid
+  assign hero_id = hero_pick.id
+  assign wall_src = collections['audited-drop-p001-p012'].products | where: 'available', true
+  assign wall_total = 0
+  for p in wall_src
+    if p.id == hero_id or p.featured_image == blank
+      continue
+    endif
+    assign p_type = p.type | downcase
+    if p_type == 'fragrance' or p_type == 'cosmetics'
+      continue
+    endif
+    assign wall_total = wall_total | plus: 1
+  endfor
+  assign wall_n = 0
+  if wall_total >= 8
+    assign wall_n = 8
+  elsif wall_total >= 4
+    assign wall_n = 4
+  endif
+  assign wall_skip = 0
+  if wall_total >= 16
+    assign wall_skip = 8
+  endif
+-%}
+{%- if wall_n > 0 -%}
+<div class="lbh-bg lbh-bg--wall" data-n="{{ wall_n }}" aria-hidden="true">
+  {%- assign wall_seen = 0 -%}{%- assign wall_shown = 0 -%}
+  {%- for p in wall_src -%}
+    {%- if p.id == hero_id or p.featured_image == blank -%}{%- continue -%}{%- endif -%}
+    {%- assign p_type = p.type | downcase -%}
+    {%- if p_type == 'fragrance' or p_type == 'cosmetics' -%}{%- continue -%}{%- endif -%}
+    {%- assign wall_seen = wall_seen | plus: 1 -%}
+    {%- if wall_seen <= wall_skip -%}{%- continue -%}{%- endif -%}
+    {%- assign wall_shown = wall_shown | plus: 1 -%}
+    <img src="{{ p.featured_image | image_url: width: 480 }}" srcset="{{ p.featured_image | image_url: width: 240 }} 240w, {{ p.featured_image | image_url: width: 480 }} 480w" sizes="(min-width: 768px) 25vw, 50vw" width="480" height="600" alt="" decoding="async" fetchpriority="low"{% if wall_shown > 6 %} class="lbh-wall-x" loading="lazy"{% endif %}>
+    {%- if wall_shown >= wall_n -%}{%- break -%}{%- endif -%}
+  {%- endfor -%}
+</div>
+{%- endif -%}
+
+{%- elsif part == 'card' and hero_pick -%}
+{%- liquid
+  assign hp_v = hero_pick.selected_or_first_available_variant
+  assign hp_title = hero_pick.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' | ' | first | split: ' — ' | first
+  assign hp_ticket = hero_pick.metafields.lbass.ticket_status.value | default: 'unknown'
+  assign hp_status = hero_pick.metafields.lbass.condition_status.value | default: 'unknown'
+  assign hp_has_ticket = hero_pick.metafields.lbass.has_original_ticket.value
+  assign hp_notes = hero_pick.metafields.lbass.condition_notes.value
+  assign hp_defects = hero_pick.metafields.lbass.visible_defects.value
+  assign hp_ticket_confirmed = false
+  if hp_has_ticket == true
+    if hp_ticket == 'ticket_attached' or hp_ticket == 'ticket_included'
+      assign hp_ticket_confirmed = true
+    endif
+  elsif hp_has_ticket == false and hp_ticket == 'no_ticket'
+    assign hp_ticket_confirmed = true
+  endif
+  assign hp_cond = ''
+  if hero_pick.metafields.lbass.inspection_status.value == 'inspected_confirmed'
+    if hp_has_ticket == true and hp_status == 'new_with_ticket'
+      if hp_ticket == 'ticket_attached' or hp_ticket == 'ticket_included'
+        assign hp_cond = 'جديد بالتّيكيت'
+      endif
+    elsif hp_has_ticket == false and hp_ticket == 'no_ticket' and hp_status == 'excellent_almost_new'
+      assign hp_cond = 'بحالة ممتازة · شبه جديد'
+    elsif hp_ticket_confirmed and hp_status == 'very_good'
+      assign hp_cond = 'بحالة مزيانة بزاف'
+    elsif hp_ticket_confirmed and hp_status == 'good'
+      assign hp_cond = 'بحالة مزيانة · شوف الملاحظات'
+    elsif hp_ticket_confirmed and hp_status == 'needs_note'
+      if hp_notes != blank or hp_defects != blank
+        assign hp_cond = 'بحالة مزيانة · شوف الملاحظات'
+      endif
+    endif
+  endif
+  capture hp_one
+    render 'lbass-one-of-one', product: hero_pick
+  endcapture
+  assign hp_one = hp_one | strip
+  assign hp_sale = false
+  if hp_v.compare_at_price and hp_v.compare_at_price > hp_v.price
+    assign hp_sale = true
+  endif
+  capture hp_pct
+    render 'lbass-sale', product: hero_pick, variant: hp_v
+  endcapture
+  assign hp_pct = hp_pct | strip
+-%}
+<a class="lbh-piece" href="{{ hero_pick.url }}" data-cro-event="hero_cta_click" data-cro-label="hero_piece" data-cro-product-card data-cro-placement="hero" data-product-id="{{ hero_pick.id }}" data-product-name="{{ hp_title | escape }}">
+  <span class="lbh-piece-img">
+    {%- if hero_pick.featured_image -%}
+    <img src="{{ hero_pick.featured_image | image_url: width: 240 }}" srcset="{{ hero_pick.featured_image | image_url: width: 120 }} 120w, {{ hero_pick.featured_image | image_url: width: 240 }} 240w" sizes="60px" width="240" height="300" alt="" fetchpriority="high" decoding="async">
+    {%- endif -%}
+  </span>
+  <span class="lbh-piece-txt">
+    <span class="lbh-piece-kick">متوفرة دابا{% if hp_one == '1' %} · قطعة وحدة{% endif %}</span>
+    <span class="lbh-piece-name" dir="auto">{{ hp_title | escape }}</span>
+    <span class="lbh-piece-row">
+      <b class="lbh-piece-price" dir="ltr">{{ hp_v.price | money_without_trailing_zeros }}</b>
+      {%- if hp_sale -%}<span class="lbh-piece-old" dir="ltr">{{ hp_v.compare_at_price | money_without_trailing_zeros }}</span>{%- if hp_pct != '0' -%}<span class="lbh-piece-off" dir="ltr">&minus;{{ hp_pct }}%</span>{%- endif -%}{%- endif -%}
+    </span>
+    {%- if hp_cond != blank -%}<span class="lbh-piece-cond">{{ hp_cond }}</span>{%- endif -%}
+  </span>
+  <span class="lbh-piece-go" aria-hidden="true">←</span>
+</a>
+{%- endif -%}

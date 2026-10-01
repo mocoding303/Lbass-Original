@@ -10,11 +10,16 @@
       nothing, and its particle script threw «Cannot read properties of null»
   Rendering the final hero in the HTML removes all three. lbass-hero-swap now
   finds .lbh and does nothing (its guard), but still supplies the .lbh CSS,
-  the hero-type / hero-mobile / hero-cta styles, the LCP preload and hero-fx
-  (word reveal + particles), which initialise on DOMContentLoaded as before.
+  the hero-type / hero-mobile / hero-cta styles and hero-fx (word reveal +
+  particles), which initialise on DOMContentLoaded as before. (It also preloaded
+  the old background image until 2026-10-01.)
 
   SLIDES (the existing designs are the source of truth — nothing redesigned):
-    0  LBASS ORIGINAL · Pre-Loved Clothing     the clothing hero, unchanged
+    0  LBASS ORIGINAL · Pre-Loved Clothing     the clothing hero. Since 2026-10-01 its
+                                               background is a wall of real in-stock
+                                               photos and its CTA group ends with one
+                                               real piece (snippets/lbass-hero-proof,
+                                               fed by hero_pick from index.liquid)
     1  ARABIC FRAGRANCES · Discover Your Signature Scent
                                                snippets/lbass-frag-hero.liquid
     +1 K-BEAUTY · Korean Skincare               snippets/lbass-beauty-hero.liquid
@@ -36,7 +41,7 @@
   prefers-reduced-motion: no autoplay, no slide animation. /#fragrances opens
   on the fragrance slide and stays there.
   Slides after the first load their images after window.load (or on first
-  visit), so only the clothing hero image is preloaded. All slides share the
+  visit), so only the clothing hero's images load with the page. All slides share the
   tallest height, so nothing below the carousel moves.
 {%- endcomment -%}
 {%- liquid
@@ -206,7 +211,7 @@
   <div class="lbhs-viewport">
     <div class="lbhs-track">
       <div class="lbhs-slide" id="lbhsSlide0" data-tone="light"{% if hc_total > 1 %} role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab0"{% endif %}>
-        <header class="lbh" id="top" role="banner"><div class="lbh-bg" aria-hidden="true"><img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" width="1264" height="848" alt="" fetchpriority="high" decoding="async"></div><div class="lbh-scrim" aria-hidden="true"></div><canvas id="lbhParticles" class="lbh-fx" aria-hidden="true" data-tint="11,11,12"></canvas><div class="lbh-wrap"><p class="lbh-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p><h1 class="lbh-h" id="home-h1"><span class="lbh-ln" dir="ltr" data-lbh-reveal="Lbass Original —">Lbass Original —</span><span class="lbh-ln lbh-ln--accent" data-lbh-reveal="حوايج Second-Hand أصلية فالمغرب">حوايج Second-Hand أصلية فالمغرب</span></h1><p class="lbh-sub">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p><div class="lbh-divider" aria-hidden="true"></div><div class="lbh-ctas"><a class="lbh-btn lbh-btn-primary" href="{{ routes.all_products_collection_url }}" data-lbh-cta="primary" data-cro-event="hero_cta_click" data-cro-label="clothing_primary"><span class="lbh-d">شوف الدروب دابا ←</span><span class="lbh-m">شوف الدروب</span></a><a class="lbh-btn lbh-btn-ghost" href="/pages/condition-guide" data-lbh-cta="secondary" data-cro-event="hero_cta_click" data-cro-label="clothing_secondary"><span class="lbh-d">كيفاش كنشيّكو القطع؟</span><span class="lbh-m">كيفاش كنشيّكو؟</span></a></div><div class="lbh-trust"><div class="lbh-ht"><b>من ألمانيا</b></div><div class="lbh-ht"><b>صور حقيقية</b></div><div class="lbh-ht"><b>قطعة 1/1</b></div><div class="lbh-ht"><b>COD</b></div><div class="lbh-ht lbh-ht--wide"><b>مراكش</b> 20 درهم</div><div class="lbh-ht lbh-ht--wide"><b>خارج مراكش</b> 50 درهم</div></div><p class="lbh-scarce">ملي كتباع القطعة، كتخرج من الكوليكسيون.</p></div><a class="lbh-cue" href="#drop" data-lbh-cue><span class="lbh-cue-line" aria-hidden="true"></span><span>SCROLL</span></a></header>
+        <header class="lbh" id="top" role="banner">{% render 'lbass-hero-proof', part: 'wall', hero_pick: hero_pick %}<div class="lbh-scrim" aria-hidden="true"></div><canvas id="lbhParticles" class="lbh-fx" aria-hidden="true" data-tint="11,11,12"></canvas><div class="lbh-wrap"><p class="lbh-eyebrow">مختارة من ألمانيا · تشيك فمراكش</p><h1 class="lbh-h" id="home-h1"><span class="lbh-ln" dir="ltr" data-lbh-reveal="Lbass Original —">Lbass Original —</span><span class="lbh-ln lbh-ln--accent" data-lbh-reveal="حوايج Second-Hand أصلية فالمغرب">حوايج Second-Hand أصلية فالمغرب</span></h1><p class="lbh-sub">Lbass Original هو متجر second-hand أونلاين من مراكش كيعرض حوايج براند، صبابط وstreetwear مختارة من ألمانيا ومفحوصة فمراكش.</p><div class="lbh-divider" aria-hidden="true"></div><div class="lbh-ctas"><a class="lbh-btn lbh-btn-primary" href="{{ routes.all_products_collection_url }}" data-lbh-cta="primary" data-cro-event="hero_cta_click" data-cro-label="clothing_primary"><span class="lbh-d">شوف الدروب دابا ←</span><span class="lbh-m">شوف الدروب</span></a><a class="lbh-btn lbh-btn-ghost" href="/pages/condition-guide" data-lbh-cta="secondary" data-cro-event="hero_cta_click" data-cro-label="clothing_secondary"><span class="lbh-d">كيفاش كنشيّكو القطع؟</span><span class="lbh-m">كيفاش كنشيّكو؟</span></a>{% render 'lbass-hero-proof', part: 'card', hero_pick: hero_pick %}</div><div class="lbh-trust"><div class="lbh-ht"><b>من ألمانيا</b></div><div class="lbh-ht"><b>صور حقيقية</b></div><div class="lbh-ht"><b>قطعة 1/1</b></div><div class="lbh-ht"><b>COD</b></div><div class="lbh-ht lbh-ht--wide"><b>مراكش</b> 20 درهم</div><div class="lbh-ht lbh-ht--wide"><b>خارج مراكش</b> 50 درهم</div></div><p class="lbh-scarce">ملي كتباع القطعة، كتخرج من الكوليكسيون.</p></div><a class="lbh-cue" href="#drop" data-lbh-cue><span class="lbh-cue-line" aria-hidden="true"></span><span>SCROLL</span></a></header>
       </div>
       {%- if hc_show_frag -%}
       <div class="lbhs-slide" id="lbhsSlide1" data-tone="dark" role="tabpanel" aria-roledescription="slide" aria-labelledby="lbhsTab1" aria-hidden="true" inert>

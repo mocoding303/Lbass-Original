@@ -20,8 +20,14 @@
 {%- endcomment -%}
 <style>
 @media (max-width:767px){
-  /* overflow-x:auto is inert while wrapping is allowed — set both */
-  .lbh .lbh-trust{ flex-wrap:nowrap !important; }
+  /* 2026-10-01: wrap, never clip. The row had flex-wrap:nowrap here (from the
+     old one-line scroller) while lbass-hero-swap already set overflow-x:visible,
+     so nothing scrolled and .lbh's overflow:hidden cut the last chip, COD, on
+     every phone narrower than 390px: 3px at 375, 18px at 360, 58px at 320
+     (measured). Tighter padding (and 11.5px text under 375px) keeps the four
+     chips on one row from 360px up; narrower phones wrap instead of hiding COD. */
+  .lbh .lbh-trust{ flex-wrap:wrap !important; gap:6px !important; }
+  .lbh .lbh-ht{ padding:9px 10px; }
 
   .lbh .lbh-scarce{
     display:inline-block;
@@ -38,5 +44,8 @@
     background:rgba(0,0,0,.52);
     border-color:rgba(242,240,235,.18);
   }
+}
+@media (max-width:374px){
+  .lbh .lbh-ht{ padding:8px 8px; font-size:11.5px; }
 }
 </style>

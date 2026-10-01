@@ -68,13 +68,15 @@ SETTINGS_ON = {
 }
 SETTINGS_OFF = SETTINGS_ON.merge('promo_enabled' => false)
 
-def render_snippet(name, assigns, settings: SETTINGS_ON)
-  render_source(File.read("#{THEME}/snippets/#{name}.liquid", encoding: "UTF-8"), assigns, settings: settings)
+def render_snippet(name, assigns, settings: SETTINGS_ON, globals: {})
+  render_source(File.read("#{THEME}/snippets/#{name}.liquid", encoding: "UTF-8"), assigns, settings: settings, globals: globals)
 end
 
 # Same context, arbitrary Liquid source. Lets a test slice a fragment straight
 # out of a template and execute it, instead of keeping a copy that can rot.
-def render_source(src, assigns, settings: SETTINGS_ON)
+# globals: extra Shopify globals (collections, for one) that must also reach
+# snippets called through {% render %}, as they do on the storefront.
+def render_source(src, assigns, settings: SETTINGS_ON, globals: {})
   tpl = Liquid::Template.parse(src, error_mode: :strict)
   # Shopify exposes settings/shop/cart/routes as GLOBALS, which survive the
   # isolated scope of {% render %}. In the gem that is static_environments —
@@ -85,7 +87,7 @@ def render_source(src, assigns, settings: SETTINGS_ON)
     "cart"     => { "currency" => { "iso_code" => "MAD" } },
     "shop"     => { "url" => "https://www.lbassoriginal.com", "currency" => "MAD" },
     "routes"   => { "root_url" => "/", "all_products_collection_url" => "/collections/all" }
-  }
+  }.merge(globals)
   ctx = Liquid::Context.build(
     environments: [assigns],
     static_environments: [globals],

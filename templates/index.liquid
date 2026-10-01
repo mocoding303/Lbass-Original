@@ -1009,8 +1009,26 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
   metaobject slides). The removed markup is kept in Lbass/expansion/
   theme-preview-208658399563/before/ if it is ever needed again.
 {%- endcomment -%}
-{% render 'lbass-hero-carousel' %}
-{% render 'lbass-shop-by-category' %}
+{%- comment -%}
+  2026-10-01 — the hero's real piece (snippets/lbass-hero-proof): the first
+  in-stock clothing, shoe or accessory piece of the homepage collection, so the
+  owner chooses it by ordering that collection. Picked here, not in the
+  carousel, so the category strip and THE DROP rail below can skip it.
+{%- endcomment -%}
+{%- liquid
+  assign hero_pick = nil
+  assign hero_src = collections['audited-drop-p001-p012'].products | where: 'available', true
+  for hp in hero_src
+    assign hp_type = hp.type | downcase
+    if hp_type == 'fragrance' or hp_type == 'cosmetics'
+      continue
+    endif
+    assign hero_pick = hp
+    break
+  endfor
+-%}
+{% render 'lbass-hero-carousel', hero_pick: hero_pick %}
+{% render 'lbass-shop-by-category', hero_id: hero_pick.id %}
 
 <!-- ═══ MARQUEE ═══ -->
 <div class="mq" aria-hidden="true">
@@ -1136,7 +1154,12 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
         2026-08-26: 8 of the catalogue's active products had totalInventory 0.
       {%- endcomment -%}
       {% assign drop_available = homepage_collection.products | where: 'available', true %}
-      {% for product in drop_available limit: 8 %}
+      {%- comment -%} 2026-10-01: the hero already shows hero_pick, so the rail skips it and still shows 8. {%- endcomment -%}
+      {% assign drop_shown = 0 %}
+      {% for product in drop_available limit: 9 %}
+        {% if hero_pick and product.id == hero_pick.id %}{% continue %}{% endif %}
+        {% if drop_shown >= 8 %}{% break %}{% endif %}
+        {% assign drop_shown = drop_shown | plus: 1 %}
         {% assign variant = product.selected_or_first_available_variant %}
         {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
         {% assign drop_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}

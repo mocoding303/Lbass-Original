@@ -1,7 +1,8 @@
 {%- comment -%}
   2026-09-26: the hero is now server-rendered by snippets/lbass-hero-carousel.liquid,
   so the build() below finds .lbh and returns at its guard. This file still supplies
-  the .lbh CSS, the LCP preload, hero-cta / hero-type / hero-mobile and hero-fx.
+  the .lbh CSS, hero-cta / hero-type / hero-mobile and hero-fx (the LCP preload was
+  removed on 2026-10-01; see the note where it stood).
 
   LBASS — HOMEPAGE HERO SWAP (2026-08-01)
 
@@ -37,8 +38,10 @@
 {%- endcomment -%}
 
 {%- if template == 'index' -%}
-<link rel="preload" as="image" fetchpriority="high"
-      href="{{ 'hero-lifestyle-1.webp' | asset_url }}">
+{%- comment -%} 2026-10-01: the preload of hero-lifestyle-1.webp that stood here is gone. The
+     hero no longer shows that picture (its background is now real product photos,
+     snippets/lbass-hero-proof), and a high-priority preload of an unused 222 KB
+     image would only compete with the hero for bandwidth. {%- endcomment -%}
 
 {% render 'lbass-hero-cta' %}
 {% render 'lbass-hero-type' %}
