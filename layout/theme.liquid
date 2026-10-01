@@ -264,9 +264,9 @@
   {%- endcomment -%}
   {%- assign d_name = safe_product_title | split: ' | ' | first | strip -%}
   {%- capture d_size -%}{% unless seo_variant.title == 'Default Title' %}قياس {{ seo_variant.title }}. {% endunless %}{%- endcapture -%}
-  {%- capture safe_page_description -%}{{ d_name }}{% if safe_product_condition != blank %} — {{ safe_product_condition }}{% endif %}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش و40 خارجها، والدفع عند الاستلام.{%- endcapture -%}
+  {%- capture safe_page_description -%}{{ d_name }}{% if safe_product_condition != blank %} — {{ safe_product_condition }}{% endif %}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش و50 خارجها، والدفع عند الاستلام.{%- endcapture -%}
   {%- if safe_page_description.size > 155 -%}
-    {%- capture safe_page_description -%}{{ d_name }}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش، 40 خارجها. الدفع عند الاستلام.{%- endcapture -%}
+    {%- capture safe_page_description -%}{{ d_name }}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش، 50 خارجها. الدفع عند الاستلام.{%- endcapture -%}
   {%- endif -%}
 {% elsif collection %}
   {% if safe_page_description == blank %}
@@ -466,11 +466,11 @@
       {% assign title_is_explicit = true %}
     {% when 'brand-nike', 'nike' %}
       {% assign safe_page_title = 'Nike Second-Hand Maroc | حوايج Nike أصلية فالمغرب | Lbass Original' %}
-      {% assign safe_page_description = 'Nike second-hand Maroc: سبادري، جاكيطات، تيشرتات وإكسسوارات Nike بصور حقيقية، حالة وقياس واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign safe_page_description = 'Nike second-hand Maroc: سبادري، جاكيطات، تيشرتات وإكسسوارات Nike بصور حقيقية، حالة وقياس واضحين. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {% when 'إكسسوارات', 'accessories', 'bags' %}
       {% assign safe_page_title = 'إكسسوارات Second-Hand فالمغرب | Bags & Caps | Lbass Original' %}
-      {% assign safe_page_description = 'إكسسوارات second-hand فالمغرب: شنط، crossbody bags، caps وقطع branded بصور حقيقية وحالة واضحة. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign safe_page_description = 'إكسسوارات second-hand فالمغرب: شنط، crossbody bags، caps وقطع branded بصور حقيقية وحالة واضحة. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {%- comment -%}
       TRACK PANTS — rewritten 2026-08-23 from 90 days of Search Console data.
@@ -507,7 +507,7 @@
     {%- endcomment -%}
     {% when 'جاكيطات-و-معاطف', 'jackets' %}
       {% assign safe_page_title = 'جاكيطات Second-Hand أصلية فالمغرب | Lbass' %}
-      {% assign safe_page_description = 'جاكيطات ومعاطف second-hand أصلية فالمغرب: بومبر، بوفر وقطع streetwear بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign safe_page_description = 'جاكيطات ومعاطف second-hand أصلية فالمغرب: بومبر، بوفر وقطع streetwear بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {% when 'men-jackets' %}
       {% assign safe_page_title = 'جاكيطات رجال Second-Hand فالمغرب | Lbass' %}
@@ -515,11 +515,11 @@
       {% assign title_is_explicit = true %}
     {% when 'تيشرتات-و-بولو', 't-shirts' %}
       {% assign safe_page_title = 'تيشرتات وبولو Second-Hand فالمغرب | Lbass' %}
-      {% assign safe_page_description = 'تيشرتات وبولو second-hand أصلية فالمغرب بصور حقيقية لنفس القطعة، قياس وحالة مبيّنين قبل الطلب. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign safe_page_description = 'تيشرتات وبولو second-hand أصلية فالمغرب بصور حقيقية لنفس القطعة، قياس وحالة مبيّنين قبل الطلب. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {% when 'سراويل-و-كارغو', 'cargo-pants' %}
       {% assign safe_page_title = 'سراويل كارغو Second-Hand فالمغرب | Lbass Original' %}
-      {% assign safe_page_description = 'سراويل cargo وjoggers وtrack pants second-hand فالمغرب، بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 40، COD أو PayPal.' %}
+      {% assign safe_page_description = 'سراويل cargo وjoggers وtrack pants second-hand فالمغرب، بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
   {% endcase %}
 {% elsif article %}

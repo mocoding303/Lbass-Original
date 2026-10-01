@@ -245,8 +245,16 @@ puts
 puts '=' * 78
 puts 'DELIVERY + SHARE IMAGE — 50 MAD outside Marrakech; the brand card'
 puts '=' * 78
-files = Dir["#{THEME}/{templates,snippets,sections,layout}/**/*.liquid"] + Dir["#{THEME}/{templates,config}/*.json"] + ["#{THEME}/assets/llms.txt"]
-stale = files.select { |f| File.read(f, encoding: 'UTF-8').match?(/(?<![\d.,])(40|٤٠) ?(درهم|MAD|DH|Dh|dh|Dhs|د\.م)/) }
+files = Dir["#{THEME}/{templates,snippets,sections,layout}/**/*.liquid"] + Dir["#{THEME}/{templates,sections,config,locales}/*.json"] + ["#{THEME}/assets/llms.txt"]
+# Three phrasings have shipped: «40 درهم» / «40 د» (number then unit), «خارجها 40» (place then
+# number) and «و40 خارجها» (number then place). Matching only the first let eight live strings
+# (product and collection meta descriptions, the pSEO chip) keep saying 40 after checkout moved
+# to 50. Liquid comments are change history, not copy, so they are left out.
+no_comments = ->(s) { s.gsub(/\{%-?\s*comment\s*-?%\}.*?\{%-?\s*endcomment\s*-?%\}/m, '') }
+stale_40 = [/(?<![\d.,])(40|٤٠) ?(درهم|MAD|DH|Dh|dh|Dhs|د\.م|د(?![\p{L}\p{M}]))/,
+            /(خارجها|خارج مراكش|باقي المغرب|لباقي المدن|[Rr]est of Morocco|reste du Maroc|outside Marrakech|hors Marrakech|ailleurs)[^\d\n]{0,24}(?<![\d.,])(40|٤٠)(?!\d)/,
+            /(?<![\d.,])(40|٤٠)(?!\d)[^\d\n]{0,6}(خارجها|خارج مراكش|لباقي المغرب|باقي المغرب)/]
+stale = files.select { |f| no_comments.(File.read(f, encoding: 'UTF-8')).then { |s| stale_40.any? { |re| s.match?(re) } } }
 check "no 40 MAD delivery left#{stale.empty? ? '' : ': ' + stale.map { |f| f.sub("#{THEME}/", '') }.join(' ')}", stale.empty?
 check 'hero chips say 50 outside Marrakech',           CAROUSEL.include?('<b>خارج مراكش</b> 50 درهم')
 share = 'lbass-share-1200x630.jpg'
