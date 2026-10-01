@@ -163,9 +163,10 @@
 {%- endcomment -%}
 
 {%- comment -%}
-  The homepage hero swap (snippets/lbass-hero-swap.liquid) was rendered here
-  until 2026-09-30. templates/index.liquid now renders its hero on the server,
-  which is the fix that snippet's own header asked for, so the snippet and this
-  render call are gone. Nothing else in this file changed: the JSON-LD above is
-  byte-identical.
+  Homepage hero swap — see snippets/lbass-hero-swap.liquid. Self-gates on
+  template == 'index' and bails if a .lbh already exists, so it is inert
+  everywhere else and cannot double-render.
+  STOPGAP: delete this render call the moment index.liquid gets
+  {% section 'lbass-hero' %} at source.
 {%- endcomment -%}
+{% render 'lbass-hero-swap' %}

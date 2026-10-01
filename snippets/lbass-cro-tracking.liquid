@@ -36,13 +36,20 @@
 
 
 {%- comment -%}
-  lbass-home-density and lbass-home-answer are retired (2026-09-30): the
-  homepage template now renders its own sections in order, and both snippets
-  render nothing. The two calls below are kept only so this tracking file did
-  not change behaviour; they can go in any later clean-up.
+  Above-the-fold density: hero height + visual reorder so products appear
+  sooner. CSS only, no markup moved. See snippets/lbass-home-density.liquid.
 {%- endcomment -%}
 {% if template == 'index' %}{% render 'lbass-home-density' %}{% endif %}
 
+{%- comment -%}
+  HOMEPAGE DIRECT-ANSWER + ACCESSORIES ENTRY ROW (2026-08-10).
+  See snippets/lbass-home-answer.liquid.
+
+  MUST stay AFTER lbass-home-density: it re-declares the `main > *` flex order
+  to make room for two new sections, and those overrides win on equal
+  specificity only by loading later. Moving this line above the density render
+  silently reverts the homepage order.
+{%- endcomment -%}
 {% if template == 'index' %}{% render 'lbass-home-answer' %}{% endif %}
 
 {%- comment -%}
