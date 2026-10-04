@@ -33,3 +33,12 @@ See **[docs/ARCHITECTURE-AUDIT.md](docs/ARCHITECTURE-AUDIT.md)** before changing
 This snapshot is not connected to the store. Changes here do not deploy.
 To sync, use the Shopify CLI (`shopify theme pull/push --theme 207249506635`)
 or the Admin API, and re-verify checksums after any pull.
+
+## SEO / GEO tooling for Claude Code
+
+Committed so every Claude Code session on this repo can use them. Each MCP server asks for approval the first time a session starts it.
+
+- **Google Search Console MCP** (`.mcp.json`, server `gsc`, from `AminForou/mcp-gsc`): set `GSC_CREDENTIALS_PATH` to a service-account JSON that has been added as a user on the Search Console property. The OAuth browser flow does not work in cloud sessions. Companion skills: `.claude/skills/gsc-*`.
+- **GEO Optimizer** (`.claude/skills/geo-optimizer` + MCP server `geo-optimizer`, from `Auriti-Labs/geo-optimizer-skill`): AI-search visibility audits. The skill lists the constraints that apply to this Shopify theme. Cloud sessions need `www.lbassoriginal.com` allowed in the environment's network policy to audit the live site.
+
+Both run through `uvx`; nothing is added to the theme itself.
