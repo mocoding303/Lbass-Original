@@ -41,4 +41,4 @@ Committed so every Claude Code session on this repo can use them. Each MCP serve
 - **Google Search Console MCP** (`.mcp.json`, server `gsc`, from `AminForou/mcp-gsc`): set `GSC_CREDENTIALS_PATH` to a service-account JSON that has been added as a user on the Search Console property. The OAuth browser flow does not work in cloud sessions. Companion skills: `.claude/skills/gsc-*`.
 - **GEO Optimizer** (`.claude/skills/geo-optimizer` + MCP server `geo-optimizer`, from `Auriti-Labs/geo-optimizer-skill`): AI-search visibility audits. The skill lists the constraints that apply to this Shopify theme. Cloud sessions need `www.lbassoriginal.com` allowed in the environment's network policy to audit the live site.
 
-Both run through `uvx`; nothing is added to the theme itself.
+Both run through `uvx`; nothing is added to the theme itself. Day-to-day usage: `docs/SEO-ROUTINE.md`.
