@@ -26,6 +26,7 @@ End every request with **"and tell me the top 3 actions"**. Add **"don't edit fi
 | Monthly | `run gsc-content-opportunities` | Pages seen in Google but rarely clicked. Rewrite their title and description |
 | Monthly | `run gsc-indexing-audit` | Product pages Google has not indexed. This matters most for one-of-one stock |
 | Monthly | `run gsc-cannibalization-check` | Two pages competing for the same search |
+| Weekly | `run shopify-store-pulse` | Visitor-to-buyer funnel, cancellations, traffic sources, ageing stock. Uses the claude.ai Shopify connector, so it also works in web sessions |
 | Every 2–3 months, or after big site changes | `run a GEO audit on https://www.lbassoriginal.com and give me the top 5 fixes` | Visibility to ChatGPT, Perplexity, Gemini |
 
 Plain questions also work, for example:
