@@ -51,7 +51,7 @@ GraphQL, paginate with `pageInfo` until done. Filter `query: "created_at:>=YYYY-
 query Orders($first: Int!, $after: String, $q: String!) {
   orders(first: $first, after: $after, query: $q, sortKey: CREATED_AT, reverse: true) {
     nodes {
-      name createdAt cancelledAt cancelReason test
+      name createdAt cancelledAt cancelReason test tags
       displayFinancialStatus displayFulfillmentStatus paymentGatewayNames
       shippingAddress { city }
       lineItems(first: 10) { nodes {
@@ -66,7 +66,7 @@ query Orders($first: Int!, $after: String, $q: String!) {
 }
 ```
 
-Exclude `test: true`. Report: orders, completed vs cancelled, cancel rate, `cancelReason`, minutes from order to cancellation, payment method (Cash on Delivery vs other), cities. Flag repeated orders for the same product and any order shipping outside Morocco.
+Exclude `test: true` and any order tagged `test` (the owner places real test orders and tags them). If such orders exist in the window, subtract them from the funnel's checkout counts too and say how many were removed. Report: orders, completed vs cancelled, cancel rate, `cancelReason`, minutes from order to cancellation, payment method (Cash on Delivery vs other), cities. Flag repeated orders for the same product and any order shipping outside Morocco.
 
 ### 4. Ageing stock
 
