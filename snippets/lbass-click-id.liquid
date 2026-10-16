@@ -1,0 +1,72 @@
+{%- comment -%}
+  2026-10-12 GOOGLE ADS CLICK ID → ORDER + WHATSAPP REF (owner request; combined script).
+  1. Saves the ad click ID from the landing URL — gclid, plus gbraid / wbraid, which Google sends instead of gclid
+     on part of the iPhone traffic — for 90 days (Google Ads' click window for offline conversion uploads).
+  2. Copies it onto the cart as an attribute → the order's "Additional details". Sends ONLY when the cart does not
+     already carry it (Liquid knows the cart's attributes), not on every page view. /cart/update.js merges attributes:
+     the drawer's «منين عرفتي Lbass Original؟» and __lbass_vault_* are untouched.
+  3. Adds it to the WhatsApp message on its own line ("Ref: …"; gbraid / wbraid are labelled) so a sale closed on
+     WhatsApp can be matched to the ad click. Covers plain wa.me links (rewritten at tap time) AND the two buttons
+     that open WhatsApp from script — cart drawer «كمّل فالواتساب» (#lbdrWa) and PDP size guide ([data-szguide]) —
+     by wrapping window.open for WhatsApp URLs only. Nothing is installed for visitors without a stored ID.
+  Rendered before </body> in layout/theme.liquid AND templates/index.liquid (the homepage uses layout none).
+  REMOVE: delete the two {% render 'lbass-click-id' %} lines.
+{%- endcomment -%}
+<script>
+(function () {
+  var KEYS = ['gclid', 'gbraid', 'wbraid'], MAX_AGE = 90 * 864e5, now = Date.now();
+  var inCart = {{ cart.attributes | json }} || {};
+  var qs; try { qs = new URLSearchParams(location.search); } catch (e) { return; }
+  var ids = {}, send = {}, n = 0;
+  KEYS.forEach(function (k) {
+    var v = qs.get(k), saved = null;
+    try {
+      if (v) localStorage.setItem('lb_' + k, JSON.stringify({ v: v, t: now }));
+      saved = JSON.parse(localStorage.getItem('lb_' + k) || 'null');
+      if (saved && now - saved.t > MAX_AGE) { localStorage.removeItem('lb_' + k); saved = null; }
+    } catch (e) { saved = v ? { v: v, t: now } : null; }
+    if (!saved || !saved.v) return;
+    ids[k] = saved.v;
+    if (inCart[k] !== saved.v) { send[k] = saved.v; n++; }
+  });
+
+  /* 1) click ID on the cart → order */
+  if (n) {
+    var root = (window.Shopify && Shopify.routes && Shopify.routes.root) || '/';
+    fetch(root + 'cart/update.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ attributes: send })
+    }).catch(function () {});
+  }
+
+  /* 2) click ID in the WhatsApp message */
+  var key = ids.gclid ? 'gclid' : ids.gbraid ? 'gbraid' : ids.wbraid ? 'wbraid' : null;
+  if (!key) return;
+  var REF = 'Ref' + (key === 'gclid' ? '' : ' (' + key + ')') + ': ' + ids[key];
+  var WA = /(^|\/\/)(wa\.me|api\.whatsapp\.com\/send|(www\.)?whatsapp\.com\/send)/i;
+  function withRef(href) {
+    try {
+      var u = new URL(href, location.href);
+      if (!WA.test(u.host + u.pathname) && !WA.test(href)) return href;
+      var t = u.searchParams.get('text') || '';
+      if (t.indexOf(ids[key]) !== -1) return href;
+      /* the floating bubble has no text: greet first so the message isn't just a code */
+      u.searchParams.set('text', (t ? t + '\n\n' : 'سلام Lbass Original 👋\n\n') + REF);
+      return u.toString();
+    } catch (e) { return href; }
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href*="wa.me"], a[href*="whatsapp.com/send"]');
+    if (a) a.href = withRef(a.href);
+  }, true);
+  var open = window.open;
+  if (typeof open === 'function') {
+    window.open = function (url) {
+      var args = Array.prototype.slice.call(arguments);
+      if (typeof url === 'string' && /wa\.me|whatsapp\.com\/send/i.test(url)) args[0] = withRef(url);
+      return open.apply(window, args);
+    };
+  }
+})();
+</script>

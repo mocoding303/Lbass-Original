@@ -273,12 +273,22 @@
   endif
 
   comment
+    2026-10-03: hero_title_ar marks brand heroes whose H1 is written in Arabic
+    script (nike, adidas-originals). .lbeh__brand-name was built for Latin brand
+    names (direction:ltr, line-height ~1.04); those two get lbeh--brand-ar, which
+    switches the H1 to RTL and gives Arabic ascenders/descenders room.
+  endcomment
+  assign hero_title_ar = false
+  comment
     Approved query-first overrides. These are deliberately handle-scoped so
     Admin metafields cannot move the target query out of the H1/first answer.
   endcomment
   case hero_handle
     when 'صبابط', 'sneakers', 'shoes', 'men-shoes', 'women-shoes'
-      assign hero_title = 'صبابط أصلية فالمغرب'
+      comment
+        2026-10-03 (theme "SEO quick wins 20261003"): H1 gains «سبادري» (see layout/theme.liquid). OLD: 'صبابط أصلية فالمغرب'
+      endcomment
+      assign hero_title = 'صبابط وسبادري أصلية فالمغرب'
       assign hero_description = 'صبابط أصلية فالمغرب متوفرة فـ Lbass Original بصور حقيقية، قياس وحالة واضحين، والمنتجات المتوفرة كيبانو أولاً.'
     comment
       ADIDAS SPLIT 2026-08-23. These two handles shared this clause, so both
@@ -288,13 +298,50 @@
       brand-adidas is the broader set (35 impr, pos 9.5, 14.29% CTR).
     endcomment
     when 'adidas-originals'
+      comment
+        2026-10-02 (theme "SEO fixes 20261002", Task 2): the title and meta in
+        layout/theme.liquid now promise «مستعمل أصلي» + the live lowest price +
+        COD لكل المغرب, so the first line under the H1 confirms that promise.
+        Same price rule as theme.liquid: cheapest AVAILABLE piece, never a sold-out
+        one, and no price at all when nothing is in stock. The H1 is unchanged; it
+        keeps the «اديداس اورجينال ملابس» query.
+        Old line: «اديداس اورجينال ملابس متوفرة فـ Lbass Original بصور حقيقية ديال نفس القطعة، حالة واضحة، قياس مبيّن، وتوصيل من مراكش لكل المغرب.»
+      endcomment
       assign hero_title = 'اديداس اورجينال ملابس فالمغرب'
-      assign hero_description = 'اديداس اورجينال ملابس متوفرة فـ Lbass Original بصور حقيقية ديال نفس القطعة، حالة واضحة، قياس مبيّن، وتوصيل من مراكش لكل المغرب.'
+      assign hero_title_ar = true
+      assign ad_hero_min = 0
+      for p in collections['adidas-originals'].products limit: 60
+        unless p.available
+          continue
+        endunless
+        if ad_hero_min == 0 or p.price < ad_hero_min
+          assign ad_hero_min = p.price
+        endif
+      endfor
+      comment
+        2026-10-04 (theme "SEO batch 3 20261004"): the line starts with the exact
+        «اديداس اورجينال ملابس» again, as the pre-2-Oct line did, alongside the
+        title fix in layout/theme.liquid (see the comment there for the GSC numbers).
+        OLD (2026-10-02): 'مستعمل وأصلي من ' + price + ' درهم: كل قطعة مختارة من ألمانيا …'
+      endcomment
+      if ad_hero_min > 0
+        assign ad_hero_price = ad_hero_min | divided_by: 100
+        assign hero_description = 'اديداس اورجينال ملابس مستعملة وأصلية من ' | append: ad_hero_price | append: ' درهم: كل قطعة مختارة من ألمانيا ومفحوصة فمراكش، بصور حقيقية ديالها وحالة وقياس واضحين. الدفع عند الاستلام فكل المغرب.'
+      else
+        assign hero_description = 'اديداس اورجينال ملابس مستعملة وأصلية: كل قطعة مختارة من ألمانيا ومفحوصة فمراكش، بصور حقيقية ديالها وحالة وقياس واضحين. الدفع عند الاستلام فكل المغرب.'
+      endif
     when 'brand-adidas'
       assign hero_title = 'حوايج Adidas Second-Hand فالمغرب'
       assign hero_description = 'كل قطع Adidas second-hand فالمغرب فبلاصة وحدة: بناطيل تراك، صبابط، شورط وجاكيطات، بصور حقيقية ديال نفس القطعة وحالة وقياس واضحين.'
     when 'brand-nike', 'nike'
-      assign hero_title = 'Nike Second-Hand Maroc'
+      comment
+        2026-10-03 (theme "SEO quick wins 20261003"): H1 targets «سبادري نايك». Written all in Arabic script
+        («نايك», not "Nike") because .lbeh__brand-name is direction:ltr: an Arabic
+        phrase with a Latin word in the middle would display its words out of order.
+        OLD: 'Nike Second-Hand Maroc'
+      endcomment
+      assign hero_title = 'سبادري وحوايج نايك أصلية فالمغرب'
+      assign hero_title_ar = true
       assign hero_description = 'Nike second-hand Maroc متوفرة فـ Lbass Original: صبابط، حوايج وإكسسوارات بصور حقيقية، قياس وحالة حسب المعلومات المؤكدة.'
     when 'إكسسوارات', 'accessories', 'bags', 'caps-accessories', 'men-accessories'
       assign hero_title = 'إكسسوارات وشنط Second-Hand فالمغرب'
@@ -384,7 +431,7 @@
 %}
 
 <section
-  class="lbeh{% if hero_is_brand %} lbeh--brand{% if hero_brand_name_length > 10 %} lbeh--brand-long{% endif %}{% endif %}{% if hero_is_empty %} lbeh--empty{% endif %}{% if hero_handle == 'audited-drop-p001-p012' %} lbeh--audited-drop{% endif %} lbeh--{{ section.settings.text_alignment }}"
+  class="lbeh{% if hero_is_brand %} lbeh--brand{% if hero_brand_name_length > 10 %} lbeh--brand-long{% endif %}{% if hero_title_ar %} lbeh--brand-ar{% endif %}{% endif %}{% if hero_is_empty %} lbeh--empty{% endif %}{% if hero_handle == 'audited-drop-p001-p012' %} lbeh--audited-drop{% endif %} lbeh--{{ section.settings.text_alignment }}"
   aria-labelledby="lbehTitle-{{ section.id }}"
   style="--lbeh-height:{{ section.settings.desktop_height }}vh;--lbeh-mobile-height:{{ section.settings.mobile_height }}svh;--lbeh-overlay:{{ overlay_opacity }};--lbeh-color:{{ section.settings.text_color }};--lbeh-focus:{{ section.settings.image_position }};"
 >
@@ -511,6 +558,8 @@
   .lbeh h1[id^="lbehTitle-"]{max-width:900px;margin:0;color:var(--lbeh-color)!important;font-size:clamp(38px,5.2vw,82px)!important;font-weight:900!important;line-height:1.08!important;letter-spacing:0!important;text-wrap:balance}
   .lbeh--brand h1[id^="lbehTitle-"]{max-width:15ch;font-size:clamp(44px,5vw,76px)!important;line-height:1.03!important;overflow-wrap:anywhere}
   .lbeh--brand-long h1[id^="lbehTitle-"]{font-size:clamp(39px,4.25vw,64px)!important}
+  .lbeh--brand-ar h1[id^="lbehTitle-"],.lbeh--brand-ar .lbeh__brand-name{line-height:1.24!important}
+  .lbeh--brand-ar .lbeh__brand-name{direction:rtl}
   .lbeh__brand-name,.lbeh__brand-qualifier{display:block}
   .lbeh__brand-name{direction:ltr;unicode-bidi:isolate;line-height:1.04}
   .lbeh__brand-qualifier{margin-top:.2em;font-size:.62em;line-height:1.3}
@@ -545,6 +594,7 @@
     .lbeh--brand .lbeh__copy{width:100%;max-width:100%;text-align:right;direction:rtl}
     .lbeh--brand h1[id^="lbehTitle-"]{max-width:100%;font-size:clamp(35px,10vw,48px)!important;line-height:1.06!important;overflow-wrap:normal}
     .lbeh--brand-long h1[id^="lbehTitle-"]{font-size:clamp(32px,8.8vw,43px)!important}
+    .lbeh--brand-ar h1[id^="lbehTitle-"],.lbeh--brand-ar .lbeh__brand-name{line-height:1.24!important}
     .lbeh__brand-qualifier{font-size:.68em;line-height:1.35}
     .lbeh--audited-drop .lbeh__overlay{background:linear-gradient(180deg,rgba(5,5,6,.1) 12%,rgba(5,5,6,.88) 100%)}
   }

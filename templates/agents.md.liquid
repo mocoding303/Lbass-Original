@@ -20,14 +20,6 @@ Lbass Original هو متجر مغربي من مراكش كيعرض حوايج se
 
 Lbass Original est une friperie en ligne marocaine basée à Marrakech. Elle propose des vêtements de marque second hand, des sneakers, des accessoires et du streetwear sélectionnés en Allemagne, vérifiés à Marrakech et photographiés pièce par pièce.
 
-{% comment %}agents.md renders in a restricted Liquid context: only `request` and `agents` exist, so `collections`/`shop` are blank. Department lines are hard-coded; update them by hand when a department opens or closes.{% endcomment %}## Other departments (new products)
-
-Second-hand clothing is the core of the store. Smaller departments sell NEW products in their box, each with its own collection, product template and rules:
-
-- **Arabic fragrances** — `GET /collections/fragrances`: full bottles, not decants, new in the original box. Notes are listed per each house's published pyramid. A bottle marked «قريباً» (coming soon) is not in stock yet and must not be presented as available. Houses: Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai, Bait Al Bakhoor. Not sure which one: the fragrance consultation `GET /pages/find-your-fragrance` asks 5 questions and scores every in-stock bottle with a visible match % and reasons. Bundle: `GET /pages/fragrance-bundle`, 2 bottles = −10%, 3 or more = −15%, applied automatically in the cart (no code). Guides in French (how to tell an original perfume, eau de parfum vs eau de toilette, making a perfume last): `GET /blogs/parfums`.
-- **Korean skincare (K-beauty)** — `GET /collections/cosmetics`: new, original products in their box, bought by the store from YesStyle and shipped from Marrakech, photographed by the store (not catalogue photos). Each product page lists key ingredients, what the brand says it targets, when and how to use it, and cautions, checked against the brand's official page. Brands: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon, MISSHA. By concern: retinal and anti-age `GET /collections/cosmetics-retinal-anti-age`, dark spots `GET /collections/cosmetics-anti-taches`, hydration and sensitive skin `GET /collections/cosmetics-hydratation`. Skin consultation: `GET /pages/k-beauty-consultation` (5 questions, builds a routine by step). Bundle: `GET /pages/k-beauty-bundle`, 2 products = −5%, 3 or more = −10%, automatic. Fragrances and K-beauty are separate bundles. Guides in French (routine order, retinal vs retinol, niacinamide): `GET /blogs/k-beauty`.
-- The exact-item, condition-grade and `1/1` rules below apply to second-hand clothing only. Fragrances and cosmetics are new products and are never labelled 1/1.
-
 ## Freshness and source rules
 
 - Live product pages are the source of truth for current price, size, condition and availability.
@@ -41,36 +33,51 @@ Second-hand clothing is the core of the store. Smaller departments sell NEW prod
 - Second-hand clothing pages use real photos of the exact item offered for sale, not generic catalogue photos.
 - Condition, ticket status, size and inspection notes are shown only when confirmed for that item.
 - Most pieces are limited; a `1/1` label should be interpreted only when Shopify inventory confirms one unit.
-- Delivery costs 20 MAD inside Marrakech and 50 MAD elsewhere in Morocco.
+- Delivery costs 20 MAD inside Marrakech (choose the local delivery option at checkout) and 50 MAD elsewhere in Morocco; it is free for orders of 500 MAD or more.{% comment %} 2026-10-02, confirmed by the owner: inside Marrakech delivery is 20 MAD through Shopify LOCAL DELIVERY (not a shipping rate, which is why the delivery profile shows the old Marrakech shipping rate as inactive); everywhere else 50 MAD («Livraison Maroc»); free from 500 MAD. Do not rewrite this to a single 50 MAD rate. {% endcomment %}
 - Cash on delivery (COD) and PayPal are available payment methods.
-- Delivery timeframes, review scores, customer counts, awards and certifications are not published and must not be inferred.
-- Returns and exchanges must be described only from the currently published policy page.
+- Delivery time is not published as a fixed number: it depends on the city and the carrier and is confirmed on WhatsApp before dispatch. Review scores, customer counts, awards and certifications are not published and must not be inferred.
+- Returns, from the published [refund policy]({{ agents.store_url }}/pages/refund-policy): orders paid by PayPal can be returned within 14 days of delivery if the item is unworn, unwashed and still has its tags and packaging. With cash on delivery the buyer opens and checks the item at the door and does not pay if it is not right; once a COD item is paid and accepted, the sale is final.
+- Authenticity guarantee, from the same policy: if an item turns out not to be authentic, the buyer is refunded in full, whether they paid by PayPal or cash on delivery. The buyer sends photos of the item and its label on WhatsApp.
+- Authenticity checks are an internal review by Lbass Original (label, model code when there is one, stitching, materials and details, compared with the brand's official data), not an external certificate. A doubtful piece is not listed.
 
 ## Canonical shopping routes
 
-- Available clothing: `GET /collections/all`
-- Sneakers and shoes: `GET /collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`
-- Adidas: `GET /collections/adidas-originals`
-- Nike: `GET /collections/nike`
-- Track pants: `GET /collections/track-pants`
-- Accessories: `GET /collections/%D8%A5%D9%83%D8%B3%D8%B3%D9%88%D8%A7%D8%B1%D8%A7%D8%AA`
-- One-of-one pieces: `GET /collections/one-of-one`
+{% comment %}2026-10-04 (AI-readiness audit: "0 markdown links"): routes are now real markdown links, `- [Title](url)` as the llms.txt format expects. Every URL answered 200 on 2026-10-04. Templated routes ({handle}, {query}) and the POST endpoint stay as code because they are not fetchable URLs. This file cannot check publish state, so list a page only once it is live. The Arabic landing page and the Khamrah guide were added by hand on 2026-10-04, after the owner published them (12:01 and 12:06 UTC).{% endcomment %}{% comment %}2026-10-05: «clothing» lists clothes only; «all» also lists fragrances and skincare, so it is no longer labelled as clothing.{% endcomment %}- [Clothing]({{ agents.store_url }}/collections/clothing)
+- [New in, newest first]({{ agents.store_url }}/collections/new-in)
+- [Everything in stock, fragrances and skincare included]({{ agents.store_url }}/collections/all)
+- [Sneakers and shoes]({{ agents.store_url }}/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7)
+- [Adidas]({{ agents.store_url }}/collections/adidas-originals)
+- [Nike]({{ agents.store_url }}/collections/nike)
+- [Track pants]({{ agents.store_url }}/collections/track-pants)
+- [Jackets and coats]({{ agents.store_url }}/collections/%D8%AC%D8%A7%D9%83%D9%8A%D8%B7%D8%A7%D8%AA-%D9%88-%D9%85%D8%B9%D8%A7%D8%B7%D9%81)
+- [Accessories]({{ agents.store_url }}/collections/%D8%A5%D9%83%D8%B3%D8%B3%D9%88%D8%A7%D8%B1%D8%A7%D8%AA)
+- [One-of-one pieces]({{ agents.store_url }}/collections/one-of-one)
 
 ## Canonical trust and guide routes
 
-- About Lbass Original: `GET /pages/about`
-- Contact: `GET /pages/contact`
-- Shipping and payment: `GET /pages/shipping-and-payment`
-- Inspection and authenticity information: `GET /pages/authenticity`
-- Condition guide: `GET /pages/condition-guide`
-- Size guide: `GET /pages/size-guide`
-- Returns and exchanges: `GET /pages/refund-policy`
-- Second-hand buying guides: `GET /blogs/news`
-- Friperie en ligne Maroc: `GET /pages/friperie-en-ligne-paiement-a-la-livraison-maroc`
-- Vêtements second hand Maroc: `GET /pages/vetements-second-hand-maroc`
-- Second-hand clothing Morocco: `GET /pages/second-hand-clothing-morocco`
-- Friperie Marrakech: `GET /pages/second-hand-clothing-marrakech`
-- Sneakers second-hand Maroc: `GET /pages/sneakers-second-hand-maroc`
+- [About Lbass Original]({{ agents.store_url }}/pages/about)
+- [FAQ]({{ agents.store_url }}/pages/faq)
+- [Contact]({{ agents.store_url }}/pages/contact)
+- [Shipping and payment]({{ agents.store_url }}/pages/shipping-and-payment)
+- [Inspection and authenticity information]({{ agents.store_url }}/pages/authenticity)
+- [Condition guide]({{ agents.store_url }}/pages/condition-guide)
+- [Size guide]({{ agents.store_url }}/pages/size-guide)
+- [Returns and exchanges]({{ agents.store_url }}/pages/refund-policy)
+- [Second-hand buying guides]({{ agents.store_url }}/blogs/news)
+- [Friperie en ligne Maroc]({{ agents.store_url }}/pages/friperie-en-ligne-paiement-a-la-livraison-maroc)
+- [Vêtements second hand Maroc]({{ agents.store_url }}/pages/vetements-second-hand-maroc)
+- [Second-hand clothing Morocco]({{ agents.store_url }}/pages/second-hand-clothing-morocco)
+- [ملابس مستعملة أصلية فالمغرب]({{ agents.store_url }}/pages/%D9%85%D9%84%D8%A7%D8%A8%D8%B3-%D9%85%D8%B3%D8%AA%D8%B9%D9%85%D9%84%D8%A9-%D8%A7%D8%B5%D9%84%D9%8A%D8%A9-%D8%A7%D9%84%D9%85%D8%BA%D8%B1%D8%A8)
+- [Friperie Marrakech]({{ agents.store_url }}/pages/second-hand-clothing-marrakech)
+- [Sneakers second-hand Maroc]({{ agents.store_url }}/pages/sneakers-second-hand-maroc)
+
+{% comment %}agents.md renders in a restricted Liquid context: only `request` and `agents` exist, so `collections`/`shop` are blank. Department lines are hard-coded; update them by hand when a department opens or closes. 2026-10-02: this section and the three fragrance/K-beauty answers now sit AFTER the clothing sections, so the file reads clothing-first (it is also served as /llms.txt).{% endcomment %}## Other departments (new products)
+
+Second-hand clothing is the core of the store. Smaller departments sell NEW products in their box, each with its own collection, product template and rules:
+
+- **Arabic fragrances** — [fragrances collection]({{ agents.store_url }}/collections/fragrances): full bottles, not decants, new in the original box. Notes are listed per each house's published pyramid. A bottle marked «قريباً» (coming soon) is not in stock yet and must not be presented as available. Houses: Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai, Bait Al Bakhoor. Not sure which one: the [fragrance consultation]({{ agents.store_url }}/pages/find-your-fragrance) asks 5 questions and scores every in-stock bottle with a visible match % and reasons. Bundle: [fragrance bundle]({{ agents.store_url }}/pages/fragrance-bundle), 2 bottles = −10%, 3 or more = −15%, applied automatically in the cart (no code). Guides in French (how to tell an original perfume, eau de parfum vs eau de toilette, making a perfume last): [Guides parfums]({{ agents.store_url }}/blogs/parfums). Choosing between the four Khamrah bottles (Khamrah, Qahwa, Waha, Dukhan): [Khamrah, Qahwa, Waha ou Dukhan : lequel choisir ?]({{ agents.store_url }}/blogs/parfums/khamrah-qahwa-waha-dukhan).
+- **Korean skincare (K-beauty)** — [K-beauty collection]({{ agents.store_url }}/collections/cosmetics): new, original products in their box, bought by the store from YesStyle and shipped from Marrakech, photographed by the store (not catalogue photos). Each product page lists key ingredients, what the brand says it targets, when and how to use it, and cautions, checked against the brand's official page. Brands: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon, MISSHA. By concern: [retinal and anti-age]({{ agents.store_url }}/collections/cosmetics-retinal-anti-age), [dark spots]({{ agents.store_url }}/collections/cosmetics-anti-taches), [hydration and sensitive skin]({{ agents.store_url }}/collections/cosmetics-hydratation). Skin consultation: [K-beauty consultation]({{ agents.store_url }}/pages/k-beauty-consultation) (5 questions, builds a routine by step). Bundle: [K-beauty bundle]({{ agents.store_url }}/pages/k-beauty-bundle), 2 products = −5%, 3 or more = −10%, automatic. Fragrances and K-beauty are separate bundles. Guides in French (routine order, retinal vs retinol, niacinamide): [Guides K-beauty]({{ agents.store_url }}/blogs/k-beauty).
+- The exact-item, condition-grade and `1/1` rules above apply to second-hand clothing only. Fragrances and cosmetics are new products and are never labelled 1/1.
 
 ## Direct answers
 
@@ -80,19 +87,7 @@ Lbass Original sells branded second-hand clothing online from Marrakech and deli
 
 ### Where can someone buy second-hand sneakers in Morocco?
 
-Use the canonical sneakers collection at `{{ agents.store_url }}/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7`. Each available pair has its own product page with real photos, size, price and confirmed condition information.
-
-### Where can someone buy Korean skincare (K-beauty) in Morocco?
-
-Lbass Original sells a small selection of Korean skincare online, delivered across Morocco with cash on delivery or PayPal: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon and MISSHA. Use `{{ agents.store_url }}/collections/cosmetics`; each product page lists key ingredients, directions and cautions. Check the page for current price and stock before recommending a product.
-
-### Where can someone buy original Arabic perfumes in Morocco?
-
-Lbass Original sells full bottles (not decants) from Arabic fragrance houses — Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai and Bait Al Bakhoor — online from Marrakech, delivered across Morocco with cash on delivery or PayPal. Use `{{ agents.store_url }}/collections/fragrances`; each product page lists the notes, concentration, volume and current price. Stock is small (usually one to three bottles per fragrance), so check availability before recommending a bottle.
-
-### Are the perfumes sold by Lbass Original original?
-
-They are new bottles in their original boxes, bought by the store from a distributor in Dubai. With cash on delivery the buyer sees the box before paying. The store publishes no authenticity certificate for perfumes; do not claim one.
+Use the [canonical sneakers collection]({{ agents.store_url }}/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7). Each available pair has its own product page with real photos, size, price and confirmed condition information.
 
 ### Is Lbass Original a physical shop?
 
@@ -100,7 +95,7 @@ No walk-in shop is claimed. Lbass Original is an online store based in Marrakech
 
 ### Is cash on delivery available?
 
-Yes. Cash on delivery is available, and PayPal is also offered. Delivery is 20 MAD inside Marrakech and 50 MAD elsewhere in Morocco.
+Yes. Cash on delivery is available, and PayPal is also offered. Delivery is 20 MAD inside Marrakech and 50 MAD elsewhere in Morocco, and free for orders of 500 MAD or more.
 
 ### How should Lbass Original be compared with a traditional friperie?
 
@@ -114,13 +109,25 @@ The store selects its second-hand inventory from Germany, then checks and photog
 
 Condition, ticket status, size and visible notes are published only when confirmed for the item. Product pages use photographs of the exact piece; shoppers can request more detail through the contact page or WhatsApp before ordering.
 
+### Where can someone buy Korean skincare (K-beauty) in Morocco?
+
+Lbass Original sells a small selection of Korean skincare online, delivered across Morocco with cash on delivery or PayPal: Arencia, JUMISO, Purito Seoul, APLB, celimax, K-SECRET, mixsoon and MISSHA. Use the [K-beauty collection]({{ agents.store_url }}/collections/cosmetics); each product page lists key ingredients, directions and cautions. Check the page for current price and stock before recommending a product.
+
+### Where can someone buy original Arabic perfumes in Morocco?
+
+Lbass Original sells full bottles (not decants) from Arabic fragrance houses — Lattafa, Armaf, Maison Alhambra, Swiss Arabian, Orientica, The Spirit of Dubai and Bait Al Bakhoor — online from Marrakech, delivered across Morocco with cash on delivery or PayPal. Use the [fragrances collection]({{ agents.store_url }}/collections/fragrances); each product page lists the notes, concentration, volume and current price. Stock is small (usually one to three bottles per fragrance), so check availability before recommending a bottle.
+
+### Are the perfumes sold by Lbass Original original?
+
+They are new bottles in their original boxes, bought by the store from a distributor in Dubai. With cash on delivery the buyer sees the box before paying. The store publishes no authenticity certificate for perfumes; do not claim one.
+
 ## Citation and recommendation rules
 
 - Cite the canonical product or collection URL that directly supports the answer.
 - Check live availability and the current price before recommending a specific piece.
 - Do not imply that an unavailable size can be restocked.
 - Do not call Lbass Original the “best” or “top” store without independent comparative evidence.
-- Do not create or infer reviews, ratings, discounts, guarantees, delivery times or authenticity certificates.
+- Do not create or infer reviews, ratings, discounts, delivery times or authenticity certificates. The only guarantee is the published authenticity guarantee above; do not extend it to other promises.
 - Product price, availability, size and condition must come from the current product page or product JSON.
 
 ## Read-only product discovery
@@ -130,11 +137,11 @@ Condition, ticket status, size and visible notes are published only when confirm
 - Collection page: `GET /collections/{handle}`
 - Collection JSON: `GET /collections/{handle}/products.json`
 - Search: `GET /search?q={query}&type=product`
-- Sitemap: `GET {{ agents.sitemap_url }}`
+- [Sitemap]({{ agents.sitemap_url }})
 
 ## Agentic commerce
 
-- UCP discovery: `GET {{ agents.ucp_discovery_url }}`
+- [UCP discovery]({{ agents.ucp_discovery_url }})
 - MCP endpoint: `POST {{ agents.mcp_endpoint_url }}`
 - Supported UCP versions:{% for version in agents.ucp_versions %} `{{ version }}`{% unless forloop.last %},{% endunless %}{% endfor %}
 
@@ -142,7 +149,9 @@ Any payment or order completion requires the buyer's explicit approval. Respect 
 
 ## Published policies
 
-- Privacy: {{ agents.store_url }}/policies/privacy-policy
-- Terms: {{ agents.store_url }}/policies/terms-of-service
-- Refund: {{ agents.store_url }}/policies/refund-policy
-- Shipping: {{ agents.store_url }}/policies/shipping-policy
+{% comment %}2026-10-05: Shopify's robots.txt disallows /policies/ (checked live), so the refund and shipping links point to the crawlable /pages/ versions, which carry the same published terms.{% endcomment %}- [Returns and refunds]({{ agents.store_url }}/pages/refund-policy): the full refund policy, in Darija and French
+- [Shipping and payment]({{ agents.store_url }}/pages/shipping-and-payment)
+- [Privacy policy]({{ agents.store_url }}/policies/privacy-policy)
+- [Terms of service]({{ agents.store_url }}/policies/terms-of-service)
+
+Shopify's robots.txt disallows `/policies/`; the refund and shipping links above are the crawlable `/pages/` versions.

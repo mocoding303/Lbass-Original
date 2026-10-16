@@ -264,6 +264,26 @@
     </div>
   </section>
 
+  {%- if page.handle == 'sneakers-second-hand-maroc' -%}
+  {%- comment -%}
+    2026-10-05: how sneakers are checked. Every line restates a check the store already
+    publishes elsewhere — the Nike page FAQ (label, model code, stitching … compared with
+    the brand's official data; a doubtful piece is not listed), the authenticity FAQ
+    (internal review, no external certificate; close-ups of label and sole on request),
+    this page's own FAQ (sole photos on WhatsApp) and the refund policy (authenticity
+    guarantee). No new check is claimed.
+  {%- endcomment -%}
+  <section id="checks" style="max-width:860px;margin:0 0 24px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--ink2);scroll-margin-top:100px" aria-labelledby="ps-checks-h">
+    <h2 id="ps-checks-h" style="margin:0 0 8px;font-size:clamp(18px,2.2vw,22px)">كيفاش كنشيّكو الصبابط قبل ما نعرضوهم؟</h2>
+    <ul style="margin:0 0 10px;padding-inline-start:20px;color:var(--txt2);font-size:13.5px;line-height:1.9">
+      <li><strong style="color:var(--cream)">الإتيكيت:</strong> القياس وكود الموديل إلا كان مكتوب، وكنقارنوه مع المعطيات الرسمية ديال البراند.</li>
+      <li><strong style="color:var(--cream)">الصنعة:</strong> الخياطة، الجلد ولا الثوب، اللوغوات والتفاصيل.</li>
+      <li><strong style="color:var(--cream)">النعل:</strong> كنراجعو النعل والسيميل وكنكتبو أي أثر ديال الاستعمال فالحالة.</li>
+    </ul>
+    <p style="color:var(--txt2);font-size:13.5px;margin:0;line-height:1.8">الجوج اللي فيه شك ما كيتعرضش. هاد الفحص داخلي ديال Lbass Original، ماشي شهادة خارجية. بغيتي صور قريبة للإتيكيت، النعل ولا شي تفصيل؟ صيفط رابط المنتج فالواتساب قبل ما تطلب. وإلا بان أن جوج ماشي أصلي، فلوسك راجعين كاملين: <a href="/pages/refund-policy" style="color:var(--gold2);text-decoration:underline">سياسة الإرجاع</a>.</p>
+  </section>
+  {%- endif -%}
+
   {%- comment -%} Size + condition + COD explainer {%- endcomment -%}
   <section id="buying-help" style="max-width:860px;margin:0 0 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;scroll-margin-top:100px" aria-label="القياس والحالة والطلب">
     <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--ink2)">
@@ -285,7 +305,7 @@
     {% case page.handle %}
     {% when 'sneakers-second-hand-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش نعرف قياس السنيكر الصحيح؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">قيس النعل الداخلي (insole) ديال صباط عندك مريح بالسنتيمتر وقارنو مع القياس المكتوب فصفحة المنتج — أرقام EU/US كيختلفو بين البراندات، السنتيمتر هو الحقيقة.</p></details>
-      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش السنيكرز أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض سنيكرز branded second-hand أصلية. فصفحة كل منتج كنبيّنو صور الجوج نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مؤكدة.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش السنيكرز أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض سنيكرز branded second-hand أصلية. قبل العرض كنراجعو الإتيكيت وكود الموديل إلا كان مكتوب، الخياطة، الخامة واللوغوات، والجوج اللي فيه شك ما كيتعرضش. هاد الفحص داخلي، ماشي شهادة خارجية، وإلا بان أن جوج ماشي أصلي فلوسك راجعين كاملين.</p></details>
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش نقدر نشوف صور إضافية للنعل والتفاصيل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">نعم — صيفط رابط المنتج فالواتساب وكنصورو ليك النعل، الخياطة، أو أي زاوية بغيتيها قبل ما تطلب.</p></details>
     {% when 'nike-second-hand-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">كيفاش كتشيّكو واش قطعة Nike أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية ديال Nike. أي قطعة فيها شك — ما كتتعرضش.</p></details>
@@ -293,8 +313,11 @@
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش الثمن ديال Nike second-hand يستاهل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها.</p></details>
     {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش خاصني نخلص شي حاجة قبل التوصيل؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح.</p></details>
-      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شحال التوصيل وشحال المدة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">20 درهم داخل مراكش و50 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شحال التوصيل وشحال المدة؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">20 درهم داخل مراكش و50 درهم لباقي المدن المغربية، ومجاني من 500 درهم. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال.</p></details>
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو الفرق بينكم وبين الفريب العادية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء.</p></details>
+      {%- comment -%}2026-10-03 (SEO plan, batch 2): two French questions — the searches for this page are French («friperie maroc en ligne», «friperie en ligne»).{%- endcomment -%}
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">C'est quoi une friperie en ligne ?</summary><p lang="fr" dir="ltr" style="color:var(--txt2);padding:0 0 13px;margin:0;text-align:left">Une boutique en ligne de vêtements d'occasion. Chez Lbass Original, chaque pièce de marque est vérifiée et photographiée à Marrakech : les photos montrent la pièce exacte et l'état est décrit avant la commande.</p></details>
+      <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">Comment payer à la livraison ?</summary><p lang="fr" dir="ltr" style="color:var(--txt2);padding:0 0 13px;margin:0;text-align:left">Commandez sur le site, nous confirmons par WhatsApp, puis vous payez à la réception, après avoir vu la pièce. Livraison 20 MAD à Marrakech, 50 MAD ailleurs au Maroc, gratuite dès 500 MAD.</p></details>
     {% when 'adidas-second-hand-maroc' %}
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">واش قطع Adidas أصلية؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج.</p></details>
       <details style="border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.028);padding:0 14px"><summary style="cursor:pointer;padding:12px 0;font-weight:900;color:var(--cream)">شنو الفرق بين Adidas و Adidas Originals؟</summary><p style="color:var(--txt2);padding:0 0 13px;margin:0">Adidas Originals هي الخط الكلاسيكي/lifestyle (Trefoil, Stan Smith)، وAdidas العادي أكثر رياضي. عندنا الجوج، وكل قطعة مكتوب فيها البراند بالضبط.</p></details>
@@ -384,7 +407,7 @@
 {% case page.handle %}
 {% when 'sneakers-second-hand-maroc' %}
 {"@type":"Question","name":"كيفاش نعرف قياس السنيكر الصحيح؟","acceptedAnswer":{"@type":"Answer","text":"قيس النعل الداخلي (insole) ديال صباط عندك مريح بالسنتيمتر وقارنو مع القياس المكتوب فصفحة المنتج — أرقام EU/US كيختلفو بين البراندات، السنتيمتر هو الحقيقة."}},
-{"@type":"Question","name":"واش السنيكرز أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض سنيكرز branded second-hand أصلية. فصفحة كل منتج كنبيّنو صور الجوج نفسها، والتّيكيت والحالة وملاحظات الفحص غير ملي تكون مؤكدة."}},
+{"@type":"Question","name":"واش السنيكرز أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض سنيكرز branded second-hand أصلية. قبل العرض كنراجعو الإتيكيت وكود الموديل إلا كان مكتوب، الخياطة، الخامة واللوغوات، والجوج اللي فيه شك ما كيتعرضش. هاد الفحص داخلي، ماشي شهادة خارجية، وإلا بان أن جوج ماشي أصلي فلوسك راجعين كاملين."}},
 {"@type":"Question","name":"واش نقدر نشوف صور إضافية للنعل والتفاصيل؟","acceptedAnswer":{"@type":"Answer","text":"نعم — صيفط رابط المنتج فالواتساب وكنصورو ليك النعل، الخياطة، أو أي زاوية بغيتيها قبل ما تطلب."}}
 {% when 'nike-second-hand-maroc' %}
 {"@type":"Question","name":"كيفاش كتشيّكو واش قطعة Nike أصلية؟","acceptedAnswer":{"@type":"Answer","text":"كنقارنو الإتيكيت، كود النموذج، الخياطة الداخلية، اللصاقات، بلاد الصنع والكولور مع المعطيات الرسمية ديال Nike. أي قطعة فيها شك — ما كتتعرضش."}},
@@ -392,8 +415,10 @@
 {"@type":"Question","name":"واش الثمن ديال Nike second-hand يستاهل؟","acceptedAnswer":{"@type":"Answer","text":"كتاخد قطعة أصلية بثمن أقل بزاف من الجديد، والحالة مكتوبة بلا تجميل باش تعرف بالضبط شنو غادي توصلك — وكتخلص غير ملي تشوفها."}}
 {% when 'friperie-en-ligne-paiement-a-la-livraison-maroc' %}
 {"@type":"Question","name":"واش خاصني نخلص شي حاجة قبل التوصيل؟","acceptedAnswer":{"@type":"Answer","text":"لا. بالدفع عند الاستلام (COD) ما كتخلص حتى درهم حتى توصلك القطعة وتشوفها. وإلا بغيتي تخلص أونلاين، PayPal متاح."}},
-{"@type":"Question","name":"شحال التوصيل وشحال المدة؟","acceptedAnswer":{"@type":"Answer","text":"20 درهم داخل مراكش و50 درهم لباقي المدن المغربية. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال."}},
-{"@type":"Question","name":"شنو الفرق بينكم وبين الفريب العادية؟","acceptedAnswer":{"@type":"Answer","text":"كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء."}}
+{"@type":"Question","name":"شحال التوصيل وشحال المدة؟","acceptedAnswer":{"@type":"Answer","text":"20 درهم داخل مراكش و50 درهم لباقي المدن المغربية، ومجاني من 500 درهم. المدة حسب المدينة وشركة التوصيل، وكنأكدو معاك فالواتساب قبل الإرسال."}},
+{"@type":"Question","name":"شنو الفرق بينكم وبين الفريب العادية؟","acceptedAnswer":{"@type":"Answer","text":"كل منتج عندو صور القطعة نفسها، والحالة والتّيكيت والقياسات كيبانو حسب المعلومات المؤكدة قبل الشراء."}},
+{"@type":"Question","name":"C'est quoi une friperie en ligne ?","acceptedAnswer":{"@type":"Answer","text":"Une boutique en ligne de vêtements d'occasion. Chez Lbass Original, chaque pièce de marque est vérifiée et photographiée à Marrakech : les photos montrent la pièce exacte et l'état est décrit avant la commande."}},
+{"@type":"Question","name":"Comment payer à la livraison ?","acceptedAnswer":{"@type":"Answer","text":"Commandez sur le site, nous confirmons par WhatsApp, puis vous payez à la réception, après avoir vu la pièce. Livraison 20 MAD à Marrakech, 50 MAD ailleurs au Maroc, gratuite dès 500 MAD."}}
 {% when 'adidas-second-hand-maroc' %}
 {"@type":"Question","name":"واش قطع Adidas أصلية؟","acceptedAnswer":{"@type":"Answer","text":"Lbass Original كيعرض قطع Adidas second-hand أصلية. التّيكيت والحالة وملاحظات الفحص كيبانو غير ملي يكونو مؤكدين فصفحة المنتج."}},
 {"@type":"Question","name":"شنو الفرق بين Adidas و Adidas Originals؟","acceptedAnswer":{"@type":"Answer","text":"Adidas Originals هي الخط الكلاسيكي/lifestyle (Trefoil, Stan Smith)، وAdidas العادي أكثر رياضي. عندنا الجوج، وكل قطعة مكتوب فيها البراند بالضبط."}},

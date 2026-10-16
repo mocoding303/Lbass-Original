@@ -56,7 +56,12 @@
       el.setAttribute('data-lbh-done','1');
       el.setAttribute('aria-label', text);
 
-      if(reduce){ el.classList.add('lbh-shown'); return; }
+      /* 2026-10-11 SPEED: no word-by-word reveal. The headline is server-rendered text and is
+         now simply left visible from the first paint. The reveal emptied it at DOMContentLoaded
+         (≈7 s on a phone on slow 4G) and rebuilt it word by word over ~2 s, which made the hero
+         the LAST thing to appear (LCP 7.2 s) and made it flash. To restore the animation, put
+         back: if(reduce){ el.classList.add('lbh-shown'); return; } */
+      el.classList.add('lbh-shown'); return;
 
       el.textContent = '';
       text.split(' ').forEach(function(w, i){

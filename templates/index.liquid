@@ -7,6 +7,14 @@
 <meta name="description" content="Lbass Original متجر second-hand أونلاين من مراكش: حوايج براند، صبابط وstreetwear من ألمانيا، بصور حقيقية وحالة واضحة، COD أو PayPal.">
 <title>Lbass Original | Friperie en ligne Maroc | Second-Hand من مراكش</title>
 <link rel="canonical" href="https://www.lbassoriginal.com/">
+{%- comment -%}
+  2026-10-04 (AI-readiness audit: "no feed linked in the page head"). Feed
+  autodiscovery. Both URLs answered 200 application/atom+xml on 2026-10-04;
+  new-in lists the newest pieces first. layout/theme.liquid carries the
+  same two lines (this template uses layout none).
+{%- endcomment -%}
+<link rel="alternate" type="application/atom+xml" title="Lbass Original — جديد القطع" href="{{ shop.url }}/collections/new-in.atom">
+<link rel="alternate" type="application/atom+xml" title="Lbass Original — أدلة second-hand" href="{{ shop.url }}/blogs/news.atom">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="theme-color" content="#0A0A0B">
 <meta name="format-detection" content="telephone=no">
@@ -33,856 +41,25 @@
 
 {% render 'lbass-entity-schema' %}
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
+{%- comment -%} 2026-10-11 SPEED 3: Google Fonts CSS is inlined (snippets/lbass-font-tajawal + lbass-stamp) instead of 2 render-blocking requests to fonts.googleapis.com; its preconnect went with it. {%- endcomment -%}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<script>
-/* Enable reveal-hiding only when motion is allowed. A watchdog clears it if
-   animations never complete (e.g. rAF throttling), so content can't get stuck hidden. */
-(function(){
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  document.documentElement.className = 'anim';
-})();
-</script>
+{% render 'lbass-font-tajawal' %}
+{%- comment -%} 2026-10-11 SPEED 2: see Lbass/fixes/2026-10-11-speed-pass-2.md {%- endcomment -%}
+<link rel="preload" href="https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeaijdA5E64BdCIg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="https://fonts.gstatic.com/s/alexandria/v6/UMBXrPdDqW66y0Y2usFeai3dA5E64Bc.woff2" as="font" type="font/woff2" crossorigin>
+{%- comment -%} 2026-10-11 SPEED: see Lbass/fixes/2026-10-11-fast-homepage.md {%- endcomment -%}
 
-<style>
-/* ════════════════ TOKENS ════════════════ */
-:root{
-  --ink:#0A0A0B; --ink2:#121214; --ink3:#1A1A1E; --line:#26262B; --line2:#34343B;
-  --gold:#C89A0E; --gold2:#E0B52A; --gold-dim:rgba(200,154,14,.14); --gold-br:rgba(200,154,14,.35);
-  --sand:#EDE4D3; --sand2:#E2D5BC; --clay:#B4502A; --clay2:#D4683E;
-  --green:#1FA855; --green2:#27C063;
-  --txt:#D8D4CC; --txt2:#97928A; --txt3:#5E5A55; --cream:#F4EFE6;
-  --ar:'Tajawal',sans-serif; --lt:'Space Grotesk',sans-serif;
-  --r-sm:10px; --r-md:16px; --r-lg:24px;
-  --tr:.28s cubic-bezier(.4,0,.2,1);
-  --pad:clamp(18px,5vw,64px);
-  --max:1500px;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-/* `clip` prevents horizontal bleed without creating a scroll container that breaks the sticky hero. */
-html{scroll-behavior:smooth;overflow-x:clip}
-body{background:var(--ink);color:var(--txt);font-family:var(--ar);font-size:16px;line-height:1.7;overflow-x:clip;max-width:100%}
-img{max-width:100%;display:block}
-a{color:inherit;text-decoration:none}
-button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;font-size:inherit}
-input,select{font-family:inherit}
-::selection{background:var(--gold);color:var(--ink)}
-.ltr{direction:ltr;unicode-bidi:embed}
-.num{font-family:var(--lt);direction:ltr;unicode-bidi:embed}
-:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
-
-/* ════════════════ STAR MOTIF ════════════════ */
-.star8{display:inline-block;width:1em;aspect-ratio:1;vertical-align:-0.12em}
-.star8 svg{width:100%;height:100%;display:block}
-.hero-star-bg{aspect-ratio:1}
-.pviz-star{aspect-ratio:1}
-.nl-star{aspect-ratio:1}
-
-/* ════════════════ ANNOUNCE BAR ════════════════ */
-.announce{background:var(--gold);color:var(--ink);font-weight:800;font-size:13px;overflow:hidden;white-space:nowrap;position:relative;z-index:60}
-.announce-track{display:inline-flex;gap:0;padding:9px 0;animation:annMarquee 42s linear infinite;will-change:transform}
-.announce span{display:inline-flex;align-items:center;gap:10px;padding:0 28px}
-.announce b{font-weight:900}
-@keyframes annMarquee{to{transform:translateX(50%)}}
-
-/* ════════════════ NAV ════════════════ */
-.lb-bar{position:sticky;top:0;z-index:56;background:rgba(200,154,14,.13);border-bottom:1px solid rgba(200,154,14,.22);backdrop-filter:blur(8px);overflow:hidden;height:36px;display:flex;align-items:center}
-.lb-bar-track{display:flex;align-items:center;gap:0;white-space:nowrap;animation:lbMarquee 50s linear infinite}
-.lb-bar-item{display:inline-flex;align-items:center;gap:7px;padding:0 32px;font-size:12.5px;font-weight:800;color:var(--gold2);letter-spacing:.03em}
-.lb-bar-sep{color:rgba(200,154,14,.5);font-size:10px}
-@keyframes lbMarquee{0%{transform:translateX(0)}100%{transform:translateX(50%)}}
-@media(max-width:480px){.lb-bar-item{padding:0 20px;font-size:11.5px}}
-@media(prefers-reduced-motion:reduce){.lb-bar-track{animation:none}}
-.nav{position:sticky;top:36px;z-index:55;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--pad);background:rgba(9,9,10,.94);border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.brand-logo{display:block;width:clamp(154px,15vw,196px);height:auto;transition:transform .35s ease,filter .35s ease}
-.brand-monogram{display:none;width:38px;height:38px;transition:transform .35s ease,filter .35s ease}
-.brand:hover .brand-logo,.brand:hover .brand-monogram{transform:translateY(-1px);filter:drop-shadow(0 0 10px rgba(200,154,14,.22))}
-.nav-links{display:flex;gap:6px;align-items:center}
-.nav-a{padding:9px 15px;border-radius:50px;font-weight:700;font-size:14.5px;color:var(--txt);transition:var(--tr)}
-.nav-a:hover{color:var(--cream);background:var(--ink3)}
-.nav-a.hot{color:var(--clay2)}
-.nav-acts{display:flex;align-items:center;gap:8px}
-.icon-b{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);transition:var(--tr);position:relative;font-size:18px}
-.icon-b:hover{border-color:var(--gold-br);background:var(--gold-dim)}
-.icon-b .bub{position:absolute;top:-4px;left:-4px;min-width:19px;height:19px;border-radius:10px;background:var(--gold);color:var(--ink);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:var(--lt)}
-.nav-wa{display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:11px 22px;border-radius:50px;transition:var(--tr)}
-.nav-wa:hover{background:var(--green2);transform:translateY(-1px)}
-.burger{display:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.burger i{display:block;width:18px;height:2px;background:var(--cream);border-radius:2px;transition:var(--tr)}
-@media(max-width:1020px){.nav-links{display:none}.nav-wa{display:none}.burger{display:flex}}
-@media(max-width:560px){
-  .nav{padding:12px 16px;gap:10px}
-  .brand{gap:8px}
-      .brand-logo{width:154px}
-  .nav-acts{gap:6px}
-  .icon-b{width:40px;height:40px;font-size:16px}
-  #wishBtn{display:none}
-}
-@media(max-width:340px){.brand-logo{display:none}.brand-monogram{display:block}.icon-b{width:38px;height:38px}}
-
-/* mobile menu */
-.mmenu{position:fixed;inset:0;z-index:90;background:var(--ink);transform:translateY(-100%);transition:transform .45s cubic-bezier(.7,0,.3,1);display:flex;flex-direction:column;padding:max(20px,env(safe-area-inset-top)) 24px 32px}
-.mmenu.open{transform:translateY(0)}
-.mmenu-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8vh}
-.mmenu-x{width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);font-size:18px;display:flex;align-items:center;justify-content:center}
-.mmenu-a{display:flex;align-items:baseline;justify-content:space-between;padding:17px 4px;border-bottom:1px solid var(--line);font-size:clamp(26px,7vw,38px);font-weight:900;color:var(--cream)}
-.mmenu-a small{font-family:var(--lt);font-size:12px;color:var(--txt3);letter-spacing:.2em}
-.mmenu-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px}
-.mmenu-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;font-weight:800;padding:17px;border-radius:var(--r-md);font-size:16px}
-.mmenu-note{text-align:center;font-size:12.5px;color:var(--txt2)}
-
-/* ════════════════ HERO ════════════════ */
-.hero{position:relative;height:175svh;min-height:0;background:var(--ink)}
-/* The tighter track keeps the film immersive without leaving a black tail. */
-.hero-sticky{position:sticky;top:0;height:100svh;display:grid;align-items:end;overflow:hidden;isolation:isolate;background:var(--ink)}
-.hero-media{position:absolute;inset:0;z-index:-2}
-.hero-frames{position:absolute;inset:-24px -14px;z-index:0;transform:translate3d(0,0,0) scale(1.045);transform-origin:center center;will-change:transform}
-.hero-poster,.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;backface-visibility:hidden;transform:none}
-.hero-poster{image-orientation:from-image}
-.hero-poster{z-index:0}
-.hero-video{z-index:1;opacity:0;will-change:opacity}
-.hero-video.is-ready{opacity:1}
-.hero-sticky::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(10,10,11,.46) 0%,rgba(10,10,11,.12) 38%,rgba(10,10,11,.52) 72%,rgba(10,10,11,.78) 100%)}
-.hero-star-bg{position:absolute;top:8%;left:-6%;width:min(46vw,520px);opacity:.07;color:var(--gold);z-index:-1;animation:slowspin 90s linear infinite}
-@keyframes slowspin{to{transform:rotate(360deg)}}
-.hero-in{position:relative;z-index:1;padding:0 var(--pad) clamp(36px,7vh,84px);max-width:1500px;width:100%;margin:0 auto;will-change:transform,opacity}
-.hero-scroll{position:absolute;z-index:2;left:clamp(12px,2.2vw,32px);top:50%;display:flex;align-items:center;gap:10px;writing-mode:vertical-rl;color:rgba(244,239,230,.72);font-family:var(--lt);font-size:9px;font-weight:700;letter-spacing:.28em;pointer-events:none;will-change:opacity}
-.hero-scroll i{display:block;width:1px;height:48px;background:linear-gradient(180deg,var(--gold2),rgba(242,208,96,.12))}
-.hero-kicker{display:inline-flex;align-items:center;gap:10px;background:rgba(10,10,11,.55);border:1px solid var(--gold-br);color:var(--gold2);font-weight:800;font-size:13px;padding:8px 18px;border-radius:50px;backdrop-filter:blur(8px);margin-bottom:22px}
-.hero-h{font-size:clamp(42px,9vw,118px);line-height:1.02;font-weight:900;color:var(--cream);margin-bottom:10px}
-.hero-h .ln{display:block;overflow:hidden}
-.hero-h .ln>span{display:inline-block;will-change:transform}
-.hero-h em{font-style:normal;color:var(--gold)}
-.hero-lt{font-family:var(--lt);font-weight:700;letter-spacing:.3em;font-size:clamp(11px,1.4vw,15px);color:var(--txt);text-transform:uppercase;direction:ltr;text-align:right;margin-bottom:26px;opacity:.9}
-.hero-sub{max-width:560px;font-size:clamp(15px,1.8vw,18.5px);color:var(--txt);margin-bottom:30px}
-.hero-sub strong{color:var(--gold2)}
-.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:800;font-size:15.5px;padding:17px 38px;border-radius:50px;transition:var(--tr);position:relative;overflow:hidden}
-.btn-gold{background:var(--gold);color:var(--ink)}
-.btn-gold:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 14px 40px rgba(200,154,14,.3)}
-.btn-line{border:1px solid rgba(244,239,230,.35);color:var(--cream);backdrop-filter:blur(6px)}
-.btn-line:hover{border-color:var(--cream);background:rgba(244,239,230,.08)}
-.btn-wa{background:var(--green);color:#fff}
-.btn-wa:hover{background:var(--green2)}
-.hero-proof{display:flex;gap:0;flex-wrap:wrap;border-top:1px solid rgba(244,239,230,.16)}
-.hp-item{padding:18px clamp(16px,3vw,40px) 0;border-left:1px solid rgba(244,239,230,.14)}
-.hp-item:last-child{border-left:none}
-.hp-item:first-child{padding-right:0}
-.hp-num{font-family:var(--lt);font-weight:700;font-size:clamp(22px,3vw,32px);color:var(--cream);direction:ltr;text-align:right}
-.hp-num b{color:var(--gold)}
-.hp-lbl{font-size:12.5px;color:var(--txt2);font-weight:700}
-@media(max-width:640px){
-  .hero{height:175svh;min-height:0}
-  .hero-proof{display:grid;grid-template-columns:1fr 1fr;gap:0}
-  .hp-item{padding:14px 14px 0;border-left:none!important}
-  .hero-ctas .btn{flex:1;min-width:150px;padding:16px 18px}
-}
-@media(min-width:768px){.hero{height:195vh}}
-@media(prefers-reduced-motion:reduce){
-  /* Reduced motion keeps the accessible poster and removes video seeking. */
-  .hero{height:100svh}
-  .hero-sticky{position:relative;top:auto}
-  .hero-frames{transform:none!important}
-  .hero-video{display:none!important}
-  .hero-poster{opacity:1!important}
-  .hero-in{transform:none!important;opacity:1!important}
-  .hero-scroll{display:none}
-}
-
-/* ════════════════ MARQUEE ════════════════ */
-.mq{border-block:1px solid var(--line);background:var(--ink2);overflow:hidden;white-space:nowrap;padding:15px 0}
-.mq-track{display:inline-flex;animation:annMarquee 52s linear infinite}
-.mq span{display:inline-flex;align-items:center;gap:14px;padding:0 30px;font-family:var(--lt);font-weight:500;letter-spacing:.12em;font-size:13.5px;color:var(--txt2);direction:ltr}
-.mq .s{color:var(--gold)}
-
-/* ════════════════ SECTION SHELL ════════════════ */
-.sec{padding:clamp(64px,10vw,120px) var(--pad)}
-.sec-in{max-width:1500px;margin:0 auto}
-.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:clamp(28px,5vw,52px);flex-wrap:wrap}
-.kick{display:flex;align-items:center;gap:10px;color:var(--gold);font-weight:800;font-size:13.5px;letter-spacing:.06em;margin-bottom:12px}
-.kick::before{content:"";width:26px;height:1px;background:var(--gold)}
-.h2{font-size:clamp(30px,5.4vw,58px);line-height:1.12;font-weight:900;color:var(--cream)}
-.h2 em{font-style:normal;color:var(--gold)}
-.sec-sub{margin-top:12px;color:var(--txt2);max-width:520px;font-size:15.5px}
-.see-all{font-family:var(--lt);font-weight:700;font-size:13px;letter-spacing:.18em;color:var(--cream);display:inline-flex;align-items:center;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--line2);transition:var(--tr);direction:ltr}
-.see-all:hover{color:var(--gold);border-color:var(--gold)}
-/* reveals: hidden only when JS confirms it'll animate (html.anim). IntersectionObserver adds .in.
-   No-JS users and the watchdog keep everything visible — content can never get stuck hidden. */
-html.anim .rev{opacity:0;transform:translateY(32px);transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1)}
-html.anim .rev.in{opacity:1;transform:none}
-.hero-h .ln>span{transition:transform .9s cubic-bezier(.5,0,.2,1)}
-html.anim .hero-h .ln>span{transform:translateY(110%)}
-html.anim .hero-h.in .ln>span{transform:translateY(0)}
-html.anim .hero-h.in .ln:nth-child(2)>span{transition-delay:.12s}
-
-/* ════════════════ THE DROP RAIL ════════════════ */
-.drop-rail{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 4px 22px;scrollbar-width:none;cursor:grab;direction:ltr;scroll-padding-inline:4px}
-.drop-rail::-webkit-scrollbar{display:none}
-.drop-card{flex:0 0 clamp(238px,24vw,310px);scroll-snap-align:start;direction:rtl}
-
-/* ════════════════ PRODUCT CARD ════════════════ */
-.pcard{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--ink2);border:1px solid var(--line);transition:transform var(--tr),border-color var(--tr),box-shadow var(--tr);display:flex;flex-direction:column}
-#dropRail .pcard,#pgrid .pcard{display:flex!important;visibility:visible;opacity:1}
-.pcard:hover{transform:translateY(-6px);border-color:var(--gold-br);box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.pviz{position:relative;aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.pviz img{width:100%;height:100%;object-fit:cover;display:block}
-.drop-card .pviz{background:linear-gradient(145deg,#171719,#0d0d0e)}
-.drop-card .pviz img{object-position:center center;transform:none}
-.drop-card .pinfo-brand,.drop-card .pname{direction:ltr;unicode-bidi:isolate;text-align:left}
-.drop-card .pname{min-height:42px;-webkit-line-clamp:2;line-height:1.32}
-.drop-card .prow,.drop-card .psizes,.drop-card .pmeta-row{direction:ltr}
-.drop-card .pdelivery{text-align:right}
-.pviz-bg{position:absolute;inset:0}
-.pviz-star{position:absolute;width:150%;opacity:.06;color:#fff;transition:transform .8s ease}
-.pcard:hover .pviz-star{transform:rotate(22deg) scale(1.06)}
-.pviz-ico{font-size:clamp(54px,7vw,84px);filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));transition:transform .5s cubic-bezier(.2,.9,.24,1);z-index:1}
-.pcard:hover .pviz-ico{transform:scale(1.12) rotate(-4deg)}
-.pviz-brand{position:absolute;bottom:12px;inset-inline:0;text-align:center;font-family:var(--lt);font-weight:700;font-size:11px;letter-spacing:.34em;color:rgba(244,239,230,.65);text-transform:uppercase;direction:ltr}
-.pbadges{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:2}
-.pb{font-size:10.5px;font-weight:900;padding:5px 11px;border-radius:30px;width:fit-content}
-.pb-new{background:rgba(200,154,14,.92);color:var(--ink)}
-.pb-best{background:rgba(180,80,42,.92);color:#fff}
-.pb-drop{background:rgba(244,239,230,.92);color:var(--ink)}
-.pb-grade{background:rgba(10,10,11,.72);color:var(--cream);border:1px solid rgba(244,239,230,.2)}
-.pwish{position:absolute;top:12px;left:12px;z-index:2;width:38px;height:38px;border-radius:50%;background:rgba(10,10,11,.82);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--cream);transition:var(--tr)}
-.pwish:hover{background:var(--clay);transform:scale(1.08)}
-.pwish.on{background:var(--clay);color:#fff}
-.pquick{position:absolute;inset-inline:12px;bottom:12px;z-index:2;display:flex;gap:8px;opacity:0;transform:translateY(10px);transition:var(--tr)}
-.pcard:hover .pquick{opacity:1;transform:translateY(0)}
-.pquick button{flex:1;padding:12px;border-radius:var(--r-sm);font-weight:800;font-size:13px}
-.pq-cart{background:rgba(244,239,230,.94);color:var(--ink)}
-.pq-cart:hover{background:var(--gold)}
-.pq-view{background:rgba(10,10,11,.7);color:var(--cream);border:1px solid rgba(244,239,230,.25)}
-.pinfo{padding:15px 16px 17px}
-.pinfo-brand{font-family:var(--lt);font-size:10.5px;font-weight:700;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;direction:ltr;text-align:right}
-.pname{font-size:15.5px;font-weight:800;color:var(--cream);margin:3px 0 8px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.prow{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pprice{font-family:var(--lt);font-weight:700;font-size:17px;color:var(--gold);direction:ltr}
-.pold{font-family:var(--lt);font-size:12.5px;color:var(--txt3);text-decoration:line-through;direction:ltr}
-/* Monetary saving on the two Liquid-rendered homepage rails. Clay rather than
-   gold: gold is the PRICE colour on this page, and the saving must not compete
-   with the number the customer pays. */
-.psaving{margin:3px 0 0;font-family:var(--lt);font-size:12px;font-weight:900;color:var(--clay);direction:rtl;text-align:start;letter-spacing:.01em}
-.psaving [dir=ltr]{font-variant-numeric:tabular-nums}
-/* The "Real" rail has no .psave slot, so the percentage needs its own chip. */
-.real-off{font-family:var(--lt);font-size:11px;font-weight:900;color:var(--clay);direction:ltr;
-  padding:2px 7px;border-radius:30px;border:1px solid var(--clay);font-variant-numeric:tabular-nums}
-.psave{font-size:11px;font-weight:900;color:var(--clay2);direction:ltr}
-.psizes{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
-.psz{font-family:var(--lt);font-size:10.5px;font-weight:500;color:var(--txt2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;direction:ltr}
-/* ════════════════ GRID + FILTERS ════════════════ */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
-@media(max-width:640px){.pgrid{grid-template-columns:1fr 1fr;gap:10px}.pinfo{padding:11px 12px 13px}.pname{font-size:13.5px}
-  /* mobile: no hover — tap card opens PDP; show one compact add button */
-  .pquick{opacity:1;transform:none;gap:0;inset-inline:auto;left:10px;bottom:10px}
-  .pquick .pq-view{display:none}
-  .pquick .pq-cart{flex:none;width:42px;height:42px;padding:0;border-radius:50%;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.45)}
-  .pquick .pq-cart .lbl{display:none}
-  .pcard{cursor:pointer}
-}
-.fbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:26px}
-.fpill{padding:10px 20px;border-radius:50px;border:1px solid var(--line2);font-weight:700;font-size:13.5px;color:var(--txt);transition:var(--tr)}
-.fpill:hover{border-color:var(--gold-br);color:var(--cream)}
-.fpill.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-.fsort{margin-right:auto;background:var(--ink2);border:1px solid var(--line2);color:var(--txt);border-radius:50px;padding:10px 18px;font-weight:700;font-size:13.5px;appearance:none;cursor:pointer}
-
-.fcount{font-size:13px;color:var(--txt3);font-weight:700}
-@media(max-width:640px){.fbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:8px;scrollbar-width:none}.fbar::-webkit-scrollbar{display:none}.fsort{margin-right:0}}
-
-/* ════════════════ REAL SHOPIFY PRODUCT GRID ════════════════ */
-.real-products{position:relative}
-.real-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
-.real-card{display:flex!important;visibility:visible!important;opacity:1!important;flex-direction:column;overflow:hidden;border-radius:var(--r-md);border:1px solid var(--line);background:var(--ink2);color:inherit;text-decoration:none;transition:transform var(--tr),border-color var(--tr),box-shadow var(--tr)}
-.real-card:hover{transform:translateY(-5px);border-color:var(--gold-br);box-shadow:0 24px 60px rgba(0,0,0,.5)}
-.real-media{position:relative;aspect-ratio:4/5;background:#101113;overflow:hidden;margin:0}
-.real-media img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .75s cubic-bezier(.2,.7,.2,1)}
-.real-card:hover .real-media img{transform:scale(1.045)}
-.real-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--lt);font-weight:800;letter-spacing:.18em;text-align:center;text-transform:uppercase;padding:20px}
-.real-badge{position:absolute;top:12px;right:12px;border:1px solid rgba(244,239,230,.24);border-radius:999px;background:rgba(10,10,11,.72);color:var(--cream);font-size:11px;font-weight:900;padding:6px 10px}
-.real-info{padding:14px 15px 16px}
-.real-vendor{font-family:var(--lt);font-size:10.5px;font-weight:800;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;direction:ltr;text-align:right;margin:0 0 5px}
-.real-title{font-size:15.5px;line-height:1.35;font-weight:900;color:var(--cream);margin:0 0 10px;min-height:42px}
-.real-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.real-price{font-family:var(--lt);font-size:17px;font-weight:900;color:var(--gold);direction:ltr;white-space:nowrap}
-.real-size{font-family:var(--lt);font-size:11px;font-weight:700;color:var(--txt2);border:1px solid var(--line);border-radius:7px;padding:3px 7px;direction:ltr;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.real-empty-state{grid-column:1/-1;border:1px solid var(--line);border-radius:var(--r-md);padding:26px;background:var(--ink2);color:var(--txt2)}
-.real-empty-state h3{color:var(--cream);font-size:20px;margin:0 0 8px}
-@media(max-width:640px){
-  .real-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .real-info{padding:11px 12px 13px}
-  .real-title{font-size:13.5px;min-height:38px}
-  .real-price{font-size:15px}
-  .real-size{max-width:58%;font-size:10px}
-}
-
-/* ════════════════ CATEGORY MOSAIC ════════════════ */
-/* ════════════════ Editorial Category Mosaic (v2) ════════════════ */
-.cats{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(210px,24vh);gap:14px;max-width:var(--max);margin:0 auto}
-.cat{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-end;padding:22px;isolation:isolate;text-decoration:none;color:inherit;transition:border-color .35s ease,box-shadow .35s ease,transform .35s ease;min-height:180px}
-.cat:hover,.cat:focus-visible{border-color:var(--gold-br);box-shadow:0 24px 60px -16px rgba(0,0,0,.55);transform:translateY(-3px)}
-.cat:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.cat-bg{position:absolute;inset:0;z-index:-2;background-size:cover;background-position:center;background-repeat:no-repeat;transition:transform .9s cubic-bezier(.2,.7,.2,1);will-change:transform}
-.cat:hover .cat-bg{transform:scale(1.04) translateY(-6px)}
-.cat::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(10,10,11,.15) 0%,rgba(10,10,11,.55) 55%,rgba(10,10,11,.92) 100%);transition:opacity .3s ease}
-.cat:hover::before{opacity:.95}
-.cat::after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:2px;background:linear-gradient(90deg,var(--gold) 0%,var(--gold2) 50%,transparent 100%);opacity:0;transform:translateY(2px);transition:opacity .35s ease,transform .35s ease}
-.cat:hover::after,.cat:focus-visible::after{opacity:1;transform:translateY(0)}
-.cat-idx{position:absolute;top:18px;right:18px;font-family:var(--lt);font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--gold2);direction:ltr;opacity:.85}
-.cat-t{font-weight:900;font-size:clamp(20px,2.4vw,28px);color:var(--cream);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
-.cat-c{font-family:var(--lt);font-size:11.5px;color:var(--gold2);letter-spacing:.18em;direction:ltr;text-align:right;font-weight:700;margin:0 0 4px;text-transform:uppercase}
-.cat-d{font-size:13.5px;color:var(--txt);font-weight:600;margin:6px 0 0;line-height:1.5;max-width:36ch;display:none}
-.cat.big .cat-d,.cat.wide .cat-d{display:block}
-.cat-cta{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-family:var(--ar);font-size:13.5px;font-weight:800;color:var(--cream);opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s ease}
-.cat:hover .cat-cta,.cat:focus-visible .cat-cta{opacity:1;transform:translateY(0)}
-.cat.big{grid-column:span 3;grid-row:span 2}
-.cat.wide{grid-column:span 3}
-.cat:not(.big):not(.wide){grid-column:span 2}
-@media(max-width:900px){
-  /* horizontal swipe carousel — show full + peek of next */
-  .cats{display:flex;grid-template-columns:none;grid-auto-rows:auto;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:0 20px 14px;margin:0 -20px;scrollbar-width:none}
-  .cats::-webkit-scrollbar{display:none}
-  .cat{flex:0 0 78%;min-height:0;aspect-ratio:4/5;scroll-snap-align:start;padding:18px;grid-column:auto !important;grid-row:auto !important;min-height:380px}
-  .cat-cta{opacity:1;transform:none} /* always visible on touch */
-  .cat-d{display:block;font-size:13px}
-  .cat:hover{transform:none} /* avoid lift on touch */
-  .cat:active .cat-bg{transform:scale(1.02)} /* tap feedback */
-}
-@media(prefers-reduced-motion:reduce){
-  .cat,.cat *,.cat::before,.cat::after,.cat-bg{transition:none !important;animation:none !important;transform:none !important}
-  .cat-cta{opacity:1;transform:none}
-}
-
-/* ════════════════ STORY (sand block) ════════════════ */
-.story{background:var(--sand);color:var(--ink)}
-.story .sec-in{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(28px,6vw,80px);align-items:center}
-.story-kick{color:var(--clay);font-weight:800;font-size:13.5px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.story-kick::before{content:"";width:26px;height:1px;background:var(--clay)}
-.story-h{font-size:clamp(30px,4.8vw,54px);font-weight:900;line-height:1.14;color:#161310;margin-bottom:20px}
-.story-h em{font-style:normal;color:var(--clay)}
-.story-p{font-size:clamp(15px,1.8vw,18px);color:#3E3830;margin-bottom:14px;max-width:560px}
-.story-p strong{color:#161310}
-.story-stats{display:flex;gap:34px;margin-top:30px;flex-wrap:wrap}
-.ss-num{font-family:var(--lt);font-weight:700;font-size:clamp(28px,3.4vw,42px);color:#161310;direction:ltr;text-align:right}
-.ss-num b{color:var(--clay)}
-.ss-lbl{font-size:13px;font-weight:700;color:#6B6354}
-.story-visual{position:relative;border-radius:var(--r-lg);overflow:hidden;aspect-ratio:4/5;border:1px solid rgba(22,19,16,.12)}
-.story-visual img{width:100%;height:100%;object-fit:cover}
-.story-tag{position:absolute;bottom:18px;right:18px;background:rgba(22,19,16,.85);color:var(--sand);font-weight:800;font-size:13px;padding:10px 18px;border-radius:50px;backdrop-filter:blur(6px)}
-@media(max-width:900px){.story .sec-in{grid-template-columns:1fr}.story-visual{aspect-ratio:16/10;order:-1}}
-
-/* ════════════════ EDITORIAL ════════════════ */
-.edit{display:grid;grid-template-columns:1fr 1fr;min-height:72svh}
-.edit-img{position:relative;overflow:hidden;min-height:380px}
-.edit-img img{position:absolute;inset:0;width:100%;height:110%;object-fit:cover;object-position:center 22%;will-change:transform}
-.edit-txt{display:flex;flex-direction:column;justify-content:center;padding:clamp(40px,6vw,90px);background:var(--ink2);border-block:1px solid var(--line)}
-.edit-h{font-size:clamp(30px,4.4vw,52px);font-weight:900;line-height:1.14;color:var(--cream);margin-bottom:18px}
-.edit-h em{font-style:normal;color:var(--gold)}
-.edit-p{color:var(--txt2);font-size:16px;max-width:480px;margin-bottom:28px}
-.edit-list{display:flex;flex-direction:column;gap:13px;margin-bottom:32px}
-.edit-li{display:flex;align-items:center;gap:13px;font-weight:700;color:var(--txt)}
-.edit-li i{width:30px;height:30px;border-radius:50%;background:var(--gold-dim);border:1px solid var(--gold-br);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;color:var(--gold);flex-shrink:0}
-@media(max-width:900px){.edit{grid-template-columns:1fr}}
-
-/* ════════════════ LOOKBOOK ════════════════ */
-.look{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.look-it{position:relative;border-radius:var(--r-md);overflow:hidden;aspect-ratio:3/4;border:1px solid var(--line);isolation:isolate}
-.look-it img,.look-it .lk-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s ease}
-.look-it:hover img,.look-it:hover .lk-bg{transform:scale(1.07)}
-.look-it::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(10,10,11,.75))}
-.look-cap{position:absolute;bottom:14px;inset-inline:16px;z-index:1;font-weight:800;font-size:14px;color:var(--cream)}
-.look-cap small{display:block;font-family:var(--lt);font-weight:500;font-size:10.5px;letter-spacing:.2em;color:var(--txt2);direction:ltr;text-align:right}
-.look-it:nth-child(2),.look-it:nth-child(4){transform:translateY(26px)}
-@media(max-width:900px){.look{grid-template-columns:1fr 1fr}.look-it:nth-child(2),.look-it:nth-child(4){transform:none}}
-
-/* ════════════════ REVIEWS ════════════════ */
-.revs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.rev-card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-md);padding:26px;display:flex;flex-direction:column;gap:14px;transition:var(--tr)}
-.rev-card:hover{border-color:var(--gold-br);transform:translateY(-4px)}
-.rev-stars{color:var(--gold);letter-spacing:3px;font-size:14px}
-.rev-bought{font-family:var(--lt);font-size:11px;letter-spacing:.1em;color:var(--txt3);direction:ltr;text-align:right}
-.rev-txt{font-size:15px;color:var(--txt);line-height:1.85}
-.rev-who{display:flex;align-items:center;gap:12px;margin-top:auto}
-.rev-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--cream);font-size:14px;flex-shrink:0}
-.rev-name{font-weight:800;color:var(--cream);font-size:14px}
-.rev-city{font-size:12px;color:var(--txt3)}
-.rev-ver{font-size:11px;color:var(--green2);font-weight:800}
-@media(max-width:900px){.revs{grid-template-columns:1fr;gap:12px}}
-
-/* ════════════════ SOCIAL ════════════════ */
-.social-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.sg-it{position:relative;aspect-ratio:1;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:34px;isolation:isolate;transition:var(--tr)}
-.sg-it:hover{transform:scale(1.04);border-color:var(--gold-br)}
-.sg-it .hov{position:absolute;inset:0;background:rgba(10,10,11,.72);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:var(--cream);opacity:0;transition:var(--tr)}
-.sg-it:hover .hov{opacity:1}
-@media(max-width:760px){.social-grid{grid-template-columns:repeat(3,1fr)}}
-
-/* ════════════════ NEWSLETTER ════════════════ */
-.nl{background:linear-gradient(140deg,var(--ink2),var(--ink3));border-block:1px solid var(--line)}
-.nl-in{max-width:760px;margin:0 auto;text-align:center}
-.nl-star{width:54px;height:54px;color:var(--gold);margin:0 auto 18px;animation:slowspin 40s linear infinite}
-.nl-h{font-size:clamp(26px,4.4vw,44px);font-weight:900;color:var(--cream);margin-bottom:12px}
-.nl-p{color:var(--txt2);margin-bottom:28px;font-size:15.5px}
-.nl-form{display:flex;gap:10px;max-width:520px;margin:0 auto 14px}
-.nl-input{flex:1;background:var(--ink);border:1px solid var(--line2);border-radius:50px;padding:16px 24px;color:var(--cream);font-size:15px;min-width:0}
-.nl-input::placeholder{color:var(--txt3)}
-.nl-input:focus{outline:none;border-color:var(--gold)}
-.nl-btn{background:var(--gold);color:var(--ink);font-weight:900;padding:16px 30px;border-radius:50px;transition:var(--tr);flex-shrink:0}
-.nl-btn:hover{background:var(--gold2)}
-.nl-note{font-size:12.5px;color:var(--txt3)}
-@media(max-width:560px){.nl-form{flex-direction:column}.nl-btn{padding:16px}}
-
-/* ════════════════ FOOTER ════════════════ */
-.foot{border-top:1px solid var(--line);padding:clamp(48px,7vw,80px) var(--pad) 0}
-.foot-in{max-width:1500px;margin:0 auto}
-.foot-grid{display:grid;grid-template-columns:1.4fr repeat(4,minmax(0,1fr));gap:clamp(28px,4vw,60px);padding-bottom:48px}
-.foot-desc{color:var(--txt2);font-size:14.5px;max-width:340px;margin:16px 0 22px}
-.foot-soc{display:flex;gap:10px}
-.fs-b{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:17px;transition:var(--tr)}
-.foot-brand{min-height:44px}
-.fs-b img{width:30px;height:30px;display:block;border-radius:50%}
-.fs-b:hover{border-color:var(--gold);background:var(--gold-dim)}
-.fcol-t{font-family:var(--lt);font-size:11.5px;font-weight:700;letter-spacing:.26em;color:var(--txt3);text-transform:uppercase;margin-bottom:18px;direction:ltr;text-align:right}
-.fcol a{display:flex;align-items:center;min-height:44px;padding:0;color:var(--txt2);font-weight:600;font-size:14.5px;transition:var(--tr)}
-.fcol a:hover{color:var(--gold2);transform:translateX(-4px)}
-.foot-bot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:22px 0;border-top:1px solid var(--line);font-size:13px;color:var(--txt3)}
-.foot-pay{display:flex;align-items:center;gap:8px;font-weight:800}
-.foot-pay .tag{border:1px solid var(--line2);border-radius:8px;padding:5px 12px;font-size:11.5px;color:var(--txt2)}
-.foot-pay .tag.g{border-color:var(--green);color:var(--green2)}
-.giant{overflow:hidden;padding:10px 0 0}
-.giant span{display:block;font-family:var(--lt);font-weight:700;font-size:clamp(64px,14vw,210px);line-height:.94;letter-spacing:.02em;color:transparent;-webkit-text-stroke:1px var(--line2);text-align:center;direction:ltr;user-select:none;transition:color .6s ease}
-.giant:hover span{color:var(--gold-dim)}
-@media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr}}
-
-/* ════════════════ OVERLAYS: CART / SEARCH / PDP ════════════════ */
-.scrim{position:fixed;inset:0;background:rgba(5,5,6,.66);backdrop-filter:blur(4px);z-index:95;opacity:0;pointer-events:none;transition:opacity .3s}
-.scrim.show{opacity:1;pointer-events:auto}
-.drawer{position:fixed;top:0;bottom:0;left:0;width:min(440px,100vw);background:var(--ink2);border-right:1px solid var(--line);z-index:96;transform:translateX(-102%);transition:transform .42s cubic-bezier(.7,0,.3,1);display:flex;flex-direction:column}
-.drawer.open{transform:translateX(0)}
-.dr-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--line)}
-.dr-title{font-weight:900;font-size:19px;color:var(--cream)}
-.dr-title small{color:var(--txt3);font-weight:700;font-size:13px}
-.dr-x{width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center}
-.ship-bar{padding:14px 22px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;color:var(--txt)}
-.ship-track{height:5px;background:var(--ink);border-radius:4px;margin-top:9px;overflow:hidden}
-.ship-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;transition:width .5s ease}
-.dr-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
-.cart-empty{margin:auto;text-align:center;padding:30px}
-.cart-empty .big{font-size:54px;opacity:.3;margin-bottom:14px}
-.ci{display:flex;gap:13px;background:var(--ink3);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px}
-.ci-viz{width:74px;height:86px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
-.ci-viz small{position:absolute;bottom:4px;inset-inline:0;text-align:center;font-family:var(--lt);font-size:7.5px;font-weight:700;letter-spacing:.16em;color:rgba(244,239,230,.7);text-transform:uppercase}
-.ci-main{flex:1;min-width:0}
-.ci-name{font-weight:800;font-size:14px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ci-meta{font-size:11.5px;color:var(--txt3);font-weight:700;margin:2px 0 8px}
-.ci-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.qty{display:flex;align-items:center;gap:10px;direction:ltr}
-.qty button{width:27px;height:27px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:15px;transition:var(--tr)}
-.qty button:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-.qty b{font-family:var(--lt);font-size:14px;min-width:16px;text-align:center}
-.ci-price{font-family:var(--lt);font-weight:700;color:var(--gold);direction:ltr;font-size:15px}
-.ci-rm{font-size:11px;color:var(--txt3);margin-top:6px}
-.ci-rm:hover{color:var(--clay2)}
-.dr-promo{display:flex;gap:8px;padding:0 18px 12px}
-.dr-promo input{flex:1;background:var(--ink);border:1px solid var(--line2);border-radius:var(--r-sm);padding:12px 16px;color:var(--cream);font-size:13.5px;min-width:0}
-.dr-promo button{background:var(--ink3);border:1px solid var(--line2);border-radius:var(--r-sm);padding:12px 18px;font-weight:800;font-size:13px}
-.dr-foot{border-top:1px solid var(--line);padding:18px 22px calc(18px + env(safe-area-inset-bottom))}
-.dr-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.dr-total b{font-family:var(--lt);font-size:24px;color:var(--cream);direction:ltr}
-.dr-cod{font-size:12px;color:var(--txt2);text-align:center;margin-top:10px;font-weight:700}
-.dr-wa{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;font-weight:900;font-size:15.5px;padding:17px;border-radius:var(--r-sm);transition:var(--tr)}
-.dr-wa:hover{background:var(--green2)}
-
-/* search overlay */
-.search-ov{position:fixed;inset:0;z-index:96;background:rgba(10,10,11,.92);backdrop-filter:blur(14px);display:flex;flex-direction:column;align-items:center;padding:12vh var(--pad) 40px;opacity:0;pointer-events:none;transition:opacity .3s}
-.search-ov.show{opacity:1;pointer-events:auto}
-.search-box{width:min(680px,100%);display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--line2);padding-bottom:14px}
-.search-box input{flex:1;background:none;border:none;color:var(--cream);font-size:clamp(20px,3.6vw,30px);font-weight:800;outline:none;font-family:var(--ar)}
-.search-box input::placeholder{color:var(--txt3)}
-.search-res{width:min(680px,100%);margin-top:24px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
-.sr-it{display:flex;align-items:center;gap:14px;background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 16px;transition:var(--tr);text-align:right;width:100%}
-.sr-it:hover{border-color:var(--gold-br)}
-.sr-ico{font-size:26px}
-.sr-name{font-weight:800;color:var(--cream);font-size:14.5px;flex:1}
-.sr-price{font-family:var(--lt);color:var(--gold);font-weight:700;direction:ltr}
-
-/* PDP overlay */
-.pdp{position:fixed;inset:0;z-index:97;background:var(--ink);transform:translateY(102%);transition:transform .5s cubic-bezier(.7,0,.3,1);overflow-y:auto;overscroll-behavior:contain}
-.pdp.open{transform:translateY(0)}
-.pdp-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:14px var(--pad);background:rgba(10,10,11,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.pdp-back{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:14px;color:var(--txt)}
-.pdp-back:hover{color:var(--cream)}
-.pdp-in{max-width:1280px;margin:0 auto;padding:clamp(20px,4vw,48px) var(--pad) 140px;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,5vw,72px);align-items:start}
-.pdp-gal{position:relative;align-self:start}
-.pdp-main-viz{position:relative;aspect-ratio:4/5;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
-.pdp-main-viz .pviz-ico{font-size:clamp(90px,12vw,150px)}
-.pdp-nav{position:absolute;top:50%;z-index:3;width:54px;height:54px;border-radius:50%;border:1px solid rgba(244,239,230,.34);background:linear-gradient(180deg,rgba(31,31,34,.92),rgba(10,10,11,.82));color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:0;line-height:1;cursor:pointer;transform:translateY(-50%);transition:background .18s,border-color .18s,box-shadow .18s,transform .18s;box-shadow:0 14px 32px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(10px);touch-action:manipulation;direction:ltr;unicode-bidi:isolate}
-.pdp-nav::before{content:"";width:13px;height:13px;border-top:3px solid currentColor;border-right:3px solid currentColor;display:block}
-.pdp-nav::after{content:"";position:absolute;inset:-10px;border-radius:50%}
-.pdp-nav.prev{left:18px}
-.pdp-nav.next{right:18px}
-.pdp-nav.prev::before{transform:rotate(225deg)}
-.pdp-nav.next::before{transform:rotate(45deg)}
-.pdp-nav:hover,.pdp-nav:focus-visible{background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold);color:var(--ink);box-shadow:0 18px 42px rgba(200,154,14,.24),0 12px 28px rgba(0,0,0,.36);transform:translateY(-50%) scale(1.05);outline:none}
-.pdp-nav:active{transform:translateY(-50%) scale(.96)}
-.pdp-count{position:absolute;right:14px;bottom:14px;z-index:3;border:1px solid rgba(244,239,230,.26);border-radius:999px;background:rgba(10,10,11,.72);color:var(--cream);font-family:var(--lt);font-size:12px;font-weight:800;direction:ltr;padding:6px 11px}
-.pdp-thumbs{display:flex;gap:10px;margin-top:12px}
-.pdp-th{width:72px;height:84px;border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px;transition:var(--tr)}
-.pdp-th.on,.pdp-th:hover{border-color:var(--gold)}
-.pdp-brand{font-family:var(--lt);font-size:12px;font-weight:700;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;direction:ltr;text-align:right}
-.pdp-name{font-size:clamp(26px,3.6vw,40px);font-weight:900;color:var(--cream);line-height:1.18;margin:8px 0 14px}
-.pdp-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.pdp-grade{font-size:12px;font-weight:900;padding:7px 14px;border-radius:30px;background:var(--gold-dim);border:1px solid var(--gold-br);color:var(--gold2)}
-.pdp-stock{font-size:12.5px;font-weight:800;color:var(--clay2)}
-.pdp-prices{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
-.pdp-price{font-family:var(--lt);font-weight:700;font-size:clamp(28px,4vw,40px);color:var(--gold);direction:ltr}
-.pdp-old{font-family:var(--lt);font-size:17px;color:var(--txt3);text-decoration:line-through;direction:ltr}
-.pdp-save{background:var(--clay);color:#fff;font-weight:900;font-size:12px;padding:5px 12px;border-radius:30px;direction:ltr}
-.pdp-lbl{font-weight:800;font-size:13.5px;color:var(--txt2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.pdp-lbl button{font-size:12px;color:var(--gold);font-weight:700;text-decoration:underline}
-.pdp-sizes{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:24px}
-.sz{min-width:52px;padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--line2);font-family:var(--lt);font-weight:700;font-size:14px;transition:var(--tr);direction:ltr}
-.sz:hover{border-color:var(--cream)}
-.sz.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
-.pdp-ctas{display:flex;gap:11px;margin-bottom:14px}
-.pdp-cart{flex:1;padding:17px;border-radius:var(--r-sm);background:var(--cream);color:var(--ink);font-weight:900;font-size:15.5px;transition:var(--tr)}
-.pdp-cart:hover{background:var(--gold)}
-.pdp-wa{flex:1;display:flex;align-items:center;justify-content:center;gap:9px;padding:17px;border-radius:var(--r-sm);background:var(--green);color:#fff;font-weight:900;font-size:15.5px;transition:var(--tr)}
-.pdp-wa:hover{background:var(--green2)}
-.pdp-trust{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px}
-.pt-chip{font-size:12px;font-weight:800;color:var(--txt2);border:1px solid var(--line);border-radius:30px;padding:7px 14px}
-.acc{border-top:1px solid var(--line)}
-.acc summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:17px 2px;font-weight:800;font-size:15px;color:var(--cream)}
-.acc summary::-webkit-details-marker{display:none}
-.acc summary::after{content:"+";font-family:var(--lt);color:var(--gold);font-size:20px;transition:transform .25s}
-.acc[open] summary::after{content:"−"}
-.acc-body{padding:0 2px 18px;color:var(--txt2);font-size:14.5px;line-height:1.9}
-.acc-body table{width:100%;border-collapse:collapse;font-size:13.5px}
-.acc-body td{padding:8px 4px;border-bottom:1px solid var(--line)}
-.acc-body td:last-child{font-family:var(--lt);direction:ltr;text-align:left;color:var(--txt)}
-.pdp-rel{grid-column:1/-1;margin-top:30px}
-.pdp-rel-h{font-weight:900;font-size:22px;color:var(--cream);margin-bottom:18px}
-.pdp-sticky{position:fixed;bottom:0;inset-inline:0;z-index:98;display:none;gap:10px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(10,10,11,.96);border-top:1px solid var(--line);transition:transform .35s cubic-bezier(.7,0,.3,1)}
-.pdp-sticky.tuck{transform:translateY(130%)}
-.pdp-sticky .info{flex:1;min-width:0}
-.pdp-sticky .nm{font-weight:800;font-size:13px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pdp-sticky .pr{font-family:var(--lt);font-weight:700;color:var(--gold);font-size:15px;direction:ltr;text-align:right}
-.pdp-sticky button{padding:14px 22px;border-radius:var(--r-sm);font-weight:900;font-size:14px;flex-shrink:0}
-@media(max-width:900px){
-  .pdp-in{grid-template-columns:1fr;padding-bottom:170px}
-  .pdp-gal{position:static}
-  .pdp.open ~ nav{display:none}
-  body.pdp-open .pdp-sticky{display:flex}
-}
-
-/* toast */
-.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--gold-br);color:var(--cream);padding:13px 26px;border-radius:50px;font-weight:700;font-size:14px;z-index:120;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;box-shadow:0 14px 44px rgba(0,0,0,.55)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* wa float */
-.waf{position:fixed;bottom:24px;right:24px;z-index:80;width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.45);transition:var(--tr)}
-.waf:hover{transform:scale(1.1);background:var(--green2)}
-.waf svg{width:27px;height:27px;fill:#fff}
-@media(max-width:640px){.waf{bottom:18px;right:16px;width:52px;height:52px}}
-
-/* ════════════════ ENHANCEMENTS ════════════════ */
-/* preloader */
-.preload{position:fixed;inset:0;z-index:200;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .7s ease,visibility .7s}
-.preload.done{opacity:0;visibility:hidden}
-.preload-star{width:72px;height:72px;color:var(--gold)}
-.preload-star svg{width:100%;height:100%;display:block;animation:plspin 2.4s cubic-bezier(.6,0,.3,1) infinite}
-@keyframes plspin{0%{transform:rotate(0) scale(.85);opacity:.5}50%{transform:rotate(180deg) scale(1);opacity:1}100%{transform:rotate(360deg) scale(.85);opacity:.5}}
-.preload-word{font-family:var(--lt);font-weight:700;letter-spacing:.5em;font-size:13px;color:var(--txt2);padding-right:.5em;direction:ltr;overflow:hidden;white-space:nowrap}
-.preload-bar{width:120px;height:2px;background:var(--line2);border-radius:2px;overflow:hidden}
-.preload-bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s ease}
-
-/* hero webgl canvas */
-#heroFx{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.9}
-
-/* custom cursor (desktop fine-pointer only) */
-.cursor,.cursor-dot{position:fixed;top:0;left:0;z-index:300;pointer-events:none;border-radius:50%;mix-blend-mode:difference;will-change:transform;translate:-50% -50%}
-.cursor{width:34px;height:34px;border:1.5px solid #fff;transition:width .25s,height .25s,background .25s,opacity .25s;opacity:0}
-.cursor-dot{width:5px;height:5px;background:#fff;opacity:0}
-.cursor.hover{width:58px;height:58px;background:rgba(255,255,255,.12);border-color:transparent}
-.cursor.down{width:26px;height:26px}
-@media(hover:hover)and(pointer:fine){body.cursor-on{cursor:none}body.cursor-on a,body.cursor-on button,body.cursor-on .pcard{cursor:none}.cursor.on,.cursor-dot.on{opacity:1}}
-@media(hover:none),(pointer:coarse){.cursor,.cursor-dot{display:none}}
-
-/* image clip reveal */
-html.anim .clip-rev{clip-path:inset(0 0 100% 0)}
-.clip-rev{clip-path:inset(0 0 0 0);transition:clip-path 1.1s cubic-bezier(.7,0,.2,1)}
-html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
-
-/* magnetic wrap keeps layout while inner moves */
-.mag{display:inline-flex;will-change:transform}
-.tilt{transform-style:preserve-3d;will-change:transform}
-.tilt .pviz-ico,.tilt .pviz-brand{transform:translateZ(28px)}
-
-/* CTA sheen */
-.btn-gold,.pdp-cart,.pq-cart{position:relative;overflow:hidden}
-.btn-gold::after,.pdp-cart::after,.pq-cart::after{content:"";position:absolute;top:0;left:-120%;width:55%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);transition:left .6s ease;pointer-events:none}
-.btn-gold:hover::after,.pdp-cart:hover::after,.pq-cart:hover::after{left:170%}
-
-/* scroll progress */
-.sprog{position:fixed;top:0;left:0;height:3px;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(90deg,var(--gold),var(--gold2));z-index:65;pointer-events:none}
-[dir="rtl"] .sprog{transform-origin:100% 50%}
-
-/* ════════════════ PDP v2 ════════════════ */
-.pdp-crumb{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--txt3);margin-bottom:4px;direction:rtl}
-.pdp-crumb button{color:var(--txt2);font-weight:700}
-.pdp-crumb button:hover{color:var(--gold)}
-.pdp-crumb .sep{opacity:.5}
-.pdp-crumb .cur{color:var(--txt)}
-/* gallery: real-photo zoom + honest "more photos on WhatsApp" */
-.pdp-main-viz.zoomable{cursor:zoom-in}
-.pdp-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin-top:12px}
-.pdp-thumb{padding:0;background:var(--ink2);border:2px solid var(--line);border-radius:var(--r-sm);overflow:hidden;cursor:pointer;aspect-ratio:4/5;transition:border-color .15s,transform .15s}
-.pdp-thumb:hover{border-color:var(--gold2);transform:translateY(-2px)}
-.pdp-thumb.on{border-color:var(--gold)}
-.pdp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.pdp-gal-note{display:flex;align-items:center;gap:10px;margin-top:12px;padding:11px 14px;border:1px dashed var(--line2);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--txt2);background:var(--ink2)}
-.pdp-gal-note a{color:var(--green2);text-decoration:underline;white-space:nowrap}
-.pdp-meas-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;margin:18px 0 6px}
-.pdp-meas-strip .m{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 8px;text-align:center}
-.pdp-meas-strip .m .k{font-size:10.5px;font-weight:700;color:var(--txt3)}
-.pdp-meas-strip .m .v{font-family:var(--lt);font-size:14px;font-weight:700;color:var(--cream);direction:ltr}
-/* fit guidance */
-.pdp-fit{display:flex;align-items:flex-start;gap:10px;background:var(--gold-dim);border:1px solid var(--gold-br);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:18px;font-size:13.5px;color:var(--txt);line-height:1.6}
-.pdp-fit b{color:var(--gold2)}
-/* size required error */
-.pdp-sizes.err .sz{border-color:var(--clay2)}
-.pdp-size-err{color:var(--clay2);font-weight:800;font-size:13px;margin:-14px 0 18px;display:none}
-.pdp-size-err.show{display:block}
-.sz[aria-pressed="true"]{background:var(--cream);color:var(--ink);border-color:var(--cream)}
-.sz[disabled]{opacity:.32;text-decoration:line-through;cursor:not-allowed}
-/* cart button states */
-.pdp-cart.ok{background:var(--green);color:#fff}
-.pdp-cart[disabled]{opacity:.7;cursor:default}
-/* zoom lightbox */
-.zoomlb{position:fixed;inset:0;z-index:120;background:rgba(5,5,6,.94);display:none;align-items:center;justify-content:center;padding:20px}
-.zoomlb.show{display:flex}
-.zoomlb img{max-width:100%;max-height:100%;border-radius:var(--r-md)}
-.zoomlb .x{position:absolute;top:18px;right:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line2);color:var(--cream);font-size:20px;display:flex;align-items:center;justify-content:center;background:rgba(10,10,11,.6)}
-
-/* CRO trust and resale clarity layer */
-.lb-answer{max-width:var(--max);margin:26px auto 0;padding:0 20px}
-.lb-answer p{margin:0;padding:14px 18px;border:1px solid var(--gold-br,rgba(200,154,14,.3));border-radius:var(--r-sm,12px);background:rgba(200,154,14,.05);color:var(--txt);font-size:13.5px;font-weight:700;line-height:1.85}
-.lb-answer strong{color:var(--gold2)}
-.lb-answer span{display:block;margin-top:4px;color:var(--txt3);font-size:11.5px;font-weight:700}
-.trust-strip{max-width:var(--max);margin:24px auto 10px;padding:0 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.trust-card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));border:1px solid var(--line);border-radius:var(--r-sm);padding:14px 12px;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:5px;box-shadow:0 12px 34px rgba(0,0,0,.18)}
-.trust-card b{color:var(--cream);font-size:14px}.trust-card span{color:var(--txt3);font-size:12px;font-weight:700;line-height:1.55}
-.intent-moments{max-width:var(--max);margin:22px auto 0;padding:0 20px 10px}
-.intent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.intent-card{border:1px solid var(--line);border-radius:var(--r-sm);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));padding:16px;min-height:178px;display:flex;flex-direction:column;gap:9px}
-.intent-card i{font-style:normal;font-family:var(--lt);font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--gold);direction:ltr;text-transform:uppercase}
-.intent-card b{color:var(--cream);font-size:17px;line-height:1.3}
-.intent-card p{color:var(--txt2);font-size:13px;font-weight:700;line-height:1.7;margin:0}
-.intent-card a{margin-top:auto;display:inline-flex;width:max-content;border-bottom:1px solid var(--line2);color:var(--gold2);font-weight:900;font-size:12.5px;padding-bottom:3px}
-@media(max-width:860px){.intent-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.intent-grid{grid-template-columns:1fr}.intent-card{min-height:auto}}
-.value-reminder{padding:clamp(30px,5vw,52px) var(--pad);border-block:1px solid var(--line);background:linear-gradient(90deg,rgba(200,154,14,.12),rgba(31,168,85,.06),rgba(244,239,230,.025))}
-.value-reminder.alt{background:linear-gradient(90deg,rgba(244,239,230,.04),rgba(180,80,42,.09),rgba(200,154,14,.08))}
-.value-reminder.dark{background:linear-gradient(90deg,rgba(10,10,11,.86),rgba(22,22,25,.98),rgba(200,154,14,.08))}
-.value-in{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}
-.value-k{font-family:var(--lt);font-size:11px;font-weight:700;letter-spacing:.22em;color:var(--gold2);direction:ltr;text-transform:uppercase;margin-bottom:6px}
-.value-title{font-size:clamp(23px,3.4vw,38px);line-height:1.14;font-weight:900;color:var(--cream)}
-.value-title em{font-style:normal;color:var(--gold)}
-.value-copy{color:var(--txt2);font-weight:700;max-width:640px;margin-top:8px}
-.value-points{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.value-points span{border:1px solid var(--line2);border-radius:999px;padding:9px 13px;background:rgba(255,255,255,.045);color:var(--txt);font-size:12px;font-weight:900;white-space:nowrap}
-.proof-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.proof-card{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r-sm);padding:18px;min-height:156px;display:flex;flex-direction:column;justify-content:space-between}
-.proof-card i{font-style:normal;font-family:var(--lt);font-size:12px;font-weight:700;letter-spacing:.18em;color:var(--gold);direction:ltr}
-.proof-card b{display:block;color:var(--cream);font-size:18px;line-height:1.25;margin:14px 0 8px}
-.proof-card span{display:block;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.65}
-.home-faq{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(200,154,14,.055));border-top:1px solid var(--line)}
-.home-faq-list{max-width:980px;margin:0 auto;display:grid;gap:10px}
-.home-faq details{border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.035);overflow:hidden}
-.home-faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;color:var(--cream);font-weight:900}
-.home-faq summary::-webkit-details-marker{display:none}
-.home-faq summary::after{content:"+";font-family:var(--lt);color:var(--gold);font-size:22px}
-.home-faq details[open] summary::after{content:"-"}
-.home-faq p{padding:0 18px 18px;color:var(--txt2);font-weight:700;line-height:1.8}
-.home-faq b{color:var(--cream)}
-.faq-cta{text-align:center;margin-top:28px}
-.faq-cta p{padding:0;color:var(--txt2);font-weight:800;margin-bottom:12px}
-.proof-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-.ps-card{background:linear-gradient(135deg,rgba(200,154,14,.10),rgba(255,255,255,.03));border:1px solid var(--gold-br);border-radius:var(--r-sm);padding:20px 16px;text-align:center}
-.ps-num{display:block;font-family:var(--lt);font-size:clamp(28px,3.5vw,40px);font-weight:700;color:var(--gold);direction:ltr}
-.ps-lbl{display:block;font-size:12.5px;font-weight:800;color:var(--txt2);margin-top:4px}
-.shop-by{padding-block:clamp(36px,5vw,64px)}
-/* lb-origin: Germany → Marrakech → Morocco trust section */
-.lb-origin{background:var(--ink3);padding-block:clamp(56px,8vw,96px)}
-.lb-origin .sec-in{display:flex;flex-direction:column;gap:32px;max-width:900px}
-.lbo-trust-intro{max-width:720px}
-.lbo-journey{display:flex;flex-direction:column;gap:4px;margin:4px 0}
-.lbo-step{display:flex;align-items:center;gap:16px;padding:14px 20px;border:1px solid var(--gold-br,rgba(200,154,14,.22));border-radius:14px;background:rgba(200,154,14,.05)}
-.lbo-step-icon{font-size:28px;flex:none;width:44px;text-align:center}
-.lbo-step-body{display:flex;flex-direction:column;gap:3px}
-.lbo-step-body b{color:var(--cream);font-size:15px;font-weight:900}
-.lbo-step-body span{color:var(--txt2);font-size:13.5px;font-weight:700}
-.lbo-step-arrow{text-align:center;color:var(--gold);font-size:18px;font-weight:900;padding:2px 0}
-.lbo-chips{display:flex;flex-wrap:wrap;gap:8px}
-.lbo-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid rgba(200,154,14,.3);border-radius:50px;color:var(--gold2);font-size:13px;font-weight:800;background:rgba(200,154,14,.07)}
-.lbo-aeo{color:var(--txt3);font-size:13px;font-style:italic;margin:0}
-.lbo-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;background:var(--gold);color:var(--ink);font-weight:900;font-size:15px;text-decoration:none;transition:background .25s,transform .2s;align-self:flex-start}
-.lbo-cta:hover{background:var(--gold2);transform:translateY(-1px)}
-@media(max-width:640px){.lbo-step{padding:12px 14px}.lbo-step-icon{font-size:22px;width:34px}}
-.size-chips,.brand-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.size-chip,.brand-chip{display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--cream);font-weight:800;font-size:14px;transition:var(--tr);text-decoration:none}
-.size-chip{font-family:var(--lt);min-width:52px}
-.size-chip:hover,.brand-chip:hover{border-color:var(--gold-br);background:var(--gold-dim);color:var(--gold2)}
-.size-sep{width:1px;height:32px;background:var(--line2);align-self:center;margin:0 4px}
-@media(max-width:640px){.proof-stats{grid-template-columns:repeat(2,1fr)}.size-chips,.brand-chips{gap:8px}.size-chip,.brand-chip{padding:10px 16px;font-size:13px}}
-@media(max-width:520px){.proof-stats{gap:8px}.ps-card{padding:14px 10px}.ps-num{font-size:24px}}
-.auth-panel{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:stretch;background:linear-gradient(135deg,rgba(200,154,14,.12),rgba(18,18,20,.95));border:1px solid rgba(200,154,14,.24);border-radius:var(--r-lg);padding:clamp(20px,4vw,36px);box-shadow:0 24px 70px rgba(0,0,0,.32)}
-.auth-steps{display:grid;gap:10px}
-.auth-step{display:flex;gap:12px;align-items:flex-start;background:rgba(10,10,11,.42);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px}
-.auth-step i{width:31px;height:31px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--lt);font-style:normal;font-weight:700;font-size:12px;flex:0 0 31px}
-.auth-step b{display:block;color:var(--cream);font-size:14px}.auth-step span{display:block;color:var(--txt2);font-size:12.5px;font-weight:700;line-height:1.6}
-.vault-section{position:relative;overflow:hidden;background:radial-gradient(circle at 18% 10%,rgba(200,154,14,.19),transparent 34%),linear-gradient(180deg,#0f0e0b,#070707);border-block:1px solid rgba(200,154,14,.18)}
-.vault-section::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 48%,rgba(200,154,14,.035) 48% 49%,transparent 49% 100%);pointer-events:none}
-.vault-head{position:relative;align-items:center;margin-bottom:24px}
-.vault-head-copy{max-width:760px}
-.vault-urgency{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:7px 12px;border:1px solid rgba(200,154,14,.26);border-radius:999px;background:rgba(200,154,14,.08);color:var(--gold2);font-size:12.5px;font-weight:900}
-.vault-urgency::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 5px rgba(200,154,14,.12)}
-.vault-primary-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:14px 24px;border-radius:12px;background:var(--gold);color:var(--ink);font-size:15px;font-weight:900;box-shadow:0 14px 38px rgba(200,154,14,.18);transition:transform .25s,background .25s,box-shadow .25s}
-.vault-primary-cta:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 18px 46px rgba(200,154,14,.28)}
-.vault-primary-cta:focus-visible{outline-color:var(--cream)}
-.vault-trust-row{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 18px;border:1px solid rgba(200,154,14,.18);border-radius:12px;background:rgba(10,10,11,.58);overflow:hidden}
-.vault-trust-row span{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 12px;color:var(--txt);font-size:12.5px;font-weight:800;text-align:center;border-inline-start:1px solid var(--line)}
-.vault-trust-row span:first-child{border-inline-start:0}
-.vault-trust-row span::before{content:"✓";color:var(--gold2);font-family:var(--lt);font-weight:700}
-.vault-grid{position:relative;display:grid;grid-template-columns:1.1fr .9fr .9fr;gap:14px;align-items:stretch}
-.vault-card{position:relative;isolation:isolate;min-height:380px;border:1px solid rgba(200,154,14,.24);border-radius:var(--r-md);overflow:hidden;background:var(--ink2);display:flex;align-items:flex-end;padding:24px;transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .35s}
-.vault-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.03) 8%,rgba(0,0,0,.3) 48%,rgba(4,4,5,.94) 100%);z-index:1}
-.vault-card::after{content:"";position:absolute;inset:0;border:1px solid transparent;border-radius:inherit;z-index:3;pointer-events:none;transition:border-color .3s}
-.vault-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.82;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .35s}
-.vault-card-content{position:relative;z-index:2;width:100%}
-.vault-card small{display:block;font-family:var(--lt);font-weight:700;letter-spacing:.16em;color:var(--gold2);direction:ltr;text-align:right;font-size:11px}
-.vault-card b{display:block;color:var(--cream);font-size:clamp(23px,2.7vw,36px);line-height:1.08;margin:8px 0 10px}
-.vault-benefit{display:block;color:var(--cream);font-size:14.5px;font-weight:800;line-height:1.6;max-width:34ch}
-.vlt-proof{display:block;margin-top:6px;color:var(--txt2);font-size:12px;font-weight:800;line-height:1.55}
-.vault-card:first-child{min-height:450px}
-.vlt-meta{display:flex!important;align-items:center;gap:10px;margin-top:14px}
-.vlt-thumbs{display:flex;align-items:center}
-.vlt-thumbs img{position:static!important;width:30px!important;height:30px!important;border-radius:50%;object-fit:cover;border:2px solid var(--ink2);opacity:1!important;margin-inline-start:-8px}
-.vlt-thumbs img:first-child{margin-inline-start:0}
-.vlt-live{color:var(--gold2);font-weight:900;font-size:12.5px}
-.vlt-cta{display:inline-flex!important;align-items:center;gap:7px;margin-top:14px;padding:10px 17px;border:1px solid var(--gold-br,rgba(200,154,14,.4));border-radius:30px;color:var(--gold2);font-size:13px;font-weight:900;background:rgba(10,10,11,.62);max-width:max-content;transition:background .25s,color .25s,transform .25s}
-.vault-card:hover{transform:translateY(-6px);border-color:rgba(224,181,42,.58);box-shadow:0 28px 70px rgba(0,0,0,.48)}
-.vault-card:hover::after{border-color:rgba(224,181,42,.38)}
-.vault-card:hover>img{transform:scale(1.045);opacity:.9}
-.vault-card:hover .vlt-cta{background:var(--gold);color:var(--ink);transform:translateX(-3px)}
-.vault-card:focus-visible{outline:2px solid var(--gold2);outline-offset:4px}
-.vlt-cta.vlt-out{border-color:var(--line);color:var(--txt3)}
-.vault-aeo{max-width:980px;margin:20px auto 0;color:var(--txt2);font-size:13px;font-weight:700;line-height:1.8;text-align:center}
-.vault-aeo strong{color:var(--cream)}
-.vlt-foot{margin-top:18px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
-.vlt-foot p{color:var(--txt2);font-size:13.5px;font-weight:800;margin:0}
-.vlt-foot p b{color:var(--gold2)}
-.vlt-foot .btn-gold{display:inline-flex;align-items:center;gap:8px;padding:15px 30px;border-radius:12px;font-weight:900;font-size:15px;min-height:50px}
-.grade-guide,.sell-trade{max-width:var(--max);margin:28px auto;padding:0 20px}
-.grade-legend-bg{background:linear-gradient(135deg,rgba(211,164,36,.11),rgba(35,130,74,.08));border:1px solid rgba(211,164,36,.22);border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow)}
-.grade-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}.grade-head h2,.sell-card h2{font-size:clamp(24px,3vw,42px);line-height:1;margin:0}.grade-head p,.sell-card p{color:var(--txt2);font-weight:700;line-height:1.7;max-width:620px;margin:0}
-.grade-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grade-card{background:rgba(20,20,23,.78);border:1px solid var(--line2);border-radius:var(--r-sm);padding:16px}.grade-card b{display:block;color:var(--gold2);margin-bottom:8px}.grade-card p{color:var(--txt2);font-size:13px;line-height:1.65;margin:0}
-.sell-card{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:center;background:linear-gradient(135deg,rgba(19,59,36,.72),rgba(25,24,27,.88));border:1px solid rgba(66,216,121,.23);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow)}
-.sell-steps{display:grid;gap:10px}.sell-steps span{background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:999px;padding:11px 14px;color:var(--txt2);font-weight:800}
-.sell-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.payment-badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pay-badge{border:1px solid var(--line2);border-radius:8px;padding:6px 11px;color:var(--txt2);font-size:11px;font-weight:900;background:rgba(255,255,255,.035)}.pay-badge.active{border-color:rgba(66,216,121,.45);color:var(--green2);background:rgba(66,216,121,.08)}
-.dr-pay{justify-content:center;margin-top:10px}.search-chips{width:min(680px,100%);display:flex;flex-wrap:wrap;gap:8px;margin:16px auto 0}.search-chip{border:1px solid var(--line2);border-radius:999px;background:rgba(255,255,255,.04);color:var(--txt2);min-height:38px;padding:0 14px;font-weight:800;font-family:var(--ar)}
-.search-chip:hover{border-color:var(--gold-br);color:var(--gold2)}
-.pmeta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.pmeta-row span{border:1px solid var(--line);border-radius:999px;padding:4px 8px;color:var(--txt3);font-size:10.5px;font-weight:900}.pdelivery{margin:9px 0 0;color:var(--txt3);font-size:12px;font-weight:800}
-.pdp-main-viz img,.ci-viz img{width:100%;height:100%;object-fit:contain!important;object-position:center center!important;transform:none!important;background:var(--ink2)}
-.pdp-main-viz img{position:absolute;inset:0;padding:clamp(8px,1.4vw,18px)}.ci-viz img{display:block;padding:6px}
-.ptrust-passport{margin:18px 0;background:linear-gradient(135deg,rgba(211,164,36,.10),rgba(255,255,255,.035));border:1px solid rgba(211,164,36,.25);border-radius:var(--r-md);padding:16px}
-.tp-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px;color:var(--gold2);font-weight:1000}.tp-title-main{display:flex;align-items:center;gap:10px}.tp-seal{width:44px;height:44px;flex:0 0 44px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.32))}
-.tp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tp-card{background:rgba(20,20,23,.72);border:1px solid var(--line);border-radius:12px;padding:12px}.tp-card b{display:block;color:var(--cream);font-size:12px;margin-bottom:5px}.tp-card span{color:var(--txt2);font-size:12px;font-weight:700;line-height:1.55}
-.pdp-help-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0}.pdp-help{min-height:46px;border-radius:12px;border:1px solid var(--line2);background:rgba(255,255,255,.045);color:var(--cream);font-weight:900;font-family:var(--ar)}
-.pdp-help:hover{border-color:var(--gold-br);color:var(--gold2)}
-@media (max-width:900px){
-  .trust-strip{grid-template-columns:repeat(2,1fr);padding:0 14px}.trust-card:last-child{grid-column:1/-1}.value-in,.auth-panel,.vault-grid{grid-template-columns:1fr}.value-points{justify-content:flex-start}.proof-grid{grid-template-columns:repeat(2,1fr)}.vault-head{align-items:flex-start}.vault-card,.vault-card:first-child{min-height:340px}.vault-trust-row{grid-template-columns:repeat(2,1fr)}.vault-trust-row span:nth-child(3){border-inline-start:0;border-top:1px solid var(--line)}.vault-trust-row span:nth-child(4){border-top:1px solid var(--line)}.grade-grid,.sell-card{grid-template-columns:1fr}.grade-legend-bg,.sell-card{padding:18px}.grade-head{display:block}.tp-grid,.pdp-help-row{grid-template-columns:1fr}
-}
-@media (max-width:520px){
-  .trust-strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.trust-card{min-width:210px;scroll-snap-align:start}.value-reminder{padding-inline:16px}.value-points span{font-size:11px;padding:8px 10px}.proof-grid{grid-template-columns:1fr}.auth-panel{border-radius:18px;padding:16px}.vault-head{margin-bottom:18px}.vault-head-copy .sec-sub{font-size:14px}.vault-primary-cta{width:100%;min-height:52px}.vault-urgency{font-size:11.5px}.vault-trust-row{margin-bottom:14px}.vault-trust-row span{min-height:45px;padding:9px 8px;font-size:11.5px}.vault-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:2px;overscroll-behavior-inline:contain;padding:2px 2px 12px;gap:12px;scrollbar-width:none}.vault-grid::-webkit-scrollbar{display:none}.vault-card,.vault-card:first-child{min-width:84vw;min-height:390px;scroll-snap-align:start;padding:20px}.vault-card-content{padding-inline-end:48px}.vault-card b{font-size:28px}.vault-benefit{font-size:14px}.vlt-proof{font-size:11.5px}.vault-aeo{text-align:right;font-size:12.5px}.vlt-foot .btn-gold{width:100%;justify-content:center}.grade-guide,.sell-trade{padding:0 12px}.payment-badges{gap:6px}.pay-badge{font-size:10px;padding:5px 8px}
-}
-
-/* ════════════════ LUX POLISH LAYER (additive — no HTML/structure changes) ════════════════ */
-/* 1 · Typographic rhythm — tighter editorial headings, calmer Latin micro-labels */
-.h2,.hero-h{letter-spacing:-.018em}
-.hero-h{line-height:1.0}
-.kick,.pinfo-brand,.pdp-brand,.see-all,.fcol-t{letter-spacing:.2em}
-.sec-sub,.story-p,.edit-p{max-width:60ch}
-/* 2 · Section breathing + whisper-thin dividers between stacked blocks */
-.sec{padding-block:clamp(76px,11vw,140px)}
-.sec + .sec,.sec + .edit,.edit + .sec{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
-[id]{scroll-margin-top:84px}
-/* 3 · Product cards — luxury lift, slow image push-in, refined focus */
-.pcard{transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s cubic-bezier(.2,.7,.2,1),border-color .3s}
-.pcard:hover{box-shadow:0 30px 70px -22px rgba(0,0,0,.72)}
-.pviz img{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
-.pcard:hover .pviz img{transform:scale(1.065)}
-.drop-card:hover .pviz img{transform:scale(1.025)}
-.pcard:focus-within{border-color:var(--gold-br)}
-/* 4 · Quieter, more premium badges (one accent reads louder than five) */
-.pb{font-size:9.5px;padding:4px 9px;letter-spacing:.04em;box-shadow:0 2px 10px rgba(0,0,0,.25)}
-.pb-grade{background:rgba(10,10,11,.55);backdrop-filter:none}
-/* 5 · Tactile buttons + animated see-all underline */
-.btn,.pq-cart,.pq-view,.pdp-cart,.pdp-wa,.dr-wa,.nl-btn{transition:transform .2s cubic-bezier(.2,.7,.2,1),background .25s,box-shadow .25s}
-.btn:active,.pdp-cart:active,.pdp-wa:active,.dr-wa:active,.nl-btn:active{transform:scale(.975)}
-.see-all{position:relative}
-.see-all::before{content:"";position:absolute;inset:-14px -6px 0;z-index:1}  /* 2026-10-01: 44px tap area, no visual change */
-.see-all::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform .4s cubic-bezier(.2,.7,.2,1)}
-.see-all:hover::after{transform:scaleX(1)}
-/* 6 · Cart bubble success pulse (fires on add via JS) */
-@keyframes bubPulse{0%{transform:scale(1)}30%{transform:scale(1.5)}60%{transform:scale(.9)}100%{transform:scale(1)}}
-.bub.pulse{animation:bubPulse .5s cubic-bezier(.2,.9,.24,1)}
-.icon-b.cart-flash{box-shadow:0 0 0 3px var(--gold-br)}
-/* 7 · Image fade-in to kill load flash (CLS-safe — dimensions already reserved) */
-.pviz img,.story-visual img,.edit-img img,.look-it img{background:var(--ink2)}
-@media (prefers-reduced-motion:reduce){.pcard:hover .pviz img{transform:none}.see-all::after{transition:none}}
-
-/* ════════════════ INSPECTION CHECKLIST ════════════════ */
-.inspect{background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(200,154,14,.04));border-block:1px solid var(--line)}
-.inspect-head{max-width:var(--max);margin:0 auto;padding:0 var(--pad);text-align:center;margin-bottom:clamp(24px,3vw,38px)}
-.inspect-h{font-size:clamp(26px,4vw,40px);font-weight:900;color:var(--cream);line-height:1.15;margin-top:6px}
-.inspect-h em{font-style:normal;color:var(--gold2)}
-.inspect-sub{max-width:60ch;margin:10px auto 0;color:var(--txt2);font-size:14.5px;font-weight:500}
-.inspect-grid{max-width:var(--max);margin:0 auto;padding:0 var(--pad);display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.inspect-card{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:var(--r-md);padding:18px 16px;transition:var(--tr)}
-.inspect-card:hover{border-color:var(--gold-br);transform:translateY(-2px);background:rgba(255,255,255,.05)}
-.ic-num{font-family:var(--lt);font-weight:700;color:var(--gold2);font-size:13px;min-width:24px;direction:ltr;padding-top:2px}
-.ic-body b{display:block;color:var(--cream);font-size:15px;margin-bottom:4px;font-weight:900}
-.ic-body span{color:var(--txt2);font-size:13px;line-height:1.65;font-weight:500}
-@media(max-width:780px){.inspect-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.inspect-grid{grid-template-columns:1fr;gap:8px}.inspect-card{padding:14px 12px}}
-
-/* ════════════════ WHAT-YOU-SEE STRIP ════════════════ */
-.see-arrives{background:var(--ink);border-top:1px solid var(--line)}
-.see-arrives-in{max-width:var(--max);margin:0 auto;padding:clamp(28px,4vw,52px) var(--pad);display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.sa-card{padding:22px 20px;border:1px solid var(--gold-br);border-radius:var(--r-md);background:linear-gradient(135deg,rgba(200,154,14,.08),rgba(255,255,255,.025));transition:var(--tr)}
-.sa-card:hover{border-color:var(--gold2);transform:translateY(-2px)}
-.sa-ic{font-size:22px;margin-bottom:10px}
-.sa-card b{display:block;color:var(--cream);font-size:16px;margin-bottom:6px;font-weight:900}
-.sa-card p{color:var(--txt2);font-size:13.5px;line-height:1.65;font-weight:500;margin:0}
-@media(max-width:780px){.see-arrives-in{grid-template-columns:1fr;gap:10px}}
-
-</style>
+{% render 'lbass-home-css' %}
 {{ content_for_header }}
 {% render 'lbass-ai-attribution' %}
 {% render 'lbass-stamp' %}
 {% render 'lbass-meta-pixel' %}
+{%- comment -%} 2026-10-11 SPEED: see Lbass/fixes/2026-10-11-fast-homepage.md {%- endcomment -%}
+{% render 'lbass-home-density' %}
+{% render 'lbass-home-answer' %}
 </head>
 <body>
-<!-- ═══ PRELOADER ═══ -->
-<div class="preload" id="preload" aria-hidden="true">
-  <span class="preload-star"><svg viewBox="0 0 100 100"><path d="M50 0 L61 27 L88 12 L73 39 L100 50 L73 61 L88 88 L61 73 L50 100 L39 73 L12 88 L27 61 L0 50 L27 39 L12 12 L39 27 Z" fill="currentColor"/></svg></span>
-  <span class="preload-word">LBASS ORIGINAL</span>
-  <span class="preload-bar"><i id="preloadBar"></i></span>
-</div>
+{%- comment -%} 2026-10-11 SPEED: see Lbass/fixes/2026-10-11-fast-homepage.md {%- endcomment -%}
 
 <!-- ═══ scroll progress + custom cursor ═══ -->
 <div class="sprog" id="sprog"></div>
@@ -916,6 +93,8 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
     <span>✦ صور حقيقية و<b>حالة موضحة</b> حسب كل قطعة</span>
   </div>
 </div>
+{%- comment -%} 2026-10-11 SPEED 2: see Lbass/fixes/2026-10-11-speed-pass-2.md {%- endcomment -%}
+{% render 'lbass-menu' %}
 
 
 <!-- ═══ TRUST ANNOUNCEMENT BAR ═══ -->
@@ -1010,25 +189,20 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
   theme-preview-208658399563/before/ if it is ever needed again.
 {%- endcomment -%}
 {%- comment -%}
-  2026-10-01 — the hero's real piece (snippets/lbass-hero-proof): the first
-  in-stock clothing, shoe or accessory piece of the homepage collection, so the
-  owner chooses it by ordering that collection. Picked here, not in the
-  carousel, so the category strip and THE DROP rail below can skip it.
+  2026-10-01 — the hero showed one real piece (snippets/lbass-hero-proof, part
+  'card'): the first in-stock piece of the manual collection audited-drop-p001-p012.
+  2026-10-03 — REMOVED at the owner's request. It was always an old piece (that
+  collection stopped being updated on 2026-09-26), its condition line could read
+  «شوف الملاحظات» as the first thing a visitor saw, and it added a third tap
+  target under the two hero buttons. Real pieces start one scroll lower, in the
+  «قطع جداد» rail (newest first from collections['new-in']).
+  hero_pick stays nil so nothing below skips a piece that is no longer shown.
+  To restore: re-add the picker loop here and the part 'card' render after the
+  two buttons in snippets/lbass-hero-carousel.liquid.
 {%- endcomment -%}
-{%- liquid
-  assign hero_pick = nil
-  assign hero_src = collections['audited-drop-p001-p012'].products | where: 'available', true
-  for hp in hero_src
-    assign hp_type = hp.type | downcase
-    if hp_type == 'fragrance' or hp_type == 'cosmetics'
-      continue
-    endif
-    assign hero_pick = hp
-    break
-  endfor
--%}
+{%- assign hero_pick = nil -%}
 {% render 'lbass-hero-carousel', hero_pick: hero_pick %}
-{% render 'lbass-shop-by-category', hero_id: hero_pick.id %}
+{%- comment -%} 2026-10-11 SPEED 2: see Lbass/fixes/2026-10-11-speed-pass-2.md {%- endcomment -%}
 
 <!-- ═══ MARQUEE ═══ -->
 <div class="mq" aria-hidden="true">
@@ -1038,7 +212,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 </div>
 
 <section class="lb-answer" aria-label="شنو هو Lbass Original">
-  <p><strong>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج branded second-hand، sneakers، accessories وstreetwear مختارة من ألمانيا.</strong> كل قطعة كتتشيك فمراكش وكتتصور بنفسها، وشارة 1/1 كتبان غير ملي المخزون كيأكد قطعة وحدة. التوصيل 20 درهم داخل مراكش و50 درهم لباقي المغرب، والخلاص بـ COD أو PayPal. <span dir="ltr">Lbass Original is a Moroccan online store based in Marrakech for original second-hand branded clothing, sneakers, accessories and streetwear sourced from Germany and checked in Marrakech.</span></p>
+  <p><strong>Lbass Original هو متجر مغربي من مراكش كيعرض حوايج branded second-hand، sneakers، accessories وstreetwear مختارة من ألمانيا.</strong> كل قطعة كتتشيك فمراكش وكتتصور بنفسها، وشارة 1/1 كتبان غير ملي المخزون كيأكد قطعة وحدة. التوصيل 20 درهم داخل مراكش و50 درهم لباقي المغرب، ومجاني من 500 درهم، والخلاص بـ COD أو PayPal. <span dir="ltr">Lbass Original is a Moroccan online store based in Marrakech for original second-hand branded clothing, sneakers, accessories and streetwear sourced from Germany and checked in Marrakech.</span></p>
 </section>
 
 <!-- ── AI Referral Welcome Block ─────────────────────────────────────────
@@ -1047,35 +221,164 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
      Fix: route AI visitors to products immediately.
      Source: GA4 analysis 2026-08-22.
 ───────────────────────────────────────────────────────────────────────── -->
-<div id="lb-ai-block" style="display:none;max-width:var(--max,1100px);margin:0 auto;padding:0 20px">
-  <div style="padding:18px 20px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:12px">
-    <p style="margin:0 0 4px;font-size:11px;font-weight:800;letter-spacing:.15em;color:rgba(37,211,102,.7)">جيت من AI؟</p>
-    <p style="margin:0 0 14px;font-size:15px;font-weight:800;color:var(--cream,#F4EFE6)">هاد القطع اللي كيتحدث عليهم ChatGPT وPerplexity — Second-Hand أصلي من مراكش</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" style="padding:10px 16px;background:var(--gold,#c89a0e);color:#000;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">👟 الصبابط</a>
-      <a href="/collections/adidas-originals" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Adidas</a>
-      <a href="/collections/nike" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Nike</a>
-      <a href="/collections/all" style="padding:10px 16px;background:transparent;border:1px solid #444;color:var(--txt2,#97928A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">كل القطع</a>
-    </div>
-    <p style="margin:10px 0 0;font-size:12px;color:var(--txt3,#66615A)">COD — خلّص ملي توصلك · 20 درهم مراكش · 50 درهم باقي المغرب · صور حقيقية · حالة واضحة</p>
-  </div>
-</div>
+{%- comment -%}
+  2026-10-04 (AI-readiness audit). This block used to sit in the HTML with
+  display:none and be revealed by JS: hidden text in the page source, which the
+  audit penalised. The script now BUILDS it, and only for AI referrers (or
+  ?ref=ai), so crawlers and normal visitors get no hidden copy. Copy toned down:
+  the old line «هاد القطع اللي كيتحدث عليهم ChatGPT وPerplexity» claimed something
+  we cannot check. The kicker lost letter-spacing:.15em, which broke Arabic letter
+  joining. Same links, same GA4 event (ai_referral_detected).
+{%- endcomment -%}
+<div id="lb-ai-block"></div>
 <script>
 (function(){
   var ref = document.referrer || '';
   var ai  = ['chatgpt.com','perplexity.ai','claude.ai','copilot.microsoft.com',
               'gemini.google.com','you.com','phind.com','kagi.com'];
   var isAI = ai.some(function(s){ return ref.indexOf(s) > -1; });
-  if(isAI || new URLSearchParams(window.location.search).get('ref') === 'ai'){
-    var el = document.getElementById('lb-ai-block');
-    if(el) el.style.display = 'block';
-    if(typeof gtag === 'function'){
-      gtag('event','ai_referral_detected',{event_category:'acquisition',event_label:ref.split('/')[2]||'ai_param'});
-    }
+  if(!(isAI || new URLSearchParams(window.location.search).get('ref') === 'ai')) return;
+  var el = document.getElementById('lb-ai-block');
+  if(!el) return;
+  el.style.cssText = 'max-width:var(--max,1100px);margin:0 auto;padding:0 20px';
+  el.innerHTML =
+    '<div style="padding:18px 20px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:12px">' +
+      '<p style="margin:0 0 4px;font-size:12px;font-weight:800;color:rgba(37,211,102,.75)">جيت من مساعد AI؟ مرحبا بيك</p>' +
+      '<p style="margin:0 0 14px;font-size:15px;font-weight:800;color:var(--cream,#F4EFE6)">هنا كتلقى حوايج براند second-hand أصلية متوفرة دابا، بصور حقيقية لنفس القطعة.</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+        '<a href="/collections/%D8%B5%D8%A8%D8%A7%D8%A8%D8%B7" style="padding:10px 16px;background:var(--gold,#c89a0e);color:#000;border-radius:8px;text-decoration:none;font-weight:800;font-size:13px">👟 الصبابط</a>' +
+        '<a href="/collections/adidas-originals" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Adidas</a>' +
+        '<a href="/collections/nike" style="padding:10px 16px;background:transparent;border:1px solid rgba(200,154,14,.4);color:var(--gold2,#E0B52A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">Nike</a>' +
+        '<a href="/collections/all" style="padding:10px 16px;background:transparent;border:1px solid #444;color:var(--txt2,#97928A);border-radius:8px;text-decoration:none;font-weight:700;font-size:13px">كل القطع</a>' +
+      '</div>' +
+      '<p style="margin:10px 0 0;font-size:12px;color:var(--txt3,#66615A)">COD — خلّص ملي توصلك · 20 درهم مراكش · 50 درهم باقي المغرب · مجاني من 500 درهم · صور حقيقية · حالة واضحة</p>' +
+    '</div>';
+  if(typeof gtag === 'function'){
+    gtag('event','ai_referral_detected',{event_category:'acquisition',event_label:ref.split('/')[2]||'ai_param'});
   }
 })();
 </script>
 
+
+{%- comment -%} 2026-10-11 SPEED 3: «قطع جداد» (#drop) and the category tiles (lbass-shop-by-category) moved up here from after #inspection, so the HTML order matches the display order (CSS order 1 and 2 in lbass-home-density). Phones paint while the page is still downloading: the trust strip (order 4) was painted at the bottom of the first screen, then pushed off when #drop arrived. Measured on slow 4G: layout shift 0.044 on every load, 0.33 when it landed in the same frame as the headline's font swap. {%- endcomment -%}
+<!-- ═══ THE DROP ═══ -->
+<section class="sec" id="drop" aria-labelledby="drop-h">
+  <div class="sec-in">
+    <div class="sec-head rev">
+      <div>
+        <p class="kick">THE DROP — وصلو هاد السيمانة</p>
+        <h2 class="h2" id="drop-h">قطع جداد، <em>وحدة بوحدة</em></h2>
+        <p class="sec-sub">أغلب القطع كتكون وحدة فالمخزون؛ الحالة والتّيكيت كيبانو بوضوح قبل الشراء.</p>
+      </div>
+      <a class="see-all" href="/collections/new-in" data-cro-event="new_drop_click" data-cro-label="section_header">SHOP THE DROP →</a>
+    </div>
+    <div class="drop-rail" id="dropRail">
+      {%- comment -%} 2026-10-03: this section read the MANUAL collection audited-drop-p001-p012, last edited 2026-09-26, so nothing listed after that date ever appeared on the homepage (27 pieces missing, including the whole 2026-10-01 drop). It now reads the AUTOMATIC collection new-in (tags type:shoes / type:clothing / type:accessory, sorted newest first; perfume and K-beauty are not in it), so every new listing shows up by itself. The hero above still reads the manual collection on purpose: the owner picks the hero piece by ordering it. {%- endcomment -%}
+      {% assign homepage_collection = collections['new-in'] %}
+      {%- comment -%}
+        In-stock only. The rail used to loop the raw collection, so sold-out
+        pieces took slots in the first product row a visitor sees. Measured
+        2026-08-26: 8 of the catalogue's active products had totalInventory 0.
+      {%- endcomment -%}
+      {% assign drop_available = homepage_collection.products | where: 'available', true %}
+      {%- comment -%} 2026-10-01: the rail skipped the hero's piece and still showed 8. 2026-10-03: the hero shows no piece any more (hero_pick is nil), so nothing is skipped. {%- endcomment -%}
+      {% assign drop_shown = 0 %}
+      {% for product in drop_available limit: 9 %}
+        {% if hero_pick and product.id == hero_pick.id %}{% continue %}{% endif %}
+        {% if drop_shown >= 8 %}{% break %}{% endif %}
+        {% assign drop_shown = drop_shown | plus: 1 %}
+        {% assign variant = product.selected_or_first_available_variant %}
+        {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
+        {% assign drop_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
+        {% assign drop_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
+        {% assign drop_inspection = product.metafields.lbass.inspection_status.value %}
+        {% assign drop_has_ticket = product.metafields.lbass.has_original_ticket.value %}
+        {% assign drop_notes = product.metafields.lbass.condition_notes.value %}
+        {% assign drop_defects = product.metafields.lbass.visible_defects.value %}
+        {% assign drop_ticket_confirmed = false %}
+        {% if drop_has_ticket == true %}
+          {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_ticket_confirmed = true %}{% endif %}
+        {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' %}
+          {% assign drop_ticket_confirmed = true %}
+        {% endif %}
+        {% assign drop_condition = '' %}
+        {% assign drop_confirmed = false %}
+        {% if drop_inspection == 'inspected_confirmed' %}
+          {% if drop_has_ticket == true and drop_status == 'new_with_ticket' %}
+            {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_condition = 'جديد بالتّيكيت' %}{% assign drop_confirmed = true %}{% endif %}
+          {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' and drop_status == 'excellent_almost_new' %}
+            {% assign drop_condition = 'بحالة ممتازة · شبه جديد' %}{% assign drop_confirmed = true %}
+          {% elsif drop_ticket_confirmed and drop_status == 'very_good' %}
+            {% assign drop_condition = 'بحالة مزيانة بزاف' %}{% assign drop_confirmed = true %}
+          {% elsif drop_ticket_confirmed and drop_status == 'good' %}
+            {% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}
+          {% elsif drop_ticket_confirmed and drop_status == 'needs_note' %}
+            {% if drop_notes != blank or drop_defects != blank %}{% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}{% endif %}
+          {% endif %}
+        {% endif %}
+        {% capture drop_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign drop_one_s = drop_one_s | strip %}{% assign drop_one = false %}{% if drop_one_s == '1' %}{% assign drop_one = true %}{% endif %}
+        {% assign drop_promo = false %}{% if variant.available and drop_confirmed and product.metafields.lbass.promo_eligible.value == true %}{% if drop_status == 'new_with_ticket' or drop_status == 'excellent_almost_new' %}{% assign drop_promo = true %}{% endif %}{% endif %}
+        {% assign drop_image = blank %}
+        {% case product.handle %}
+          {% when 'lbass-p001-striped-shirt-shorts-set' %}{% assign drop_image = 'lbass-preview-p001-striped-set.webp' | asset_url %}
+          {% when 'lbass-p002-zara-khaki-jacket' %}{% assign drop_image = 'lbass-preview-p002-zara-jacket.webp' | asset_url %}
+          {% when 'lbass-p003-nike-calm-flip-flop-beige' %}{% assign drop_image = 'lbass-preview-p003-nike-calm-beige.webp' | asset_url %}
+          {% when 'lbass-p004-adidas-black-crossbody-bag' %}{% assign drop_image = 'lbass-preview-p004-adidas-bag.webp' | asset_url %}
+          {% when 'lbass-p005-nike-black-slides' %}{% assign drop_image = 'lbass-preview-p005-nike-black-slides.webp' | asset_url %}
+          {% when 'lbass-p006-karl-kani-blue-slides' %}{% assign drop_image = 'lbass-preview-p006-blue-slides.webp' | asset_url %}
+          {% when 'lbass-p007-new-balance-black-jersey' %}{% assign drop_image = 'lbass-preview-p007-new-balance-jersey.webp' | asset_url %}
+          {% when 'lbass-p008-nike-air-black-top' %}{% assign drop_image = 'lbass-preview-p008-nike-air-top.webp' | asset_url %}
+          {% when 'lbass-p009-nike-black-waist-bag' %}{% assign drop_image = 'lbass-preview-p009-nike-waist-bag.webp' | asset_url %}
+          {% when 'lbass-p010a-nike-navy-slides' %}{% assign drop_image = 'lbass-preview-p010a-nike-navy-slides.webp' | asset_url %}
+          {% when 'lbass-p010b-adidas-black-slides' %}{% assign drop_image = 'lbass-preview-p010b-adidas-black-slides.webp' | asset_url %}
+          {% when 'lbass-p011-nike-white-cap' %}{% assign drop_image = 'lbass-preview-p011-nike-white-cap.webp' | asset_url %}
+          {% when 'lbass-p012-tommy-hilfiger-black-cap' %}{% assign drop_image = 'lbass-preview-p012-tommy-cap.webp' | asset_url %}
+        {% endcase %}
+        <div class="lbqa-wrap">
+        <a class="pcard drop-card" href="{{ product.url }}" data-cro-product-card data-cro-placement="new_drop" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
+          <div class="pviz">
+            {% if drop_image != blank %}
+              <img src="{{ drop_image }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="640" height="800">
+            {% elsif product.featured_image %}
+              <img src="{{ product.featured_image | image_url: width: 540 }}" srcset="{{ product.featured_image | image_url: width: 360 }} 360w, {{ product.featured_image | image_url: width: 540 }} 540w, {{ product.featured_image | image_url: width: 720 }} 720w" sizes="(max-width: 767px) 62vw, 310px" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="700" height="875">
+            {% else %}
+              <div class="pviz-bg" style="background:linear-gradient(150deg,#1f2420,#101312)"></div>
+              <span class="pviz-brand">{{ product.vendor | escape }}</span>
+            {% endif %}
+            <div class="pbadges"><span class="pb">وصل جديد</span>{% if drop_promo %}<span class="pb pb-drop">قطعة مختارة</span>{% endif %}<span class="pb pb-grade">{{ drop_condition }}</span></div>
+          </div>
+          <div class="pinfo">
+            <p class="pinfo-brand">{{ product.vendor | escape }}</p>
+            <h3 class="pname">{{ display_title | escape }}</h3>
+            {%- comment -%}
+              The percentage comes from snippets/lbass-sale so this rail cannot
+              disagree with the collection grid or the product page about the
+              same piece. The .psave slot shows the DISCOUNT when there is one
+              and falls back to 1/1 otherwise — the same rule the JS-rendered
+              card at cardHTML() already follows, so the two card paths on this
+              page stay consistent.
+            {%- endcomment -%}
+            {%- assign drop_sale = false -%}
+            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign drop_sale = true -%}{%- endif -%}
+            {%- capture drop_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
+            {%- assign drop_pct = drop_pct | strip -%}
+            <div class="prow">
+              <span><span class="pprice">{{ variant.price | money_without_trailing_zeros }}</span>{% if drop_sale %} <span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}</span>
+              {% if drop_sale and drop_pct != '0' %}<span class="psave">&minus;{{ drop_pct }}%</span>{% elsif drop_one %}<span class="psave">1/1</span>{% endif %}
+            </div>
+            {% if drop_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
+            <div class="psizes"><span class="psz">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span></div>
+            <div class="pmeta-row"><span>{% if drop_one %}قطعة وحدة{% elsif variant.available %}متوفرة دابا{% else %}تباعت{% endif %}</span><span>COD أو PayPal</span></div>
+            <p class="pdelivery">🚚 توصيل لكل المغرب</p>
+          </div>
+        </a>
+        {% render 'lbass-quick-add', product: product %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% render 'lbass-shop-by-category', hero_id: hero_pick.id %}
 
 <section class="trust-strip" aria-label="معلومات الثقة">
   <div class="trust-card"><b>✓ معلومات حسب التأكيد</b><span>كنبيّنو التّيكيت والحالة وملاحظات الفحص غير ملي تكون مسجلة ومؤكدة.</span></div>
@@ -1135,138 +438,24 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
   </div>
 </section>
 
-<!-- ═══ THE DROP ═══ -->
-<section class="sec" id="drop" aria-labelledby="drop-h">
-  <div class="sec-in">
-    <div class="sec-head rev">
-      <div>
-        <p class="kick">THE DROP — وصلو هاد السيمانة</p>
-        <h2 class="h2" id="drop-h">قطع جداد، <em>وحدة بوحدة</em></h2>
-        <p class="sec-sub">أغلب القطع كتكون وحدة فالمخزون؛ الحالة والتّيكيت كيبانو بوضوح قبل الشراء.</p>
-      </div>
-      <a class="see-all" href="/collections/audited-drop-p001-p012" data-cro-event="new_drop_click" data-cro-label="section_header">SHOP THE DROP →</a>
-    </div>
-    <div class="drop-rail" id="dropRail">
-      {% assign homepage_collection = collections['audited-drop-p001-p012'] %}
-      {%- comment -%}
-        In-stock only. The rail used to loop the raw collection, so sold-out
-        pieces took slots in the first product row a visitor sees. Measured
-        2026-08-26: 8 of the catalogue's active products had totalInventory 0.
-      {%- endcomment -%}
-      {% assign drop_available = homepage_collection.products | where: 'available', true %}
-      {%- comment -%} 2026-10-01: the hero already shows hero_pick, so the rail skips it and still shows 8. {%- endcomment -%}
-      {% assign drop_shown = 0 %}
-      {% for product in drop_available limit: 9 %}
-        {% if hero_pick and product.id == hero_pick.id %}{% continue %}{% endif %}
-        {% if drop_shown >= 8 %}{% break %}{% endif %}
-        {% assign drop_shown = drop_shown | plus: 1 %}
-        {% assign variant = product.selected_or_first_available_variant %}
-        {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
-        {% assign drop_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
-        {% assign drop_status = product.metafields.lbass.condition_status.value | default: 'unknown' %}
-        {% assign drop_inspection = product.metafields.lbass.inspection_status.value %}
-        {% assign drop_has_ticket = product.metafields.lbass.has_original_ticket.value %}
-        {% assign drop_notes = product.metafields.lbass.condition_notes.value %}
-        {% assign drop_defects = product.metafields.lbass.visible_defects.value %}
-        {% assign drop_ticket_confirmed = false %}
-        {% if drop_has_ticket == true %}
-          {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_ticket_confirmed = true %}{% endif %}
-        {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' %}
-          {% assign drop_ticket_confirmed = true %}
-        {% endif %}
-        {% assign drop_condition = '' %}
-        {% assign drop_confirmed = false %}
-        {% if drop_inspection == 'inspected_confirmed' %}
-          {% if drop_has_ticket == true and drop_status == 'new_with_ticket' %}
-            {% if drop_ticket == 'ticket_attached' or drop_ticket == 'ticket_included' %}{% assign drop_condition = 'جديد بالتّيكيت' %}{% assign drop_confirmed = true %}{% endif %}
-          {% elsif drop_has_ticket == false and drop_ticket == 'no_ticket' and drop_status == 'excellent_almost_new' %}
-            {% assign drop_condition = 'بحالة ممتازة · شبه جديد' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'very_good' %}
-            {% assign drop_condition = 'بحالة مزيانة بزاف' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'good' %}
-            {% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}
-          {% elsif drop_ticket_confirmed and drop_status == 'needs_note' %}
-            {% if drop_notes != blank or drop_defects != blank %}{% assign drop_condition = 'بحالة مزيانة · شوف الملاحظات' %}{% assign drop_confirmed = true %}{% endif %}
-          {% endif %}
-        {% endif %}
-        {% capture drop_one_s %}{% render 'lbass-one-of-one', product: product %}{% endcapture %}{% assign drop_one_s = drop_one_s | strip %}{% assign drop_one = false %}{% if drop_one_s == '1' %}{% assign drop_one = true %}{% endif %}
-        {% assign drop_promo = false %}{% if variant.available and drop_confirmed and product.metafields.lbass.promo_eligible.value == true %}{% if drop_status == 'new_with_ticket' or drop_status == 'excellent_almost_new' %}{% assign drop_promo = true %}{% endif %}{% endif %}
-        {% assign drop_image = blank %}
-        {% case product.handle %}
-          {% when 'lbass-p001-striped-shirt-shorts-set' %}{% assign drop_image = 'lbass-preview-p001-striped-set.webp' | asset_url %}
-          {% when 'lbass-p002-zara-khaki-jacket' %}{% assign drop_image = 'lbass-preview-p002-zara-jacket.webp' | asset_url %}
-          {% when 'lbass-p003-nike-calm-flip-flop-beige' %}{% assign drop_image = 'lbass-preview-p003-nike-calm-beige.webp' | asset_url %}
-          {% when 'lbass-p004-adidas-black-crossbody-bag' %}{% assign drop_image = 'lbass-preview-p004-adidas-bag.webp' | asset_url %}
-          {% when 'lbass-p005-nike-black-slides' %}{% assign drop_image = 'lbass-preview-p005-nike-black-slides.webp' | asset_url %}
-          {% when 'lbass-p006-karl-kani-blue-slides' %}{% assign drop_image = 'lbass-preview-p006-blue-slides.webp' | asset_url %}
-          {% when 'lbass-p007-new-balance-black-jersey' %}{% assign drop_image = 'lbass-preview-p007-new-balance-jersey.webp' | asset_url %}
-          {% when 'lbass-p008-nike-air-black-top' %}{% assign drop_image = 'lbass-preview-p008-nike-air-top.webp' | asset_url %}
-          {% when 'lbass-p009-nike-black-waist-bag' %}{% assign drop_image = 'lbass-preview-p009-nike-waist-bag.webp' | asset_url %}
-          {% when 'lbass-p010a-nike-navy-slides' %}{% assign drop_image = 'lbass-preview-p010a-nike-navy-slides.webp' | asset_url %}
-          {% when 'lbass-p010b-adidas-black-slides' %}{% assign drop_image = 'lbass-preview-p010b-adidas-black-slides.webp' | asset_url %}
-          {% when 'lbass-p011-nike-white-cap' %}{% assign drop_image = 'lbass-preview-p011-nike-white-cap.webp' | asset_url %}
-          {% when 'lbass-p012-tommy-hilfiger-black-cap' %}{% assign drop_image = 'lbass-preview-p012-tommy-cap.webp' | asset_url %}
-        {% endcase %}
-        <div class="lbqa-wrap">
-        <a class="pcard drop-card" href="{{ product.url }}" data-cro-product-card data-cro-placement="new_drop" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
-          <div class="pviz">
-            {% if drop_image != blank %}
-              <img src="{{ drop_image }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="640" height="800">
-            {% elsif product.featured_image %}
-              <img src="{{ product.featured_image | image_url: width: 700 }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="700" height="875">
-            {% else %}
-              <div class="pviz-bg" style="background:linear-gradient(150deg,#1f2420,#101312)"></div>
-              <span class="pviz-brand">{{ product.vendor | escape }}</span>
-            {% endif %}
-            <div class="pbadges"><span class="pb">وصل جديد</span>{% if drop_promo %}<span class="pb pb-drop">قطعة مختارة</span>{% endif %}<span class="pb pb-grade">{{ drop_condition }}</span></div>
-          </div>
-          <div class="pinfo">
-            <p class="pinfo-brand">{{ product.vendor | escape }}</p>
-            <h3 class="pname">{{ display_title | escape }}</h3>
-            {%- comment -%}
-              The percentage comes from snippets/lbass-sale so this rail cannot
-              disagree with the collection grid or the product page about the
-              same piece. The .psave slot shows the DISCOUNT when there is one
-              and falls back to 1/1 otherwise — the same rule the JS-rendered
-              card at cardHTML() already follows, so the two card paths on this
-              page stay consistent.
-            {%- endcomment -%}
-            {%- assign drop_sale = false -%}
-            {%- if variant.compare_at_price and variant.compare_at_price > variant.price -%}{%- assign drop_sale = true -%}{%- endif -%}
-            {%- capture drop_pct %}{% render 'lbass-sale', product: product, variant: variant %}{% endcapture -%}
-            {%- assign drop_pct = drop_pct | strip -%}
-            <div class="prow">
-              <span><span class="pprice">{{ variant.price | money_without_trailing_zeros }}</span>{% if drop_sale %} <span class="pold">{{ variant.compare_at_price | money_without_trailing_zeros }}</span>{% endif %}</span>
-              {% if drop_sale and drop_pct != '0' %}<span class="psave">&minus;{{ drop_pct }}%</span>{% elsif drop_one %}<span class="psave">1/1</span>{% endif %}
-            </div>
-            {% if drop_sale %}<p class="psaving" dir="auto">{{ settings.promo_save_label | default: 'وفّر' }} <span dir="ltr">{{ variant.compare_at_price | minus: variant.price | money_without_trailing_zeros }}</span></p>{% endif %}
-            <div class="psizes"><span class="psz">{% unless variant.title == 'Default Title' %}{{ variant.title | escape }}{% else %}One Size{% endunless %}</span></div>
-            <div class="pmeta-row"><span>{% if drop_one %}قطعة وحدة{% elsif variant.available %}متوفرة دابا{% else %}تباعت{% endif %}</span><span>COD أو PayPal</span></div>
-            <p class="pdelivery">🚚 توصيل لكل المغرب</p>
-          </div>
-        </a>
-        {% render 'lbass-quick-add', product: product %}
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
 
 <!-- ═══ REAL SHOPIFY PRODUCTS ═══ -->
 <section class="sec real-products" id="shop" style="padding-top:20px" aria-labelledby="shop-h">
   <div class="sec-in">
-    {% assign homepage_collection = collections['audited-drop-p001-p012'] %}
+    {%- comment -%} 2026-10-03: this section read the MANUAL collection audited-drop-p001-p012, last edited 2026-09-26, so nothing listed after that date ever appeared on the homepage (27 pieces missing, including the whole 2026-10-01 drop). It now reads the AUTOMATIC collection new-in (tags type:shoes / type:clothing / type:accessory, sorted newest first; perfume and K-beauty are not in it), so every new listing shows up by itself. The hero above still reads the manual collection on purpose: the owner picks the hero piece by ordering it. In-stock only, to match the heading «متوفرة دابا»; sold-out pieces stay on the collection page. {%- endcomment -%}
+    {% assign homepage_collection = collections['new-in'] %}
     <div class="sec-head rev">
       <div>
         <p class="kick">الكولكسيون الكامل</p>
         <h2 class="h2" id="shop-h">القطع اللي <em>متوفرة دابا</em></h2>
         <p class="sec-sub">هاد المنتجات جاية مباشرة من Shopify: صور المنتج، الثمن، القياس، والرابط ديال كل قطعة.</p>
       </div>
-      <a class="see-all" href="{{ homepage_collection.url | default: '/collections/audited-drop-p001-p012' }}">{{ homepage_collection.products_count }} قطعة →</a>
+      <a class="see-all" href="{{ homepage_collection.url | default: '/collections/new-in' }}">{{ homepage_collection.products_count }} قطعة →</a>
     </div>
 
     <div class="real-grid" aria-label="منتجات Shopify المتوفرة">
-      {% for product in homepage_collection.products limit: 50 %}
+      {% assign shop_available = homepage_collection.products | where: 'available', true %}
+      {% for product in shop_available limit: 24 %}
         {% assign variant = product.selected_or_first_available_variant %}
         {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
         {% assign real_ticket = product.metafields.lbass.ticket_status.value | default: 'unknown' %}
@@ -1300,7 +489,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
         <a class="real-card" href="{{ product.url }}" aria-label="{{ display_title | escape }}" data-cro-product-card data-cro-placement="homepage_collection" data-product-id="{{ product.id }}" data-product-name="{{ display_title | escape }}">
           <figure class="real-media">
             {% if product.featured_image %}
-              <img src="{{ product.featured_image | image_url: width: 900 }}" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="900" height="1125">
+              <img src="{{ product.featured_image | image_url: width: 540 }}" srcset="{{ product.featured_image | image_url: width: 360 }} 360w, {{ product.featured_image | image_url: width: 540 }} 540w, {{ product.featured_image | image_url: width: 720 }} 720w" sizes="(max-width: 767px) 47vw, (max-width: 1100px) 31vw, 280px" alt="{{ display_title | escape }}" loading="lazy" decoding="async" width="900" height="1125">
             {% else %}
               <span class="real-empty">{{ product.vendor | escape }}</span>
             {% endif %}
@@ -1334,10 +523,14 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       {% else %}
         <div class="real-empty-state">
           <h3>مازال ماكاين حتى منتج فهاد الكولكسيون</h3>
-          <p>زيد المنتجات لكولكسيون Audited Drop P001-P012 باش يبانوا هنا.</p>
+          <p>شوف <a href="/collections/new-in">كل القطع الجديدة</a>.</p>
         </div>
       {% endfor %}
     </div>
+    {%- comment -%} 2026-10-11 SPEED 2: see Lbass/fixes/2026-10-11-speed-pass-2.md {%- endcomment -%}
+    {%- if shop_available.size > 24 -%}
+    <p style="text-align:center;margin:26px 0 0"><a class="see-all" href="{{ homepage_collection.url | default: '/collections/new-in' }}">شوف كل القطع ({{ shop_available.size }}) ←</a></p>
+    {%- endif -%}
   </div>
 </section>
 
@@ -1480,7 +673,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       </div>
     </div>
     <div class="story-visual rev clip-rev">
-      <img src="{{ 'hero-lifestyle-2.webp' | asset_url }}" alt="لوك streetwear بقطعة The North Face — Lbass Original" loading="lazy" decoding="async" width="1200" height="670">
+      <img src="{{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك streetwear بقطعة The North Face — Lbass Original" loading="lazy" decoding="async" width="1200" height="670">
       <span class="story-tag">❖ قطع مختارة من ألمانيا · تشيكت فمراكش</span>
     </div>
   </div>
@@ -1553,7 +746,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 
 <!-- ═══ EDITORIAL ═══ -->
 <section class="edit" aria-labelledby="edit-h">
-  <div class="edit-img clip-rev"><img id="editImg" src="{{ 'editorial-campaign.webp' | asset_url }}" alt="حملة Lbass Original — حوايج براند أصلية بستايل مغربي" loading="lazy" decoding="async" width="896" height="1200" onerror="this.src='{{ 'hero-lifestyle-3b.webp' | asset_url }}'"></div>
+  <div class="edit-img clip-rev"><img id="editImg" src="{{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="حملة Lbass Original — حوايج براند أصلية بستايل مغربي" loading="lazy" decoding="async" width="896" height="1200" onerror="this.src='{{ 'hero-lifestyle-3b.webp' | asset_url }}'"></div>
   <div class="edit-txt">
     <p class="kick rev">كيفاش كنخدمو</p>
     <h2 class="edit-h rev" id="edit-h">من الاختيار، <em>حتى لباب دارك.</em></h2>
@@ -1630,7 +823,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       </div>
     </div>
     <div class="story-visual rev clip-rev">
-      <img src="{{ 'hero-lifestyle-2.webp' | asset_url }}" alt="لوك streetwear بقطعة The North Face — Lbass Original" loading="lazy" decoding="async" width="1200" height="670">
+      <img src="{{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-2.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك streetwear بقطعة The North Face — Lbass Original" loading="lazy" decoding="async" width="1200" height="670">
       <span class="story-tag">✦ كل منتج عندو صور ومعلومات ديالو</span>
     </div>
   </div>
@@ -1751,7 +944,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
     {% assign v_denim_url = collections['جاكيطات-و-معاطف'].url | default: '/pages/vault?cat=denim' %}
     <div class="vault-grid" data-vault-total="{{ v_total }}">
       <a class="vault-card rev" href="{{ v_shoes_url }}" data-vault-card data-vault-category="sneakers" data-vault-destination="{{ v_shoes_url }}">
-        <img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" alt="سنيكرز وصبابط أصلية متوفرة فـ Lbass Original" loading="lazy" decoding="async" width="1376" height="768">
+        <img src="{{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="سنيكرز وصبابط أصلية متوفرة فـ Lbass Original" loading="lazy" decoding="async" width="1376" height="768">
         <div class="vault-card-content">
           <small>SNEAKERS{% if vn_shoes > 0 %} · {{ vn_shoes }} متوفرة دابا{% endif %}</small>
           <b>Sneakers</b>
@@ -1764,7 +957,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
         </div>
       </a>
       <a class="vault-card rev" href="{{ v_street_url }}" data-vault-card data-vault-category="streetwear" data-vault-destination="{{ v_street_url }}">
-        <img src="{{ 'editorial-campaign.webp' | asset_url }}" alt="قطع streetwear أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="896" height="1200">
+        <img src="{{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="قطع streetwear أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="896" height="1200">
         <div class="vault-card-content">
           <small>STREETWEAR{% if vn_street > 0 %} · {{ vn_street }} متوفرة دابا{% endif %}</small>
           <b>Streetwear</b>
@@ -1777,7 +970,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
         </div>
       </a>
       <a class="vault-card rev" href="{{ v_denim_url }}" data-vault-card data-vault-category="denim-jackets" data-vault-destination="{{ v_denim_url }}">
-        <img src="{{ 'hero-lifestyle-3b.webp' | asset_url }}" alt="جينز وجاكيتات أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="1264" height="848">
+        <img src="{{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="جينز وجاكيتات أصلية مختارة من Lbass Original" loading="lazy" decoding="async" width="1264" height="848">
         <div class="vault-card-content">
           <small>DENIM &amp; JACKETS{% if vn_denim > 0 %} · {{ vn_denim }} متوفرة دابا{% endif %}</small>
           <b>Denim &amp; Jackets</b>
@@ -1872,10 +1065,10 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       <a class="see-all" href="#shop">SHOP THE LOOK →</a>
     </div>
     <div class="look">
-      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-1.webp' | asset_url }}" alt="لوك سنيكرز Nike Air Max" loading="lazy" decoding="async" width="1376" height="768"><span class="look-cap">سنيكر هيد<small>LOOK 01 — AIR MAX</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'social-2.webp' | asset_url }}" alt="لوك ستريت ستايل فكازا" loading="lazy" decoding="async" width="800" height="800"><span class="look-cap">ستريت كازا<small>LOOK 02 — STREET</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-3b.webp' | asset_url }}" alt="لوك دنيم Levi's كلاسيكي" loading="lazy" decoding="async" width="1264" height="848"><span class="look-cap">دنيم كلاسيك<small>LOOK 03 — 501</small></span></a>
-      <a class="look-it rev" href="#shop"><img src="{{ 'look-rooftop.webp' | asset_url }}" alt="لوك هودي على سطح كازا" loading="lazy" decoding="async" width="896" height="1200"><span class="look-cap">هودي موود<small>LOOK 04 — ROOFTOP</small></span></a>
+      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك سنيكرز Nike Air Max" loading="lazy" decoding="async" width="1376" height="768"><span class="look-cap">سنيكر هيد<small>LOOK 01 — AIR MAX</small></span></a>
+      <a class="look-it rev" href="#shop"><img src="{{ 'social-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'social-2.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'social-2.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'social-2.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك ستريت ستايل فكازا" loading="lazy" decoding="async" width="800" height="800"><span class="look-cap">ستريت كازا<small>LOOK 02 — STREET</small></span></a>
+      <a class="look-it rev" href="#shop"><img src="{{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'hero-lifestyle-3b.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك دنيم Levi's كلاسيكي" loading="lazy" decoding="async" width="1264" height="848"><span class="look-cap">دنيم كلاسيك<small>LOOK 03 — 501</small></span></a>
+      <a class="look-it rev" href="#shop"><img src="{{ 'look-rooftop.webp' | asset_url | replace: '.webp?', '_800x.webp?' }}" srcset="{{ 'look-rooftop.webp' | asset_url | replace: '.webp?', '_480x.webp?' }} 480w, {{ 'look-rooftop.webp' | asset_url | replace: '.webp?', '_800x.webp?' }} 800w, {{ 'look-rooftop.webp' | asset_url | replace: '.webp?', '_1200x.webp?' }} 1200w" sizes="(max-width: 767px) 92vw, 50vw" alt="لوك هودي على سطح كازا" loading="lazy" decoding="async" width="896" height="1200"><span class="look-cap">هودي موود<small>LOOK 04 — ROOFTOP</small></span></a>
     </div>
   </div>
 </section>
@@ -1975,7 +1168,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       {% if form.errors %}
         <p class="nl-note" role="alert">وقع مشكل. تأكد من الإيميل وعاود جرب.</p>
       {% endif %}
-      <style>.nl-g{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;color:#97928A;margin:0 0 10px}.nl-g label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.nl-g input{accent-color:#C89A0E}</style><div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-all' checked>بجوج</label></div>
+      <style>.nl-g{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;font-size:13px;color:#5E5A55;margin:0 0 10px}.nl-g label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.nl-g input{accent-color:#C89A0E}</style><div class='nl-g'><span>شنو كتقلب عليه؟</span><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-men'>رجال</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-women'>نساء</label><label><input type='radio' name='contact[tags]' value='newsletter,homepage,pref-all' checked>بجوج</label></div>
       <input class="nl-input" type="email" name="contact[email]" placeholder="الإيميل ديالك…" required aria-label="الإيميل">
       <button class="nl-btn" type="submit">عَلمني ←</button>
     {% endform %}
@@ -2119,6 +1312,26 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
         <p>الثمن كيتحدد حسب البراند، الحالة، والطلب على القطعة — ما كايناش تعريفة ثابتة. صيفط صور القطعة والإتيكيت فالواتساب وكنعطيوك عرض، أو تبديل بقطعة من عندنا إلا بغيتي.</p>
       </details>
     </div>
+    {%- comment -%}
+      2026-10-02 (theme "SEO fixes 20261002", Task 3): «شوف حتى» row. These clothing
+      pages sit on Google page 1–2 for the exact searches used as anchors (GSC
+      Morocco, 2026-08-30 → 09-28): vêtements occasion maroc pos 21, friperie /
+      friperie maroc en ligne 17.7, streetwear maroc 13.9, carhartt maroc 9.3,
+      friperie marrakech 7.3. The row sits at the END of the homepage (inside the
+      FAQ, above the WhatsApp button), so no clothing section moves down. Clothing
+      pages only, no perfume or K-beauty. Each link is an isolated LTR run.
+    {%- endcomment -%}
+    <nav class="faq-also" aria-label="شوف حتى">
+      <span>شوف حتى:</span>
+      {%- comment -%}2026-10-03 (SEO plan, batch 2): Arabic landing page, shown only once it is published.{%- endcomment -%}
+      {%- assign ar_landing = pages['ملابس-مستعملة-اصلية-المغرب'] -%}
+      {% if ar_landing.url != blank %}<a href="{{ ar_landing.url }}">ملابس مستعملة أصلية فالمغرب</a>{% endif %}
+      <a href="/pages/vetements-second-hand-maroc" lang="fr" dir="ltr">Vêtements occasion Maroc</a>
+      <a href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc" lang="fr" dir="ltr">Friperie en ligne Maroc</a>
+      <a href="/pages/streetwear-original-maroc" lang="fr" dir="ltr">Streetwear Maroc</a>
+      <a href="/collections/brand-carhartt" lang="fr" dir="ltr">Carhartt Maroc</a>
+      <a href="/pages/second-hand-clothing-marrakech" lang="fr" dir="ltr">Friperie Marrakech</a>
+    </nav>
     <div class="faq-cta">
       <p>مازال عندك سؤال؟</p>
       <a class="btn btn-gold" href="https://wa.me/491754264425?text={{ 'سلام Lbass، عندي سؤال قبل الطلب.' | url_encode }}" target="_blank" rel="noopener">💬 سول فالواتساب</a>
@@ -2127,6 +1340,41 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 </section>
 
 </main>
+
+{%- comment -%}
+  2026-10-04 (AI-readiness audit: "no dateModified"). WebPage node for the
+  homepage. dateModified = publish date of the newest piece in the automatic
+  «new-in» collection, i.e. the last time the homepage product rails really
+  changed. It is NOT a deploy date or today's date (llms.txt tells agents not to
+  infer freshness from deploys); if new-in is empty the property is left out.
+  name/description must stay identical to <title> and the meta description at
+  the top of this file.
+{%- endcomment -%}
+{%- liquid
+  assign lb_home_mod_ts = 0
+  assign lb_home_modified = ''
+  for p in collections['new-in'].products limit: 12
+    assign lb_ts = p.published_at | date: '%s' | plus: 0
+    if lb_ts > lb_home_mod_ts
+      assign lb_home_mod_ts = lb_ts
+      assign lb_home_modified = p.published_at | date: '%Y-%m-%d'
+    endif
+  endfor
+-%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "{{ shop.url }}/#webpage",
+  "url": "{{ shop.url }}/",
+  "name": "Lbass Original | Friperie en ligne Maroc | Second-Hand من مراكش",
+  "description": "Lbass Original متجر second-hand أونلاين من مراكش: حوايج براند، صبابط وstreetwear من ألمانيا، بصور حقيقية وحالة واضحة، COD أو PayPal.",
+  "inLanguage": "ar-MA",
+  "isPartOf": {"@id": "{{ shop.url }}/#website"},
+  "about": {"@id": "{{ shop.url }}/#organization"}{% if lb_home_modified != blank %},
+  "dateModified": "{{ lb_home_modified }}"{% endif %}
+}
+</script>
 
 <!-- ═══ ABOUT PAGE SCHEMA (Story section) ═══ -->
 <script type="application/ld+json">
@@ -2194,6 +1442,7 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       </div>
     </div>
     {% render 'lbass-entity-block' %}
+    <style>/* 2026-10-11 a11y contrast + tap targets */ .jdgm-all-reviews-text__text,.jdgm-verified-by__text{color:#0B5F54!important} #pdpBack{color:#F4EFE6!important} .jdgm-carousel__left-arrow,.jdgm-carousel__right-arrow{min-width:44px!important;min-height:44px!important}</style>
     <!-- Start of Judge.me code -->
     <div class='jdgm-widget jdgm-all-reviews-text' style='text-align:center;margin:18px auto 8px'>
       <a href='javascript:void(0)'>
@@ -2204,11 +1453,11 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
       </a>
     </div>
     <div style='clear:both'></div>
-    <div style='text-align:center;margin:8px auto 14px'>
-      <a class='jdgm-verified-count-badget' href='javascript:void(0)'>
+    {%- if shop.metafields.judgeme.verified_badge != blank -%}<div style='text-align:center;margin:8px auto 14px'>
+      <a class='jdgm-verified-count-badget' href='javascript:void(0)' aria-label='Judge.me — آراء موثّقة · verified reviews'>
         {{ shop.metafields.judgeme.verified_badge }}
       </a>
-    </div>
+    </div>{%- endif -%}
     <!-- End of Judge.me code -->
     <div class="foot-bot">
       <span>© 2026 Lbass Original · حوايج براند أصلية فالمغرب 🇲🇦</span>
@@ -2301,8 +1550,15 @@ html.anim .clip-rev.in{clip-path:inset(0 0 0 0)}
 </script>
 
 <!-- ═══ GSAP ═══ -->
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+{%- comment -%} 2026-10-11 SPEED 2: see Lbass/fixes/2026-10-11-speed-pass-2.md {%- endcomment -%}
+<script>
+(function(){
+  if (!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  ['https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js','https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js'].forEach(function(u){
+    var s = document.createElement('script'); s.src = u; s.async = false; document.head.appendChild(s);
+  });
+})();
+</script>
 {%- comment -%} three.js loader removed 2026-09-26: its only consumer was the old hero's #heroFx canvas, which is gone. {%- endcomment -%}
 
 <script>
@@ -2333,7 +1589,7 @@ const GRADES = {
 
 const PRODUCTS = [];
 
-{% assign homepage_collection = collections['audited-drop-p001-p012'] %}
+{% assign homepage_collection = collections['new-in'] %}
 const SHOPIFY_PRODUCTS = [
 {% if homepage_collection and homepage_collection.products_count > 0 %}
 {% for product in homepage_collection.products limit: 50 %}
@@ -2568,12 +1824,12 @@ function renderCats(){
 }
 function renderSocial(){
   const posts = [
-    '{{ 'social-1.webp' | asset_url }}','{{ 'editorial-campaign.webp' | asset_url }}','{{ 'social-2.webp' | asset_url }}',
-    '{{ 'look-rooftop.webp' | asset_url }}','{{ 'social-3.webp' | asset_url }}','{{ 'hero-lifestyle-1.webp' | asset_url }}'
+    '{{ 'social-1.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}','{{ 'editorial-campaign.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}','{{ 'social-2.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}',
+    '{{ 'look-rooftop.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}','{{ 'social-3.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}','{{ 'hero-lifestyle-1.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}'
   ];
   $('#socGrid').innerHTML = posts.map(src =>
     `<a class="sg-it" href="https://www.instagram.com/lbas.original/" target="_blank" rel="noopener" aria-label="منشور إنستغرام Lbass Original">
-       <img src="${src}" alt="" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+       <img src="${src}" alt="" loading="lazy" decoding="async" width="480" height="480" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
        <span class="hov">شوف المنشور ↗</span>
      </a>`).join('');
 }
@@ -2974,7 +2230,9 @@ if (animOn && 'IntersectionObserver' in window){
   setTimeout(()=>$$('.clip-rev').forEach(el=>el.classList.add('in')),3000);
 } else { $$('.clip-rev').forEach(el=>el.classList.add('in')); }
 
-/* ════════════════ PRELOADER ════════════════ */
+/* ════════════════ PRELOADER ════════════════
+   2026-10-11 SPEED: markup removed (see the comment at the top of <body>), so this returns
+   at `if (!pl) return;` and does nothing. Kept only so a restore is copy-paste. */
 (function(){
   const pl = $('#preload'), bar = $('#preloadBar');
   if (!pl) return;
@@ -3195,5 +2453,6 @@ window.addEventListener('load', () => {
 {% render 'lbass-jdgm-image-guard' %}
 {% render 'lbass-cart-drawer' %}
 {% render 'lbass-cro-tracking' %}
+{% render 'lbass-click-id' %}
 </body>
 </html>

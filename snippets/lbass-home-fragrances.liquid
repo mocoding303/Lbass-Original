@@ -176,9 +176,12 @@
     // RTL rows scroll towards negative scrollLeft, so "next" (the end side) is -1 there
     function dir() { return getComputedStyle(row).direction === 'rtl' ? -1 : 1; }
     function update() {
+      // 2026-10-11 SPEED 3: arrows only exist for desktop mice. On phones, skip the layout reads below:
+      // they forced a full-page layout in the middle of loading the homepage.
+      if (!mq.matches) { prev.hidden = true; next.hidden = true; return; }
       var max = row.scrollWidth - row.clientWidth;
       var x = Math.abs(row.scrollLeft);
-      var on = mq.matches && max > 4;
+      var on = max > 4;
       prev.hidden = !on || x < 4;
       next.hidden = !on || x > max - 4;
     }

@@ -99,6 +99,108 @@
 {%- assign lc_cur = ',' -%}
 {%- for t in current_tags -%}{%- assign lc_cur = lc_cur | append: t | downcase | append: ',' -%}{%- endfor -%}
 
+{%- comment -%} 2026-10-11 SPEED 3: this <style> moved here from after the form. It came after the markup, so phones painted the filter bar unstyled first (stacked boxes) and then restyled it, and the product count jumped (layout shift). No other CSS sits between the two spots, so the final look is unchanged. {%- endcomment -%}
+<style>
+/* ── wrapper. NOTE: no `direction: ltr` here. The old file forced LTR on an
+   RTL page, which mirrored the whole bar the wrong way. ── */
+.lb-facets-wrapper{margin-bottom:24px;position:relative;z-index:40}
+.lb-facets-form{display:flex;flex-direction:column;gap:12px}
+.lb-facets-scroll{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.lb-facet-pill{position:relative}
+.lb-facet-pill>summary{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+  border:1px solid var(--line,#D1D1D1);border-radius:100px;background:var(--bg,#fff);
+  color:var(--cream,#111);font-size:14.5px;font-weight:700;cursor:pointer;list-style:none;
+  white-space:nowrap;transition:.2s}
+.lb-facet-pill>summary::-webkit-details-marker{display:none}
+.lb-facet-pill:hover>summary{border-color:currentColor}
+.lb-facet-pill[open]>summary,.lb-facet-pill.has-active>summary{border-width:2px;padding:9px 17px}
+.lb-facet-count{font-weight:800}
+
+/* dropdown — logical inset so it anchors correctly in both directions */
+.lb-facet-dropdown{position:absolute;top:calc(100% + 8px);inset-inline-start:0;
+  min-width:min(340px,92vw);background:var(--bg,#fff);border:2px solid currentColor;
+  border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;flex-direction:column;
+  z-index:50;overflow:hidden;text-align:start}
+
+.lb-facet-body{max-height:min(400px,60vh);overflow-y:auto;padding-bottom:8px}
+.lb-facet-row{display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--line,#EBEBEB);cursor:pointer;text-align:start}
+.lb-facet-row:last-child{border-bottom:none}
+.lb-facet-row input{display:none}
+.lb-facet-row:hover{background:rgba(0,0,0,.04)}
+.lb-facet-row.is-selected{background:rgba(0,0,0,.07);font-weight:800}
+.lb-facet-row.is-disabled{opacity:.45;pointer-events:none}
+.lb-row-inner{display:flex;align-items:center;gap:10px;flex:1}
+.lb-row-text{font-size:15px}
+.lb-swatch{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.28);
+  flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.lb-sw-black{background:#141414}.lb-sw-white{background:#fff}.lb-sw-grey{background:#9b9b9b}
+.lb-sw-blue{background:#2f5fd0}.lb-sw-navy{background:#1b2a4a}.lb-sw-red{background:#c8322b}
+.lb-sw-beige{background:#d8c8a8}.lb-sw-brown{background:#6b4a2b}.lb-sw-green{background:#3f8a3f}
+.lb-sw-neon-green{background:#9be600}.lb-sw-purple{background:#7a3fb0}.lb-sw-sage{background:#9caf88}
+.lb-sw-silver{background:linear-gradient(135deg,#c4c4c4,#f2f2f2)}
+.lb-sw-multicolor{background:conic-gradient(#e23,#f80,#fd0,#3b5,#28d,#74e,#e23)}
+.lb-sw-khaki{background:#b0a05f}.lb-sw-pink{background:#e79ac0}.lb-sw-orange{background:#e08a2b}
+.lb-sw-yellow{background:#e8c72b}
+.lb-row-count{font-size:12.5px;opacity:.55;font-variant-numeric:tabular-nums}
+.lb-check{display:none;margin-inline-start:auto;flex:none}
+.lb-facet-row.is-selected .lb-check{display:block}
+
+.lb-facet-search{display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--line,#EBEBEB)}
+.lb-facet-search input{flex:1;border:none;background:transparent;font-size:15px;
+  outline:none;color:inherit;text-align:start}
+
+.lb-price-panel{padding:20px 18px}
+.lb-price-inputs{display:flex;align-items:flex-end;gap:10px}
+.lb-price-col{flex:1}
+.lb-price-col label{display:block;font-size:13px;margin-bottom:6px}
+.lb-price-box{display:flex;align-items:center;gap:6px;border:2px solid currentColor;
+  border-radius:8px;padding:10px 12px}
+.lb-price-box input{width:100%;border:none;outline:none;background:transparent;
+  font-size:16px;color:inherit;-moz-appearance:textfield}
+.lb-price-box input::-webkit-outer-spin-button,
+.lb-price-box input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.lb-price-sep{padding-bottom:14px}
+
+.lb-facet-footer{display:flex;gap:10px;padding:14px 18px;
+  border-top:1px solid var(--line,#EBEBEB);background:var(--bg,#fff);position:sticky;bottom:0}
+.lb-btn-reset,.lb-btn-save{flex:1;padding:12px;font-size:15px;font-weight:800;
+  border-radius:100px;cursor:pointer;text-align:center;border:2px solid;transition:.2s}
+.lb-btn-reset{background:transparent;color:inherit;border-color:var(--line,#B0B0B0);opacity:.75}
+.lb-btn-reset:hover{opacity:1}
+/* Solid ink plate, bone type. Explicit values — an earlier draft used
+   `background:currentColor` with `color` also set, which rendered the label
+   invisible against its own background. */
+.lb-btn-save{background:var(--lb-ink,#0B0B0C);color:var(--lb-bone,#fff);
+  border-color:var(--lb-ink,#0B0B0C)}
+.lb-btn-save:hover{opacity:.88}
+
+/* active chips */
+.lb-active-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lb-active-label{font-size:13px;font-weight:800;opacity:.7}
+.lb-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;
+  border:1px solid var(--line,#D1D1D1);border-radius:100px;font-size:13.5px;
+  font-weight:700;text-decoration:none;color:inherit}
+.lb-chip:hover{border-color:currentColor}
+.lb-chip-x{font-size:11px;opacity:.6}
+.lb-clear-all{font-size:13.5px;font-weight:800;text-decoration:underline;
+  color:inherit;margin-inline-start:4px}
+.lb-result-count{margin:0;font-size:13px;font-weight:700;opacity:.7}
+.lb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* click-outside catcher */
+details.lb-facet-pill[open] summary::before{content:"";display:block;position:fixed;
+  inset:0;z-index:-1;background:transparent}
+
+@media(max-width:640px){
+  .lb-facet-dropdown{position:fixed;inset-inline:8px;top:auto;bottom:8px;
+    min-width:0;max-height:70vh}
+  .lb-facet-body{max-height:50vh}
+  .lb-facet-pill>summary{font-size:14px;padding:9px 15px}
+}
+</style>
 <div class="lb-facets-wrapper">
   <form id="LbassCollectionFilters" class="lb-facets-form" onsubmit="return false;"
           data-collection-url="{{ lb_base }}" data-current-tags="{{ current_tags | join: '+' | downcase | escape }}">
@@ -536,107 +638,6 @@
   </form>
 </div>
 
-<style>
-/* ── wrapper. NOTE: no `direction: ltr` here. The old file forced LTR on an
-   RTL page, which mirrored the whole bar the wrong way. ── */
-.lb-facets-wrapper{margin-bottom:24px;position:relative;z-index:40}
-.lb-facets-form{display:flex;flex-direction:column;gap:12px}
-.lb-facets-scroll{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-
-.lb-facet-pill{position:relative}
-.lb-facet-pill>summary{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
-  border:1px solid var(--line,#D1D1D1);border-radius:100px;background:var(--bg,#fff);
-  color:var(--cream,#111);font-size:14.5px;font-weight:700;cursor:pointer;list-style:none;
-  white-space:nowrap;transition:.2s}
-.lb-facet-pill>summary::-webkit-details-marker{display:none}
-.lb-facet-pill:hover>summary{border-color:currentColor}
-.lb-facet-pill[open]>summary,.lb-facet-pill.has-active>summary{border-width:2px;padding:9px 17px}
-.lb-facet-count{font-weight:800}
-
-/* dropdown — logical inset so it anchors correctly in both directions */
-.lb-facet-dropdown{position:absolute;top:calc(100% + 8px);inset-inline-start:0;
-  min-width:min(340px,92vw);background:var(--bg,#fff);border:2px solid currentColor;
-  border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;flex-direction:column;
-  z-index:50;overflow:hidden;text-align:start}
-
-.lb-facet-body{max-height:min(400px,60vh);overflow-y:auto;padding-bottom:8px}
-.lb-facet-row{display:flex;align-items:center;gap:10px;padding:14px 18px;
-  border-bottom:1px solid var(--line,#EBEBEB);cursor:pointer;text-align:start}
-.lb-facet-row:last-child{border-bottom:none}
-.lb-facet-row input{display:none}
-.lb-facet-row:hover{background:rgba(0,0,0,.04)}
-.lb-facet-row.is-selected{background:rgba(0,0,0,.07);font-weight:800}
-.lb-facet-row.is-disabled{opacity:.45;pointer-events:none}
-.lb-row-inner{display:flex;align-items:center;gap:10px;flex:1}
-.lb-row-text{font-size:15px}
-.lb-swatch{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.28);
-  flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
-.lb-sw-black{background:#141414}.lb-sw-white{background:#fff}.lb-sw-grey{background:#9b9b9b}
-.lb-sw-blue{background:#2f5fd0}.lb-sw-navy{background:#1b2a4a}.lb-sw-red{background:#c8322b}
-.lb-sw-beige{background:#d8c8a8}.lb-sw-brown{background:#6b4a2b}.lb-sw-green{background:#3f8a3f}
-.lb-sw-neon-green{background:#9be600}.lb-sw-purple{background:#7a3fb0}.lb-sw-sage{background:#9caf88}
-.lb-sw-silver{background:linear-gradient(135deg,#c4c4c4,#f2f2f2)}
-.lb-sw-multicolor{background:conic-gradient(#e23,#f80,#fd0,#3b5,#28d,#74e,#e23)}
-.lb-sw-khaki{background:#b0a05f}.lb-sw-pink{background:#e79ac0}.lb-sw-orange{background:#e08a2b}
-.lb-sw-yellow{background:#e8c72b}
-.lb-row-count{font-size:12.5px;opacity:.55;font-variant-numeric:tabular-nums}
-.lb-check{display:none;margin-inline-start:auto;flex:none}
-.lb-facet-row.is-selected .lb-check{display:block}
-
-.lb-facet-search{display:flex;align-items:center;gap:10px;padding:14px 18px;
-  border-bottom:1px solid var(--line,#EBEBEB)}
-.lb-facet-search input{flex:1;border:none;background:transparent;font-size:15px;
-  outline:none;color:inherit;text-align:start}
-
-.lb-price-panel{padding:20px 18px}
-.lb-price-inputs{display:flex;align-items:flex-end;gap:10px}
-.lb-price-col{flex:1}
-.lb-price-col label{display:block;font-size:13px;margin-bottom:6px}
-.lb-price-box{display:flex;align-items:center;gap:6px;border:2px solid currentColor;
-  border-radius:8px;padding:10px 12px}
-.lb-price-box input{width:100%;border:none;outline:none;background:transparent;
-  font-size:16px;color:inherit;-moz-appearance:textfield}
-.lb-price-box input::-webkit-outer-spin-button,
-.lb-price-box input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.lb-price-sep{padding-bottom:14px}
-
-.lb-facet-footer{display:flex;gap:10px;padding:14px 18px;
-  border-top:1px solid var(--line,#EBEBEB);background:var(--bg,#fff);position:sticky;bottom:0}
-.lb-btn-reset,.lb-btn-save{flex:1;padding:12px;font-size:15px;font-weight:800;
-  border-radius:100px;cursor:pointer;text-align:center;border:2px solid;transition:.2s}
-.lb-btn-reset{background:transparent;color:inherit;border-color:var(--line,#B0B0B0);opacity:.75}
-.lb-btn-reset:hover{opacity:1}
-/* Solid ink plate, bone type. Explicit values — an earlier draft used
-   `background:currentColor` with `color` also set, which rendered the label
-   invisible against its own background. */
-.lb-btn-save{background:var(--lb-ink,#0B0B0C);color:var(--lb-bone,#fff);
-  border-color:var(--lb-ink,#0B0B0C)}
-.lb-btn-save:hover{opacity:.88}
-
-/* active chips */
-.lb-active-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.lb-active-label{font-size:13px;font-weight:800;opacity:.7}
-.lb-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;
-  border:1px solid var(--line,#D1D1D1);border-radius:100px;font-size:13.5px;
-  font-weight:700;text-decoration:none;color:inherit}
-.lb-chip:hover{border-color:currentColor}
-.lb-chip-x{font-size:11px;opacity:.6}
-.lb-clear-all{font-size:13.5px;font-weight:800;text-decoration:underline;
-  color:inherit;margin-inline-start:4px}
-.lb-result-count{margin:0;font-size:13px;font-weight:700;opacity:.7}
-.lb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-
-/* click-outside catcher */
-details.lb-facet-pill[open] summary::before{content:"";display:block;position:fixed;
-  inset:0;z-index:-1;background:transparent}
-
-@media(max-width:640px){
-  .lb-facet-dropdown{position:fixed;inset-inline:8px;top:auto;bottom:8px;
-    min-width:0;max-height:70vh}
-  .lb-facet-body{max-height:50vh}
-  .lb-facet-pill>summary{font-size:14px;padding:9px 15px}
-}
-</style>
 
 <script>
 (function(){

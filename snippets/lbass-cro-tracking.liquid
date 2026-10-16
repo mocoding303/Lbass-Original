@@ -12,7 +12,7 @@
   Server-rendered on purpose: the menu needs crawlable category links, and
   JS-built navigation is not crawlable.
 {%- endcomment -%}
-{% render 'lbass-menu' %}
+{%- comment -%} 2026-10-11 SPEED 2: no longer rendered here — templates/index.liquid (after the announce bar) and layout/theme.liquid (top of <body>) render it, so the header is in the first screen of HTML instead of the last. Was: {% render 'lbass-menu' %} {%- endcomment -%}
 
 {%- comment -%} Category card legibility — see snippets/lbass-cards-fix.liquid. {%- endcomment -%}
 {% render 'lbass-cards-fix' %}

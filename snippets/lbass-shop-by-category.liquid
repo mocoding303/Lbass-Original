@@ -38,29 +38,11 @@
   assign cat_sn_n = cat_sn.products | where: 'available', true | size
   assign cat_jk = collections['جاكيطات-و-معاطف']
   assign cat_jk_n = cat_jk.products | where: 'available', true | size
-  # 2026-09-30 (merged with the homepage redesign): the clothing tiles show each
-  # department's first IN-STOCK product photo instead of the editorial
-  # cat-*-ed.webp images, which show no piece in stock (CLAUDE.md: imagery must be
-  # real). The Clothing tile skips the hero's piece (hero_id) so the first two
-  # screens never show the same photo twice. No photo, no image: the tile keeps
-  # its dark background.
-  assign cat_cloth_img = nil
-  for p in collections['audited-drop-p001-p012'].products
-    if p.available == false or p.id == hero_id
-      continue
-    endif
-    assign p_type = p.type | downcase
-    if p_type == 'fragrance' or p_type == 'cosmetics'
-      continue
-    endif
-    if p.featured_image
-      assign cat_cloth_img = p.featured_image
-      break
-    endif
-  endfor
-  assign cat_sn_img = cat_sn.products | where: 'available', true | map: 'featured_image' | compact | first
-  assign cat_jk_img = cat_jk.products | where: 'available', true | map: 'featured_image' | compact | first
-  assign cat_acc_img = cat_acc.products | where: 'available', true | map: 'featured_image' | compact | first
+  # 2026-10-01 (owner request, after seeing the live store): the tiles show the
+  # editorial cat-*-ed.webp images again. A same-day change had swapped them for
+  # each department's first in-stock product photo; the owner preferred the
+  # editorial set. Category tiles are navigation art, not listings: every product
+  # page keeps the real photos of the exact piece. Ask the owner before swapping.
 -%}
 <section class="lbcat" aria-labelledby="lbcat-h">
   <style>
@@ -118,37 +100,38 @@
     <h2 class="lbcat-h" id="lbcat-h">تسوق حسب القسم <span>Shop by category</span></h2>
     <div class="lbcat-grid">
       <a class="lbcat-tile" href="{{ routes.all_products_collection_url }}" data-cro-event="home_category_click" data-cro-label="clothing">
-        {%- if cat_cloth_img -%}<img src="{{ cat_cloth_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
+        <img src="{{ 'cat-tshirts-ed.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}" srcset="{{ 'cat-tshirts-ed.webp' | asset_url | replace: '.webp?', '_360x.webp?' }} 360w, {{ 'cat-tshirts-ed.webp' | asset_url | replace: '.webp?', '_720x.webp?' }} 720w" sizes="(max-width: 767px) 47vw, 25vw" alt="" width="1448" height="1086" loading="lazy" decoding="async">
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>حوايج</b><small>Clothing{% if cat_cloth_n > 0 %} · {{ cat_cloth_n }}{% endif %}</small></span>
       </a>
       {%- if cat_sn_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_sn.url }}" data-cro-event="home_category_click" data-cro-label="sneakers">
-        {%- if cat_sn_img -%}<img src="{{ cat_sn_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
+        <img src="{{ 'cat-shoes-ed.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}" srcset="{{ 'cat-shoes-ed.webp' | asset_url | replace: '.webp?', '_360x.webp?' }} 360w, {{ 'cat-shoes-ed.webp' | asset_url | replace: '.webp?', '_720x.webp?' }} 720w" sizes="(max-width: 767px) 47vw, 25vw" alt="" width="1448" height="1086" loading="lazy" decoding="async">
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>صبابط</b><small>Sneakers · {{ cat_sn_n }}</small></span>
       </a>
       {%- endif -%}
       {%- if cat_jk_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_jk.url }}" data-cro-event="home_category_click" data-cro-label="jackets">
-        {%- if cat_jk_img -%}<img src="{{ cat_jk_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
+        <img src="{{ 'cat-jackets-ed.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}" srcset="{{ 'cat-jackets-ed.webp' | asset_url | replace: '.webp?', '_360x.webp?' }} 360w, {{ 'cat-jackets-ed.webp' | asset_url | replace: '.webp?', '_720x.webp?' }} 720w" sizes="(max-width: 767px) 47vw, 25vw" alt="" width="1448" height="1086" loading="lazy" decoding="async">
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>جاكيطات</b><small>Jackets · {{ cat_jk_n }}</small></span>
       </a>
       {%- endif -%}
       {%- if cat_acc_n > 0 -%}
       <a class="lbcat-tile" href="{{ cat_acc.url }}" data-cro-event="home_category_click" data-cro-label="accessories">
-        {%- if cat_acc_img -%}<img src="{{ cat_acc_img | image_url: width: 640 }}" alt="" width="640" height="800" loading="lazy" decoding="async">{%- endif -%}
+        <img src="{{ 'cat-acc-ed.webp' | asset_url | replace: '.webp?', '_480x.webp?' }}" srcset="{{ 'cat-acc-ed.webp' | asset_url | replace: '.webp?', '_360x.webp?' }} 360w, {{ 'cat-acc-ed.webp' | asset_url | replace: '.webp?', '_720x.webp?' }} 720w" sizes="(max-width: 767px) 47vw, 25vw" alt="" width="1448" height="1086" loading="lazy" decoding="async">
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>إكسسوارات</b><small>Accessories · {{ cat_acc_n }}</small></span>
       </a>
       {%- endif -%}
       {%- if cat_frag_av > 0 -%}
       <a class="lbcat-tile lbcat-tile--wide lbcat-tile--frag" href="{{ cat_frag.url }}" data-cro-event="home_category_click" data-cro-label="fragrances">
+        {%- comment -%} 2026-10-11 SPEED 3: bottles show at 36-55 CSS px wide; 120/180 px files instead of the 427-492 px originals {%- endcomment -%}
         <span class="lbcat-arches" aria-hidden="true">
-          <span class="lbcat-arch"><img src="{{ 'lbass-frag-cdn.webp' | asset_url }}" alt="" width="427" height="637" loading="lazy" decoding="async"></span>
-          <span class="lbcat-arch lbcat-arch--mid"><img src="{{ 'lbass-frag-khamrah.webp' | asset_url }}" alt="" width="446" height="561" loading="lazy" decoding="async"></span>
-          <span class="lbcat-arch"><img src="{{ 'lbass-frag-rose.webp' | asset_url }}" alt="" width="492" height="720" loading="lazy" decoding="async"></span>
+          <span class="lbcat-arch"><img src="{{ 'lbass-frag-cdn.webp' | asset_url | replace: '.webp?', '_180x.webp?' }}" srcset="{{ 'lbass-frag-cdn.webp' | asset_url | replace: '.webp?', '_120x.webp?' }} 120w, {{ 'lbass-frag-cdn.webp' | asset_url | replace: '.webp?', '_180x.webp?' }} 180w" sizes="(max-width: 767px) 44px, 56px" alt="" width="427" height="637" loading="lazy" decoding="async"></span>
+          <span class="lbcat-arch lbcat-arch--mid"><img src="{{ 'lbass-frag-khamrah.webp' | asset_url | replace: '.webp?', '_180x.webp?' }}" srcset="{{ 'lbass-frag-khamrah.webp' | asset_url | replace: '.webp?', '_120x.webp?' }} 120w, {{ 'lbass-frag-khamrah.webp' | asset_url | replace: '.webp?', '_180x.webp?' }} 180w" sizes="(max-width: 767px) 44px, 56px" alt="" width="446" height="561" loading="lazy" decoding="async"></span>
+          <span class="lbcat-arch"><img src="{{ 'lbass-frag-rose.webp' | asset_url | replace: '.webp?', '_180x.webp?' }}" srcset="{{ 'lbass-frag-rose.webp' | asset_url | replace: '.webp?', '_120x.webp?' }} 120w, {{ 'lbass-frag-rose.webp' | asset_url | replace: '.webp?', '_180x.webp?' }} 180w" sizes="(max-width: 767px) 44px, 56px" alt="" width="492" height="720" loading="lazy" decoding="async"></span>
         </span>
         <span class="lbcat-go" aria-hidden="true">←</span>
         <span class="lbcat-txt"><b>عطور</b><small>Fragrances · {{ cat_frag_av }}</small></span>

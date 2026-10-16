@@ -19,6 +19,53 @@
   case collection.handle
     when 'track-pants'
       assign coll_extra_faq = 'فين نقدر نشري بنطال تراك أصلي فالمغرب؟||من Lbass Original أونلاين. القطع كتتختار من ألمانيا، كتتشيك فمراكش، وكتتصور وحدة بوحدة قبل ما تتعرض. التوصيل لكل المغرب مع الدفع عند الاستلام.@@واش بناطيل التراك عندكم أصلية؟||إيه. كل قطعة كتدوز من فحص قبل العرض — الإتيكيت، الخياطة، الخامة والتفاصيل — وأي قطعة فيها شك ما كتتعرضش. هاد الفحص داخلي ديال Lbass وماشي شهادة خارجية.@@واش كاين بنطال تراك أسود ولا أحمر؟||الألوان المتوفرة دابا كتبان فالشيبس ديال «شوف حسب اللون» فوق الكوليكشن. الشيب كيختافى بوحدو ملي تسالي القطع ديال داك اللون، باش ما توصلش لصفحة خاوية.@@كيفاش نعرف القياس ديال بنطال التراك؟||قيس بنطال عندك كيجيك مزيان (الوسط، وطول الرجل) وقارن مع القياسات المكتوبة فصفحة المنتج. label size بوحدو ماشي كافي فـ second-hand.@@واش كاين الدفع عند الاستلام؟||إيه، الدفع عند الاستلام (COD) متوفر فكل المغرب: كتوصلك القطعة، كتشوفها، ومن بعد كتخلص. PayPal متوفر حتا هو.@@شحال التوصيل؟||20 درهم داخل مراكش و50 درهم لباقي مدن المغرب، ومجاني ملي يوصل الطلب 500 درهم أو أكثر.'
+    when 'nike', 'brand-nike', 'صبابط', 'sneakers', 'shoes'
+      comment
+        2026-10-03 (SEO plan, batch 2): questions behind «سبادري نايك» (29 Moroccan impr at #1 on a sold
+        product page) and «صبابط» (41 impr, position 4.9). The price line is computed
+        from the AVAILABLE shoes of this collection (slides and flip-flops excluded), so
+        it stays true as stock turns over; with none in stock it has no numbers.
+        Delivery = owner rule: 20 MAD Marrakech, 50 elsewhere, free from 500.
+      endcomment
+      assign xf_min = 0
+      assign xf_max = 0
+      for xf_p in collection.products limit: 50
+        if xf_p.available and xf_p.type == 'Shoes'
+          unless xf_p.title contains 'Slide' or xf_p.title contains 'Flip'
+            assign xf_price = xf_p.price | divided_by: 100
+            if xf_min == 0 or xf_price < xf_min
+              assign xf_min = xf_price
+            endif
+            if xf_price > xf_max
+              assign xf_max = xf_price
+            endif
+          endunless
+        endif
+      endfor
+      if collection.handle == 'nike' or collection.handle == 'brand-nike'
+        assign xf_q1 = 'شحال ثمن سبادري نايك عندكم؟'
+        assign xf_what = 'سبادري نايك'
+      else
+        assign xf_q1 = 'شحال ثمن الصبابط عندكم؟'
+        assign xf_what = 'الصبابط والسبادري'
+      endif
+      if xf_min > 0
+        capture xf_a1
+          echo xf_what
+          echo ' المتوفرين دابا كيبداو من '
+          echo xf_min
+          echo ' درهم'
+          if xf_max > xf_min
+            echo ' حتى '
+            echo xf_max
+            echo ' درهم'
+          endif
+          echo ' حسب الموديل والحالة. الثمن ديال كل جوج مكتوب فصفحتو قبل ما تطلب.'
+        endcapture
+      else
+        assign xf_a1 = 'الثمن ديال كل جوج مكتوب فصفحة المنتج قبل ما تطلب، وكيتبدل حسب الموديل والحالة.'
+      endif
+      assign coll_extra_faq = xf_q1 | append: '||' | append: xf_a1 | append: '@@كيفاش نعرف القياس ديال الصباط؟||قيس النعل الداخلي (insole) ديال صباط عندك مريح بالسنتيمتر وقارنو مع القياس EU المكتوب فصفحة المنتج. إلا بغيتي تتأكد، صيفط لينا رابط المنتج فالواتساب.@@واش الصبابط مستعملين ولا جداد؟||أغلبهم second-hand مفحوصين، وشي وحدين جداد. الحالة مكتوبة فصفحة كل جوج قبل الطلب: جديد بالتّيكيت، جديد بلا تيكيت، شبه جديد، بحالة مزيانة بزاف ولا بحالة مزيانة، وأي عيب كيبان فالصور.@@شحال التوصيل؟||20 درهم داخل مراكش و50 درهم لباقي مدن المغرب، ومجاني ملي يوصل الطلب 500 درهم أو أكثر. الدفع عند الاستلام متوفر فكل المغرب.'
   endcase
   assign coll_extra_faq_rows = coll_extra_faq | split: '@@'
 -%}
@@ -243,6 +290,50 @@
 .coll-decision a{flex:none;color:var(--ink);background:var(--gold);border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:900;text-decoration:none}
 @media(max-width:820px){.coll-intent{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.coll-shop-head{align-items:start;flex-direction:column;padding-top:26px}.coll-shop-head__count{margin-top:0!important}.coll-discovery{margin-top:42px;padding-top:28px}.coll-intent{grid-template-columns:1fr}.coll-intent-card{min-height:auto}.coll-decision{align-items:stretch;flex-direction:column}.coll-decision a{text-align:center;min-height:44px;display:grid;place-items:center}}
+/* ── 2026-10-06 FUNNEL FIX, mobile only (≤600px) ─────────────────────────────
+   GA4 Sep 8–Oct 5, owner traffic excluded: only 11% of sessions that landed on a
+   collection opened a product. Measured at 375×812 on the live theme: the hero
+   filled screen 1 (min-height 620px, 126px logo), the first product started at
+   1,603px (≈2 screens) on /collections/nike, and the grid showed ONE card per row
+   (theme.liquid .grid = minmax(220px,1fr), so 2 columns cannot fit in ~327px).
+   After this block: first product at ≈835px, two cards per row (≈390–430px tall).
+   Kept visible on purpose: the H1, the hero description (SEO text), the
+   breadcrumb, the trust strip, the colour chips and the filter bar. Hidden on
+   mobile only: the decorative brand logo (aria-hidden), the CTA that scrolled to
+   the grid (the grid is now right below), the hero trust chips (same signals as
+   the trust strip), the "SHOP THE EDIT" label and the shop-head intro line.
+   Desktop is untouched. Delete this block to revert. */
+@media (max-width:600px){
+  .lbeh{min-height:0!important}
+  .lbeh__inner{padding:22px 18px 16px!important;gap:10px!important}
+  .lbeh__brand-visual{display:none!important}
+  .lbeh__label{margin:0 0 6px!important}
+  .lbeh__brand-title{margin-bottom:6px!important}
+  .lbeh__brand-title .lbeh__brand-name{font-size:27px!important;line-height:1.25!important}
+  .lbeh__description{font-size:13.5px!important;line-height:1.7!important;margin-bottom:0!important}
+  .lbeh__cta,.lbeh__trust{display:none!important}
+  .wrap > .crumb{padding:8px 0!important}
+  .wrap > .lb-bridge-trust{flex-wrap:nowrap!important;overflow-x:auto;gap:14px!important;padding:9px 12px!important;margin:8px 0 10px!important;white-space:nowrap;scrollbar-width:none}
+  .wrap > .lb-bridge-trust::-webkit-scrollbar{display:none}
+  .lbcn{padding:9px 11px!important;margin:0 0 8px!important}
+  .lbcn__label{margin:0 0 6px!important}
+  .lbcn__row{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .lbcn__row::-webkit-scrollbar{display:none}
+  .lbcn__chip{flex:0 0 auto}
+  .coll-shop-head{padding-top:10px!important;padding-bottom:6px!important;gap:2px!important}
+  .coll-shop-head__label,.coll-shop-head > div > p{display:none!important}
+  #lbfGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}
+  #lbfGrid .card .card-body{padding:9px 9px 10px!important}
+  #lbfGrid .card-title{font-size:12.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #lbfGrid .lb-price__now{font-size:15.5px}
+  #lbfGrid .card-body > p{display:none}
+  #lbfGrid .card-body .chip.lb-uniq{display:none!important}
+  #lbfGrid .card-body .chip{font-size:10.5px!important;padding:2px 7px!important}
+  #lbfGrid .card-body .chip-cond{display:inline-flex!important}
+  #lbfGrid .lbqa-btn{min-height:40px!important;padding:8px 10px!important;font-size:12.5px}
+  #lbfGrid .lbqa-en{display:none}
+  #lbfGrid .lb-stamp{font-size:13px}
+}
 </style>
 <div class="wrap">
   <nav class="crumb" aria-label="مسار التصفح">
@@ -282,6 +373,18 @@
     </nav>
   {% endif %}
 
+  {%- comment -%}
+    2026-10-03: both "alternatives" rails below passed no relevance hint, so
+    snippets/lbass-live-products-rail fell through to its last tier,
+    collections.all, which this storefront lists A→Z: every sold-out or thin
+    collection offered the same Adidas pieces (football boots and shorts under a
+    sold Carhartt crossbody bag). They now ask for the same product type as this
+    collection's first piece (bags for a bag, jackets for a jacket), newest of
+    that type first (type_source), then the newest in-stock arrivals (collections['new-in'], newest first), and only then
+    the old store-wide list. Pieces of this collection stay excluded.
+  {%- endcomment -%}
+  {%- assign coll_alt_type = collection_product_source.first.type -%}
+  {%- assign coll_alt_newest = collections['new-in'] -%}
   {% if _in_stock.size == 0 %}
     <section class="coll-decision" aria-label="حالة المخزون">
       <p><strong>هاد الكوليكشن ما بقى فيها حتى قطعة متوفرة دابا.</strong><br>خليّنا القطع المباعة باينة للمعلومة، ولقينا ليك بدائل حية مباشرة تحت.</p>
@@ -292,7 +395,10 @@
       intro: 'اختيارات حية من الدروب الحالي باش ما تساليش فصفحة مسدودة.',
       placement: 'empty_collection_alternatives',
       limit: 4,
-      exclude_ids: collection_product_ids
+      exclude_ids: collection_product_ids,
+      prefer_type: coll_alt_type,
+      type_source: coll_alt_newest,
+      prefer_collection: coll_alt_newest
     %}
   {% endif %}
 
@@ -341,7 +447,10 @@
       intro: 'هاد الكوليكشن فيها اختيارات قليلة، لذلك زدنا قطع حية من الدروب الحالي.',
       placement: 'low_stock_collection_alternatives',
       limit: 4,
-      exclude_ids: collection_product_ids
+      exclude_ids: collection_product_ids,
+      prefer_type: coll_alt_type,
+      type_source: coll_alt_newest,
+      prefer_collection: coll_alt_newest
     %}
   {% endif %}
 

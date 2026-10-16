@@ -63,7 +63,9 @@
        short, so half the track always overflows the viewport and the band is
        never caught empty on wide screens. */
     t.innerHTML = one + one;
-    if(t.scrollWidth / 2 < window.innerWidth){ t.innerHTML = one + one + one + one; }
+    /* 2026-10-11 SPEED 3: reading scrollWidth here forced a full-page layout while the page was still loading.
+       One copy of the list measures ~4,000px, so only very wide screens can need the extra pair: measure there only. */
+    if(window.matchMedia && window.matchMedia('(min-width: 1600px)').matches && t.scrollWidth / 2 < window.innerWidth){ t.innerHTML = one + one + one + one; }
   }
 
   if(document.readyState === 'loading'){

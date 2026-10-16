@@ -32,6 +32,10 @@
 {%- endcomment -%}
 {%- if part == 'wall' -%}
 <style>
+/* 2026-10-11 SPEED 3: hidden until the whole hero has arrived; revealed by the <style> right after </header> in
+   snippets/lbass-hero-carousel. Phones can paint the hero half-downloaded; this wall then stretched as the rest
+   arrived and its photos jumped (layout shift). Showing it a moment later is not a shift. */
+.lbh-bg--wall{visibility:hidden}
 .lbh-bg--wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));background:#F1EEE7}
 .lbh-bg--wall[data-n="4"]{grid-template-rows:repeat(2,minmax(0,1fr))}
 .lbh-bg.lbh-bg--wall img{min-width:0;min-height:0;object-position:center;opacity:.6;filter:grayscale(.3) contrast(1.02)}
@@ -101,7 +105,7 @@
     {%- assign wall_seen = wall_seen | plus: 1 -%}
     {%- if wall_seen <= wall_skip -%}{%- continue -%}{%- endif -%}
     {%- assign wall_shown = wall_shown | plus: 1 -%}
-    <img src="{{ p.featured_image | image_url: width: 480 }}" srcset="{{ p.featured_image | image_url: width: 240 }} 240w, {{ p.featured_image | image_url: width: 480 }} 480w" sizes="(min-width: 768px) 25vw, 50vw" width="480" height="600" alt="" decoding="async" fetchpriority="low"{% if wall_shown > 6 %} class="lbh-wall-x" loading="lazy"{% endif %}>
+    <img src="{{ p.featured_image | image_url: width: 480 }}" srcset="{{ p.featured_image | image_url: width: 240 }} 240w, {{ p.featured_image | image_url: width: 400 }} 400w, {{ p.featured_image | image_url: width: 480 }} 480w" sizes="(min-width: 768px) 25vw, 50vw" width="480" height="600" alt="" decoding="async" fetchpriority="low"{% if wall_shown > 6 %} class="lbh-wall-x" loading="lazy"{% endif %}>
     {%- if wall_shown >= wall_n -%}{%- break -%}{%- endif -%}
   {%- endfor -%}
 </div>

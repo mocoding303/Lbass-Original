@@ -7,28 +7,39 @@
 
   PageView is NOT fired here — the Shopify app already handles that.
 {%- endcomment -%}
+{%- comment -%}
+  2026-10-11 SPEED 2 — DEFERRED, NOT REMOVED. The fbq stub and fbq('init') still run immediately, so every
+  fbq('track', …) the theme fires (InitiateCheckout from the cart drawer, ViewContent, lbass_vault_view) is
+  queued and sent as soon as the library arrives. Only the download of fbevents.js (~420 KB of JS plus its
+  ~415 KB signals config) now waits until the page has loaded and the phone is idle — or until the visitor
+  first taps, scrolls or types, whichever comes first. PageView, AddToCart, InitiateCheckout and Purchase for
+  ads attribution come from the Facebook & Instagram app pixel (Shopify customer events), which is untouched.
+{%- endcomment -%}
 <script>
 (function(){
   /* If fbq already exists (e.g. from another script), skip */
   if (window.fbq) return;
 
-  /* Standard Meta Pixel base code */
-  !function(f,b,e,v,n,t,s){
-    if(f.fbq)return;
-    n=f.fbq=function(){
-      n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments)
-    };
-    if(!f._fbq) f._fbq=n;
-    n.push=n; n.loaded=!0; n.version='2.0'; n.queue=[];
-    t=b.createElement(e); t.async=!0; t.src=v;
-    s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s);
-  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+  /* Standard Meta Pixel stub — the queue starts now */
+  var n = window.fbq = function(){ n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+  if (!window._fbq) window._fbq = n;
+  n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
 
   fbq('init', '905499551256322');
   /* PageView intentionally omitted — Shopify FB app handles it */
+
+  var started = false, EVTS = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
+  function loadLib(){
+    if (started) return; started = true;
+    EVTS.forEach(function(t){ window.removeEventListener(t, loadLib, true); });
+    var t = document.createElement('script'); t.async = true; t.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(t, s);
+  }
+  EVTS.forEach(function(t){ window.addEventListener(t, loadLib, {capture: true, passive: true}); });
+  function whenIdle(){ (window.requestIdleCallback || function(cb){ setTimeout(cb, 1500); })(loadLib, {timeout: 4000}); }
+  if (document.readyState === 'complete') whenIdle(); else window.addEventListener('load', whenIdle);
 })();
 </script>
-<noscript><img height="1" width="1" style="display:none"
+<noscript><img height="1" width="1" alt="" style="display:none"
 src="https://www.facebook.com/tr?id=905499551256322&ev=PageView&noscript=1"
 /></noscript>

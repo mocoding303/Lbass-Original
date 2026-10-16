@@ -68,6 +68,35 @@
   {%- endunless -%}
 {%- endfor -%}
 {%- if first_collection == nil -%}{%- assign first_collection = fallback_collection -%}{%- endif -%}
+{%- comment -%}
+  2026-10-05 — SOLD PAGES: the most specific category, for the alternatives rail and the
+  "similar pieces" links. The rail drew its same-type tiers from collections.all, which
+  Liquid caps at 50 products and this storefront sorts A→Z, so Arabic-titled pieces never
+  made the cut. Measured on the live store 2026-10-05: the sold black Adidas track pants
+  offered H&M cargo pants and Jordan pants, never the in-stock «بنطال تراك أديداس أسود
+  بخطوط حمراء» (399 MAD); the sold Nike P-6000 offered Adidas football boots.
+  sold_cat_coll = the product's SMALLEST collection (track-pants, شورطات, men-sneakers …)
+  after skipping brand, gender and catch-all collections. It stays nil for products that
+  are available, and every use below falls back to the old behaviour when it is nil.
+{%- endcomment -%}
+{%- assign sold_cat_coll = nil -%}
+{%- assign sold_vendor_handle = product.vendor | handleize -%}
+{%- unless product.available -%}
+  {%- assign sold_cat_skip = 'frontpage,all,new-in,clothing,men,women,unisex,kids,one-of-one,audited-drop-p001-p012,summer-sale,lattafa-best-sellers' | split: ',' -%}
+  {%- assign sold_cat_count = 100000 -%}
+  {%- for c in product.collections -%}
+    {%- if sold_cat_skip contains c.handle -%}{%- continue -%}{%- endif -%}
+    {%- if c.handle contains 'brand-' -%}{%- continue -%}{%- endif -%}
+    {%- if sold_vendor_handle != blank and c.handle contains sold_vendor_handle -%}{%- continue -%}{%- endif -%}
+    {%- if c.products_count < 2 -%}{%- continue -%}{%- endif -%}
+    {%- if c.products_count < sold_cat_count -%}
+      {%- assign sold_cat_coll = c -%}
+      {%- assign sold_cat_count = c.products_count -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endunless -%}
+{%- assign sold_rail_coll = first_collection -%}
+{%- if sold_cat_coll -%}{%- assign sold_rail_coll = sold_cat_coll -%}{%- endif -%}
 {% assign main_image = product.featured_image %}
 {% assign wa_number = '491754264425' %}
 {% assign display_title = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first %}
@@ -185,7 +214,7 @@
 {% capture product_image_alt %}{{ title_intro }} {% if is_new_condition %}new{% else %}second-hand{% endif %} original in Morocco{% if color_note != blank %}, {{ color_note }}{% endif %}{% unless product.has_only_default_variant %}, size {{ selv.title }}{% endunless %}{% if condition_label != blank %}, {{ condition_label }}{% endif %}, photographed by Lbass Original{% endcapture %}
 {% assign product_image_alt = product_image_alt | strip %}
 {%- comment -%}
-  Prefill asks for the city because the Marrakech (20) vs rest-of-Morocco (40)
+  Prefill asks for the city because the Marrakech (20) vs rest-of-Morocco (50)
   rate cannot be detected at checkout — Shopify exposes no provinces for MA.
   This message is where the correct rate gets confirmed before dispatch.
 {%- endcomment -%}
@@ -434,6 +463,18 @@
 .pdp-express summary::-webkit-details-marker{display:none}
 .pdp-express summary::after{display:none}
 .pdp-express[open] summary::after{display:none}
+/* 2026-10-06 funnel fix: on phones the express form and the payment/returns block start
+   folded (see the inline scripts after each), so their summaries become tappable toggles. */
+.pdp-pay > summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pdp-pay > summary::-webkit-details-marker{display:none}
+.pdp-pay > summary::after{content:'+';font-size:18px;font-weight:900;color:var(--gold2,#E0B52A);line-height:1}
+.pdp-pay[open] > summary::after{content:'−'}
+.pdp-pay:not([open]) > summary{margin:0}
+@media(max-width:767px){
+  .pdp-express summary{pointer-events:auto;cursor:pointer}
+  .pdp-express summary::after{display:block;content:'+';font-size:18px;font-weight:900;line-height:1}
+  .pdp-express[open] summary::after{display:block;content:'−'}
+}
 .pdp-express form{padding:4px 16px 16px;display:flex;flex-direction:column;gap:9px}
 .pdpx-in{padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--ink,#0A0A0B);color:var(--cream,#F4EFE6);font-family:inherit;font-size:14.5px;font-weight:700;min-height:48px}
 .pdpx-in:focus{outline:none;border-color:var(--gold)}
@@ -564,7 +605,10 @@
 .ps-n{width:28px;height:28px;flex-shrink:0;border-radius:50%;background:var(--gold);color:var(--ink);font-family:var(--lt);font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center}
 .ps-t{font-size:14px;font-weight:700;color:var(--txt)}
 @media(max-width:900px){
-  .pdp-wrap{grid-template-columns:1fr;padding-bottom:170px}
+  /* minmax(0,1fr), not 1fr (2026-10-11): 1fr = minmax(auto,1fr), so a 5+ photo thumbnail row
+     (70px each) stretched this column to 390–470px and the page laid out 490px wide on a
+     390px phone, cutting off the RTL start of every line. 9 in-stock products affected. */
+  .pdp-wrap{grid-template-columns:minmax(0,1fr);padding-bottom:170px}
   .pdp-gal{position:static}
   .pdp-buy-panel{position:relative;top:auto;padding:18px}
   .pdp-details-flow{margin-top:18px}
@@ -598,8 +642,66 @@
 .pp-row span{color:var(--txt2);line-height:1.65;font-weight:500}
 .pp-row a{color:var(--green2);text-decoration:underline}
 </style>
+<style id="lbass-pdp-one-action">
+/* ── 2026-10-11 PDP ONE ACTION — phones only (≤767px), in-stock pieces only (.pdp-direct) ──
+   Owner brief: one page, one action — product page → Shopify checkout in as few taps as possible.
+   GA4 13 Sep–10 Oct (owner excluded): 179 product-view sessions, only 3 add-to-carts made on a
+   product page, 4 WhatsApp clicks from product pages. Measured at 390×844 on the live theme:
+   «زيد للسلة» at ≈2,090px, 13 WhatsApp entry points, «قطعة وحدة فقط» 5×, a 452px info card.
+   Order now: photo → title → price → size · condition → «قطعة وحدة فقط» (stock = 1 only)
+   → «اطلب دابا» (straight to checkout) → WhatsApp button «سولنا قبل ما تطلب» → 3 trust lines
+   → 3 folded sections, + the floating WhatsApp bubble lifted above the sticky bar (owner
+   request 2026-10-11: WhatsApp button under the order button, no add-to-cart link, bubble
+   back on product pages). Desktop is unchanged; everything hidden here is
+   still in the HTML (SEO text intact). REVERT: delete this <style>, the .pdp-m-* markup and the
+   «PDP ONE ACTION» script block (all dated 2026-10-11), and the pdp-direct / pdp-one-size classes. */
+.pdp-m-facts,.pdp-m-after{display:none}
+.pdp-zoom{position:absolute;top:12px;inset-inline-start:12px;z-index:4;width:44px;height:44px;display:grid;place-items:center;padding:0;border:1px solid rgba(11,11,12,.16);border-radius:50%;background:rgba(255,255,255,.88);cursor:zoom-in}
+.pdp-zoom svg{width:20px;height:20px;fill:none;stroke:#0B0B0C;stroke-width:1.8;stroke-linecap:round}
+.pdp-zoom:focus-visible{outline:3px solid #BF2E15;outline-offset:2px}
+@media(max-width:767px){
+  .pdp-crumb .cur{display:none!important}
+  .pdp-crumb .sep:has(+ .cur){display:none!important}
+  .pdp-thumbs,.pdp-gal-note{display:none!important}
+  .pdp-wrap .pdp-main-viz{height:clamp(340px,56vh,460px)}
+  .pdp-sticky-wa{display:none!important}
+  body:has(.pdp-direct) .wa-float{bottom:calc(104px + env(safe-area-inset-bottom))}
+  .pdp-direct .pdp-brand,.pdp-direct .pdp-meta,.pdp-direct .pdp-badges,.pdp-direct .pdp-price-kicker,
+  .pdp-direct .pdp-ship-line,.pdp-direct .pdp-pay,.pdp-direct .pdp-price-helper,.pdp-direct .pdp-condition-card,
+  .pdp-direct #pdpForm .pdp-cta-reassurance,
+  .pdp-direct .pdp-drop-block .pdp-block-actions,.pdp-direct .pdp-one-block,.pdp-direct .pdp-buy-note,
+  .pdp-direct .pdp-why,.pdp-direct .pdp-express,.pdp-direct .pdp-trust,
+  .pdp-direct .pdp-help-row,.pdp-direct .pdp-desc-cta{display:none!important}
+  .pdp-direct #pdpForm.pdp-one-size .pdp-lbl,.pdp-direct #pdpForm.pdp-one-size .pdp-selected,
+  .pdp-direct #pdpForm.pdp-one-size .pdp-sizes{display:none!important}
+  .pdp-direct .pdp-name{font-size:clamp(23px,6.6vw,28px);margin:2px 0 6px}
+  .pdp-direct .pdp-price-wrap{margin-bottom:8px;padding-bottom:0;border-bottom:0}
+  .pdp-direct .pdp-m-facts{display:block;margin:2px 0 16px}
+  .pdp-m-line{margin:0;font-size:14.5px;font-weight:700;line-height:1.7;color:#2B2B2B}
+  .pdp-m-line b{font-weight:900;color:#111}
+  .pdp-m-one{margin:3px 0 0;font-size:13.5px;font-weight:900;color:#BF2E15}
+  .pdp-direct #pdpAdd{font-size:16.5px;min-height:58px}
+  .pdp-direct #pdpForm .pdp-wa{margin-top:10px}
+  .pdp-direct .pdp-m-after{display:block;margin:16px 0 8px}
+  .pdp-m-err{margin:0 0 10px;color:#B3261E;font-size:13px;font-weight:800}
+  .pdp-m-trust{list-style:none;margin:0 0 12px;padding:12px 14px;border:1px solid #E6E1D8;border-radius:12px;background:#FAF8F4;display:grid;gap:9px}
+  .pdp-m-trust li{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.65;color:#333}
+  .pdp-m-trust b{color:#111;font-weight:900}
+  .pdp-m-trust a{color:#111;text-decoration:underline}
+  .pdp-m-acc{border-top:1px solid #E6E1D8}
+  .pdp-m-acc:last-of-type{border-bottom:1px solid #E6E1D8}
+  .pdp-m-acc summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:48px;padding:12px 2px;font-size:14.5px;font-weight:900;color:#111;cursor:pointer}
+  .pdp-m-acc summary::-webkit-details-marker{display:none}
+  .pdp-m-acc summary::after{content:'+';font-size:20px;font-weight:900;line-height:1;color:#BF2E15}
+  .pdp-m-acc[open] summary::after{content:'−'}
+  .pdp-m-acc-b{padding:0 2px 14px;font-size:13.5px;line-height:1.75;color:#333}
+  .pdp-m-acc-b p{margin:0 0 8px}
+  .pdp-m-acc-b a{color:#111;text-decoration:underline}
+  .pdp-sticky .info{max-width:none!important}
+}
+</style>
 
-<div class="pdp-wrap">
+<div class="pdp-wrap{% if product.available and condition_confirmed %} pdp-direct{% endif %}">
   <nav class="pdp-crumb" aria-label="مسار التصفّح">
     <a href="{{ routes.root_url }}">الرئيسية</a><span class="sep">›</span>
     {% if first_collection %}<a href="{{ first_collection.url }}">{{ first_collection.title }}</a><span class="sep">›</span>{% endif %}
@@ -607,9 +709,11 @@
   </nav>
 
   <div class="pdp-gal">
-    <div class="pdp-main-viz" id="pdpMainViz" {% if main_image %}data-zoom="{{ main_image | image_url: width: 1600 }}" data-zoom-w="{{ main_image.width }}" data-zoom-h="{{ main_image.height }}" role="button" tabindex="0" aria-label="كبّر الصورة"{% endif %}>
+    <div class="pdp-main-viz" id="pdpMainViz" {% if main_image %}data-zoom="{{ main_image | image_url: width: 1600 }}" data-zoom-w="{{ main_image.width }}" data-zoom-h="{{ main_image.height }}" role="group" aria-label="صور المنتج"{% endif %}>
       {% if main_image %}
-        <img id="pdpMainImg" src="{{ main_image | image_url: width: 1200 }}" alt="{{ main_image.alt | default: product_image_alt | escape }}" fetchpriority="high" loading="eager" decoding="async" width="1200" height="1500">
+        <img id="pdpMainImg" src="{{ main_image | image_url: width: 1200 }}" srcset="{{ main_image | image_url: width: 600 }} 600w, {{ main_image | image_url: width: 800 }} 800w, {{ main_image | image_url: width: 1200 }} 1200w" sizes="(max-width: 900px) 92vw, 52vw" alt="{{ main_image.alt | default: product_image_alt | escape }}" fetchpriority="high" loading="eager" decoding="async" width="1200" height="1500">
+        {%- comment -%} 2026-10-11 a11y: zoom is its own button (the photo area used to be role=button and contained the arrow buttons). Tapping the photo still zooms. {%- endcomment -%}
+        <button type="button" class="pdp-zoom" data-pdp-zoom aria-label="كبّر الصورة"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/></svg></button>
         {% if product.images.size > 1 %}
           <button type="button" class="pdp-nav prev" data-pdp-prev aria-label="الصورة السابقة"></button>
           <button type="button" class="pdp-nav next" data-pdp-next aria-label="الصورة الموالية"></button>
@@ -708,8 +812,9 @@
         limit: 2,
         exclude_ids: soldout_exclude_ids,
         prefer_type: soldout_prefer_type,
-        prefer_collection: first_collection,
+        prefer_collection: sold_rail_coll,
         prefer_vendor: product.vendor,
+        type_source: sold_cat_coll,
         compact: true
       %}
     {% endunless %}
@@ -867,15 +972,35 @@
         If the policy ever changes, change /pages/refund-policy FIRST and then
         this block. The link below is the source of truth.
       {% endcomment %}
-      <div class="pdp-pay" aria-label="طرق الخلاص">
-        <p class="pdp-pay-h">PayPal كيعطيك مرونة أكثر</p>
-        <p class="pdp-pay-b">إلا خلصتي بـ <b>PayPal</b>، تقدر تطلب الإرجاع خلال <b>14 يوم</b> من وقت ما توصلك القطعة إلا ما عجباتكش — بشرط تبقى بنفس الحالة اللي وصلاتك، مالبوساش ومامغسولاش وبالإتيكيتات. <span class="pdp-pay-note">تكاليف الإرجاع على الزبون، إلا كان الغلط من عندنا.</span></p>
+      {%- comment -%}
+        2026-10-06 funnel fix: on mobile this ~300px block sat between the price and
+        «زيد للسلة». It is now a <details>, open on desktop and folded on phones
+        (≤767px) by the inline script below, so the same text is still on the page
+        and one tap away. The COD door-inspection line stays visible right above the
+        buy button (.pdp-cta-reassurance). OLD heading: «PayPal كيعطيك مرونة أكثر».
+      {%- endcomment -%}
+      <details class="pdp-pay" id="pdpPay" open aria-label="طرق الخلاص">
+        <summary class="pdp-pay-h">💳 الخلاص والإرجاع: COD أو PayPal</summary>
+        <p class="pdp-pay-b"><b>PayPal كيعطيك مرونة أكثر:</b> إلا خلصتي بـ <b>PayPal</b>، تقدر تطلب الإرجاع خلال <b>14 يوم</b> من وقت ما توصلك القطعة إلا ما عجباتكش — بشرط تبقى بنفس الحالة اللي وصلاتك، مالبوساش ومامغسولاش وبالإتيكيتات. <span class="pdp-pay-note">تكاليف الإرجاع على الزبون، إلا كان الغلط من عندنا.</span></p>
         <p class="pdp-pay-b">وباقي تقدر تختار <b>الدفع عند الاستلام</b>: كتشوف القطعة فالباب قبل ما تخلص، وإلا ما عجباتكش ما تخلصش وما تاخدهاش. ملي كتخلص وكتاخدها، البيعة كتسالى.</p>
         <a class="pdp-pay-link" href="/pages/refund-policy">شوف شروط الإرجاع كاملة ←</a>
-      </div>
+      </details>
+      <script>(function(){try{if(window.matchMedia&&window.matchMedia('(max-width:767px)').matches){var d=document.getElementById('pdpPay');if(d)d.removeAttribute('open');}}catch(e){}})();</script>
       <p class="pdp-price-helper"><strong>هاد السعر هو السعر النهائي قبل التوصيل.</strong>{% if promo_visible %} السعر كيبقى نفسه فالسلة وما كاين حتى تخفيض مخبّي فالخلاص.{% endif %}</p>
     </div>
 
+    {%- comment -%}
+      2026-10-11 PDP ONE ACTION (phones only; display:none on desktop): one line for size and
+      condition, then «قطعة وحدة فقط» once — only when is_one_of_one (summed variant stock = 1,
+      never fragrance/cosmetics; see snippets/lbass-one-of-one). Replaces on phones the eyebrow,
+      the badges row, «⚡ قطعة وحدة فقط · 1/1» and the size picker of single-size pieces.
+    {%- endcomment -%}
+    {%- if product.available and condition_confirmed -%}
+    <div class="pdp-m-facts">
+      <p class="pdp-m-line">{% if product.variants.size == 1 %}القياس: <b dir="auto">{% if product.variants.first.title == 'Default Title' %}One Size{% else %}{{ product.variants.first.title }}{% endif %}</b> · {% endif %}الحالة: <b>{{ condition_label }}</b></p>
+      {%- if is_one_of_one -%}<p class="pdp-m-one">⚡ قطعة وحدة فقط</p>{%- endif -%}
+    </div>
+    {%- endif -%}
     <div class="pdp-condition-card" aria-label="شفافية الحالة والتوفر">
       {% if condition_confirmed %}<div class="pdp-mini pdp-condition-message"><b>{{ condition_label }}</b><span>{{ condition_description }}</span></div>{% endif %}
       {% if ticket_confirmed %}<div class="pdp-mini"><b>التّيكيت</b><span>{% if ticket_status == 'ticket_attached' %}التّيكيت الأصلي باقي متعلق{% elsif ticket_status == 'ticket_included' %}التّيكيت الأصلي داخل مع القطعة{% else %}ما فيهاش التّيكيت الأصلي{% endif %}</span></div>{% endif %}
@@ -885,9 +1010,9 @@
     </div>
 
     {% if product.available and condition_confirmed %}
-    <form id="pdpForm" action="{{ routes.cart_add_url }}" method="post" novalidate>
+    <form id="pdpForm" action="{{ routes.cart_add_url }}" method="post" novalidate{% if product.variants.size == 1 %} class="pdp-one-size"{% endif %}>
       {% unless product.has_only_default_variant %}
-        <p class="pdp-lbl">اختار القياس <button type="button" data-szguide style="background:none;border:0;font-size:12px;color:var(--gold);font-weight:700;text-decoration:underline;cursor:pointer">دليل القياسات</button></p>
+        <p class="pdp-lbl">اختار القياس <button type="button" data-szguide data-cro-label="pdp_size_guide" style="background:none;border:0;font-size:12px;color:var(--gold);font-weight:700;text-decoration:underline;cursor:pointer">دليل القياسات</button></p>
         <div class="pdp-selected"><span>القياس المختار</span><b id="pdpSelectedSize">مازال ما تختارش</b></div>
         <div class="pdp-sizes" id="pdpSizes" role="group" aria-label="اختيار القياس">
           {% for variant in product.variants %}
@@ -933,6 +1058,50 @@
       </div>
       <a class="pdp-wa" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="pdp_buy_panel">سولنا قبل ما تطلب</a>
     </form>
+    {%- comment -%}
+      2026-10-11 PDP ONE ACTION (phones only). Trust lines use ONLY published facts:
+      COD with no deposit (proof list «بلا مقدّم»); delivery 20 MAD Marrakech via «التوصيل المحلي»
+      / 50 MAD elsewhere / free from 500 (owner-confirmed, see lbass-delivery-rates — never one
+      50 rate); door inspection + PayPal 14 days (/pages/refund-policy). No delivery TIME: the store
+      publishes none (FAQ: «المدة كتبدل حسب المدينة») — add it only when the owner gives the number.
+    {%- endcomment -%}
+    <div class="pdp-m-after">
+      <p class="pdp-m-err" id="pdpDirectErr" role="alert" hidden></p>
+      <ul class="pdp-m-trust" aria-label="الخلاص والتوصيل والإرجاع">
+        <li><span aria-hidden="true">💵</span><span><b>الدفع عند الاستلام</b> — بلا مقدّم، كتخلص ملي توصلك</span></li>
+        <li><span aria-hidden="true">🚚</span><span><b>التوصيل:</b> مراكش 20 درهم (اختار «التوصيل المحلي») · باقي المغرب 50 درهم · فابور من 500 درهم</span></li>
+        <li><span aria-hidden="true">↩️</span><span><b>تشوف القطعة فالباب قبل ما تخلص</b> — ما عجباتكش؟ ما تخلصش. خلصتي بـ <bdi>PayPal</bdi>؟ عندك 14 يوم للإرجاع (<a href="/pages/refund-policy">الشروط</a>)</span></li>
+      </ul>
+      <details class="pdp-m-acc">
+        <summary>📏 القياسات</summary>
+        <div class="pdp-m-acc-b">
+          {%- if product.variants.size == 1 -%}<p>القياس: <b dir="auto">{% if product.variants.first.title == 'Default Title' %}One Size{% else %}{{ product.variants.first.title }}{% endif %}</b>{% if product.metafields.lbass.label_size != blank %} · القياس فالإتيكيت: <b dir="auto">{{ product.metafields.lbass.label_size }}</b>{% endif %}</p>{%- endif -%}
+          {%- if product.metafields.lbass.meas_length != blank or product.metafields.lbass.meas_chest != blank or product.metafields.lbass.meas_waist != blank or product.metafields.lbass.meas_sleeve != blank or product.metafields.lbass.meas_inseam != blank or product.metafields.lbass.meas_insole != blank -%}
+          <p>بالسنتمتر: {% if product.metafields.lbass.meas_length != blank %}الطول {{ product.metafields.lbass.meas_length }} cm · {% endif %}{% if product.metafields.lbass.meas_chest != blank %}الصدر {{ product.metafields.lbass.meas_chest }} cm · {% endif %}{% if product.metafields.lbass.meas_waist != blank %}الوسط {{ product.metafields.lbass.meas_waist }} cm · {% endif %}{% if product.metafields.lbass.meas_sleeve != blank %}الكمّ {{ product.metafields.lbass.meas_sleeve }} cm · {% endif %}{% if product.metafields.lbass.meas_inseam != blank %}داخل الرجل {{ product.metafields.lbass.meas_inseam }} cm · {% endif %}{% if product.metafields.lbass.meas_insole != blank %}النعل {{ product.metafields.lbass.meas_insole }} cm{% endif %}</p>
+          {%- endif -%}
+          {%- if fit_note != blank -%}<p><b>{{ fit_note }}</b></p>{%- endif -%}
+          {%- if measurement_note != blank -%}<p>{{ measurement_note }}</p>{%- endif -%}
+          <p><a href="/pages/size-guide">دليل القياسات</a></p>
+        </div>
+      </details>
+      <details class="pdp-m-acc">
+        <summary>🔍 الحالة والتفاصيل</summary>
+        <div class="pdp-m-acc-b">
+          <p><b>{{ condition_label }}</b> — {{ condition_description }}</p>
+          {%- if condition_notes != blank -%}<p><b>ملاحظات الفحص:</b> {{ condition_notes }}</p>{%- endif -%}
+          {%- if visible_defects != blank -%}<p><b>الملاحظات الظاهرة:</b> {{ visible_defects }}</p>{%- endif -%}
+          {%- if ticket_confirmed -%}<p><b>التّيكيت:</b> {% if ticket_status == 'ticket_attached' %}التّيكيت الأصلي باقي متعلق{% elsif ticket_status == 'ticket_included' %}التّيكيت الأصلي داخل مع القطعة{% else %}ما فيهاش التّيكيت الأصلي{% endif %}</p>{%- endif -%}
+          <p>هاد القطعة جاية من ألمانيا. الصور ديال نفس القطعة اللي غادي توصلك.</p>
+        </div>
+      </details>
+      <details class="pdp-m-acc">
+        <summary>📝 الوصف</summary>
+        <div class="pdp-m-acc-b">
+          <p>{{ product_summary }}</p>
+          {%- if product.description != blank -%}<p><a href="#pdpFullDesc">الوصف الكامل ↓</a></p>{%- endif -%}
+        </div>
+      </details>
+    </div>
     {% elsif product.available %}
       <section class="pdp-pending" aria-labelledby="pdp-pending-title">
         <h2 id="pdp-pending-title">هاد المنتج ماشي متوفر للطلب دابا</h2>
@@ -955,8 +1124,23 @@
               {%- unless c.handle contains 'brand-' -%}{%- if soldout_cat_coll == nil -%}{%- assign soldout_cat_coll = c -%}{%- endif -%}{%- endunless -%}
             {%- endunless -%}
           {%- endfor -%}
+          {%- comment -%}
+            2026-10-05: when the sold piece has a specific category (sold_cat_coll), the first
+            link goes there, named by the collection's own title (e.g. «بنطال تراك — Track
+            Pants»), and the second goes to the brand. The brand-* collections are unpublished,
+            so for Nike/Adidas the brand page is the `nike` / `adidas-originals` collection,
+            which the old code labelled «شوف قطع مشابهة» and linked twice. Without a category
+            the old two links render unchanged.
+          {%- endcomment -%}
+          {% if sold_cat_coll %}
+            {%- assign sold_brand_link = soldout_brand_coll -%}
+            {%- if sold_brand_link == nil and first_collection and sold_vendor_handle != blank and first_collection.handle contains sold_vendor_handle -%}{%- assign sold_brand_link = first_collection -%}{%- endif -%}
+            <a href="{{ sold_cat_coll.url }}">{{ sold_cat_coll.title }}</a>
+            {% if sold_brand_link and sold_brand_link.handle != sold_cat_coll.handle %}<a href="{{ sold_brand_link.url }}">قطع {{ product.vendor }} الأخرى</a>{% endif %}
+          {% else %}
           {% if soldout_brand_coll %}<a href="{{ soldout_brand_coll.url }}">قطع {{ product.vendor }} الأخرى</a>{% elsif first_collection %}<a href="{{ first_collection.url }}">شوف قطع مشابهة</a>{% endif %}
           {% if soldout_cat_coll and soldout_cat_coll.handle != soldout_brand_coll.handle %}<a href="{{ soldout_cat_coll.url }}">{{ soldout_cat_coll.title }}</a>{% endif %}
+          {% endif %}
           <a href="{{ routes.all_products_collection_url }}">الدروب الحالي</a>
           <a href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener">سولنا فـ WhatsApp</a>
         </div>
@@ -1007,6 +1191,8 @@
         <p class="pdpx-note">غادي نوجّهوك لصفحة التأكيد والمعلومات ديالك معمّرة أوتوماتيكياً · التوصيل 20 درهم داخل مراكش · 50 درهم خارج مراكش — مجاني من 500 درهم</p>
       </form>
     </details>
+    {%- comment -%} 2026-10-06 funnel fix: folded on phones so «زيد للسلة» is the one main button; one tap opens it. Desktop unchanged. {%- endcomment -%}
+    <script>(function(){try{if(window.matchMedia&&window.matchMedia('(max-width:767px)').matches){var d=document.getElementById('pdpExpress');if(d)d.removeAttribute('open');}}catch(e){}})();</script>
     {% endif %}
 
     <div class="pdp-trust">
@@ -1131,7 +1317,7 @@
         {% elsif product.available %}
           <a class="pdc-primary" href="mailto:contact@lbassoriginal.com?subject={{ display_title | url_encode }}">سول بالإيميل</a>
         {% else %}
-          <a class="pdc-primary" href="{% if first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}">شوف قطع مشابهة</a>
+          <a class="pdc-primary" href="{% if sold_cat_coll %}{{ sold_cat_coll.url }}{% elsif first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}">شوف قطع مشابهة</a>
         {% endif %}
         <a class="pdc-secondary" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener">سول فالواتساب</a>
       </div>
@@ -1262,7 +1448,7 @@
       {% assign visible_product_description = visible_product_description | replace: 'مستعمل — حالة ممتازة، ما فيه عيوب', 'ما فيهاش التّيكيت · بحالة ممتازة وشبه جديدة، والملاحظات كيبانو فوق' %}
   {% endcase %}
   {% if visible_product_description != blank and condition_confirmed %}
-  <section class="pdp-body" aria-label="تفاصيل القطعة">
+  <section class="pdp-body" id="pdpFullDesc" aria-label="تفاصيل القطعة">
     {{ visible_product_description }}
   </section>
   {% elsif visible_product_description != blank %}
@@ -1328,6 +1514,10 @@
   {% assign picked = ',' %}
   {% assign look_count = 0 %}
 
+  {%- comment -%} 2026-10-11 PDP ONE ACTION: the reviews block rendered an empty «no reviews yet» widget on
+      97 of 100 products. Shown only when Judge.me has counted at least one review. {%- endcomment -%}
+  {%- assign lb_rv_count = product.metafields.reviews.rating_count.value | default: 0 -%}
+  {%- if lb_rv_count > 0 -%}
   <section class="pdp-reviews lbass-reviews" aria-labelledby="reviews-h" dir="rtl">
     <header class="lbass-reviews__head">
       <p class="lbass-reviews__eyebrow" aria-hidden="true">LBASS COMMUNITY PROOF</p>
@@ -1341,6 +1531,7 @@
     <!-- Start of Judge.me code -->{% assign has_legacy = false %}{% if product.metafields.judgeme.widget.size > 20 %}{% assign has_legacy = true %}{% endif %}<div style='clear:both'></div><div id='judgeme_product_reviews' class='jdgm-widget jdgm-review-widget' data-product-title='{{ product.title | escape }}' data-id='{{ product.id }}' data-product-id='{{ product.id }}' data-widget='review' data-auto-install='false' data-shop-reviews-count='{{ shop.metafields.judgeme.shop_reviews_count | default: 0 | escape }}' data-entry-point='review_widget.js' data-entry-key='review-widget/main.js'>{% if has_legacy %}<div class='jdgm-legacy-widget-content' style='display: none;'>{{ product.metafields.judgeme.widget }}</div>{% endif %}</div>{% if product.metafields.judgeme.review_widget_data %}<script>jdgm.data ||= {}; jdgm.data.reviewWidget ||= {}; jdgm.data.reviewWidget[{{ product.id }}] = {{ product.metafields.judgeme.review_widget_data }}</script>{% endif %}<!-- End of Judge.me code -->
     <p class="lbass-reviews__trust"><span aria-hidden="true">✓</span> رأيك خاص يكون حقيقي ومبني على تجربة الشراء.</p>
   </section>
+  {%- endif -%}
 
   <section class="pdp-rel" aria-labelledby="rel-h">
     <h2 class="pdp-rel-h" id="rel-h">كمّل اللوك — شوف شنو يجي مع هاد القطعة 👇</h2>
@@ -1861,7 +2052,7 @@
   {% elsif product.available %}
     <a href="mailto:contact@lbassoriginal.com?subject={{ display_title | url_encode }}" class="pdp-sticky-add">تواصل معنا</a>
   {% else %}
-    <a href="{% if first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}" class="pdp-sticky-add">قطع مشابهة</a>
+    <a href="{% if sold_cat_coll %}{{ sold_cat_coll.url }}{% elsif first_collection %}{{ first_collection.url }}{% else %}{{ routes.all_products_collection_url }}{% endif %}" class="pdp-sticky-add">قطع مشابهة</a>
   {% endif %}
   <a class="pdp-sticky-wa" href="https://wa.me/{{ wa_number }}?text={{ wa_msg_buy }}" target="_blank" rel="noopener" data-cro-event="whatsapp_click" data-cro-label="pdp_mobile_sticky" aria-label="سولنا فـ WhatsApp على {{ display_title | escape }}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.04 2a9.84 9.84 0 0 0-8.4 14.96L2.2 22l5.17-1.36A9.9 9.9 0 1 0 12.04 2Zm0 17.98a8.03 8.03 0 0 1-4.1-1.12l-.3-.18-3.07.81.82-2.99-.2-.31a8.06 8.06 0 1 1 6.85 3.79Zm4.42-6.03c-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2a7.28 7.28 0 0 1-1.34-1.67c-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z"/></svg></a>
 </div>
@@ -2070,7 +2261,7 @@
     var src = btn.dataset.src;
     var zoom = btn.dataset.zoom;
     var alt = btn.dataset.alt;
-    if (src) main.src = src;
+    if (src) { main.removeAttribute('srcset'); main.removeAttribute('sizes'); main.src = src; } /* 2026-10-11: first photo ships a srcset */
     if (alt) main.alt = alt;
     if (viz && zoom) viz.dataset.zoom = zoom;
     thumbs.forEach(function(b, i){
@@ -2197,6 +2388,7 @@
   }
 
   viz?.addEventListener('click', function(){ openZoom(currentImage); });
+  document.querySelector('[data-pdp-zoom]')?.addEventListener('click', function(e){ e.stopPropagation(); openZoom(currentImage); });
   viz?.addEventListener('keydown', function(e){
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openZoom(currentImage); }
     if (thumbs.length > 1 && e.key === 'ArrowLeft'){ e.preventDefault(); setGalleryImage(currentImage - 1); }
@@ -2356,6 +2548,93 @@
       else form.submit();
     });
   });
+
+  /* ── 2026-10-11 PDP ONE ACTION (phones ≤767px) ─────────────────────────────────
+     «اطلب دابا — خلّص ملي توصلك» (main button + sticky bar) adds THIS piece with
+     /cart/add.js — anything already in the cart stays — then goes straight to /checkout.
+     If the piece is already in the cart it goes straight to /checkout.
+     GA4: no gtag/ecommerce call here on purpose. Shopify emits product_added_to_cart for the
+     /cart/add.js request, so the Google & YouTube pixel sends add_to_cart ONCE, and checkout
+     sends begin_checkout ONCE. The 700ms pause lets that event leave before the page unloads.
+     The cart permalink is NOT used: it replaces the cart and skips add_to_cart.
+     Desktop and the promo / lower buttons keep the drawer flow (this listener returns early
+     for them). ── */
+  var lbPhoneMQ = window.matchMedia ? window.matchMedia('(max-width:767px)') : null;
+  function lbIsPhone(){ return !!(lbPhoneMQ && lbPhoneMQ.matches); }
+  var LB_DIRECT_LABEL = 'اطلب دابا — خلّص ملي توصلك';
+  var LB_DIRECT_STICKY = 'اطلب دابا';
+  function lbDirectLabels(){
+    if (!lbIsPhone() || !document.querySelector('.pdp-direct')) return;
+    if (addBtn && !addBtn.disabled){ addBtn.textContent = LB_DIRECT_LABEL; addBtn.dataset.idleLabel = LB_DIRECT_LABEL; }
+    if (stickyAdd && !stickyAdd.disabled){ stickyAdd.textContent = LB_DIRECT_STICKY; stickyAdd.dataset.idleLabel = LB_DIRECT_STICKY; }
+  }
+  function lbDesktopLabels(){
+    [addBtn, stickyAdd].forEach(function(b){
+      if (b && !b.disabled && (b.textContent === LB_DIRECT_LABEL || b.textContent === LB_DIRECT_STICKY)){ b.textContent = 'زيد للسلة'; b.dataset.idleLabel = 'زيد للسلة'; }
+    });
+  }
+  lbDirectLabels();
+  document.querySelectorAll('#pdpSizes .sz').forEach(function(b){ b.addEventListener('click', lbDirectLabels); });
+  /* keep the label in step with the behaviour when the width changes after load (rotated
+     tablet, resized desktop window, editor/devtools device toggle) */
+  function lbOnWidthChange(){ if (lbIsPhone()) lbDirectLabels(); else lbDesktopLabels(); }
+  if (lbPhoneMQ && lbPhoneMQ.addEventListener) lbPhoneMQ.addEventListener('change', lbOnWidthChange);
+  else if (lbPhoneMQ && lbPhoneMQ.addListener) lbPhoneMQ.addListener(lbOnWidthChange);
+  var lbDirectBusy = false;
+  function lbRestoreButtons(msg){
+    lbDirectBusy = false;
+    [addBtn, stickyAdd].forEach(function(b){ if (b){ b.disabled = false; b.removeAttribute('aria-busy'); } });
+    if (lbIsPhone()) lbDirectLabels(); else lbDesktopLabels();
+    var errEl = document.getElementById('pdpDirectErr');
+    if (msg && errEl){ errEl.textContent = msg; errEl.hidden = false; }
+  }
+  /* Back from checkout: Safari/Chrome may restore this page from the back-forward cache with the
+     buttons still disabled on «لحظة…» — give them back. */
+  window.addEventListener('pageshow', function(e){ if (e.persisted && lbDirectBusy) lbRestoreButtons(); });
+  document.getElementById('pdpForm')?.addEventListener('submit', function(e){
+    var form = this;
+    var trigger = e.submitter || form._lbassTrigger || null;
+    if (!lbIsPhone() || !document.querySelector('.pdp-direct')) return;
+    if (!trigger || (trigger.id !== 'pdpAdd' && trigger.id !== 'pdpStickyAdd')) return;
+    var idInput = form.querySelector('[name="id"]');
+    if (!idInput || !idInput.value) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    form._lbassTrigger = null;
+    if (lbDirectBusy) return;
+    lbDirectBusy = true;
+    var vid = parseInt(idInput.value, 10);
+    var btns = [addBtn, stickyAdd].filter(Boolean);
+    var errEl = document.getElementById('pdpDirectErr');
+    if (errEl) errEl.hidden = true;
+    btns.forEach(function(b){ b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = 'لحظة… كنوجدو الطلب'; });
+    function goCheckout(){ window.location.href = '/checkout'; }
+    var vault = currentVaultAttribution();
+    fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
+      .then(function(r){ return r.json(); })
+      .then(function(cart){
+        var inCart = cart && cart.items && cart.items.some(function(i){ return i.variant_id === vid; });
+        if (inCart){ goCheckout(); return; }
+        return fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ items: [{ id: vid, quantity: 1 }] })
+        })
+        .then(function(r){ if (!r.ok) throw Object.assign(new Error('add_failed'), { status: r.status }); return r.json(); })
+        .then(function(){
+          try { if (window.Shopify && Shopify.analytics && typeof Shopify.analytics.publish === 'function') Shopify.analytics.publish('lbass_add_to_cart', { currency: 'MAD', value: {{ product.price | divided_by: 100.0 | json }}, items_count: 1, source: 'pdp_direct_checkout', product_name: {{ display_title | json }} }); } catch(e3){}
+          if (vault){
+            persistVaultCart(vault);
+            publishVault('lbass_vault_add_to_cart', { currency: 'MAD', value: {{ product.price | divided_by: 100.0 | json }}, items_count: 1, source: vault.source || 'vault', category: vault.category || 'unknown', product_id: {{ product.id | json }}, product_name: {{ display_title | json }} });
+          }
+          setTimeout(goCheckout, 700);
+        });
+      })
+      .catch(function(err){
+        if (err && err.status === 422) lbRestoreButtons('⚠ هاد القطعة ما بقاتش متوفرة دابا. شوف قطع أخرى من نفس البراند.');
+        else lbRestoreButtons('⚠ وقع مشكل فالاتصال. عاود جرّب، ولا سولنا فالواتساب تحت.');
+      });
+  }, true);
 
   // hide sticky bar while main CTA is in viewport
   var sticky = document.getElementById('pdpSticky');

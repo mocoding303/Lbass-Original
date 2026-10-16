@@ -13,6 +13,12 @@
     compact       two-column compact layout for a PDP buy panel
     prefer_collection  a collection object whose in-stock products are offered FIRST
     prefer_vendor      a vendor name used as the second-choice tier
+    type_source        optional collection: when given, the same-type tier is drawn
+                       from its in-stock products (in its own order, e.g. newest
+                       first for new-in) instead of collections.all, which this
+                       storefront lists A→Z. Added 2026-10-03 for the collection
+                       pages' sold-out / low-stock rails; product pages do not pass
+                       it and keep their behaviour.
 
   RELEVANCE TIERS (added 2026-08-29)
     Until this change the pool was `collections.all.products | where: 'available'`
@@ -69,13 +75,27 @@
     H&M grey cargo pants ahead of an in-stock black Adidas track pant for a
     shopper who searched «بنطال تراك أسود للرجال»: right category, wrong answer.
   endcomment
+  comment
+    2026-10-05: when the caller also passes type_source (only the sold-product rail
+    does), tier 0 is drawn from that small category collection instead of the A→Z,
+    50-product collections.all, so an Arabic-titled piece of the same brand and type
+    can win. Callers without type_source keep the old tier 0.
+  endcomment
   if prefer_type != blank and prefer_vendor != blank
-    assign lr_tier0 = lr_all | where: 'type', prefer_type | where: 'vendor', prefer_vendor
+    if type_source != blank
+      assign lr_tier0 = type_source.products | where: 'available', true | where: 'type', prefer_type | where: 'vendor', prefer_vendor
+    else
+      assign lr_tier0 = lr_all | where: 'type', prefer_type | where: 'vendor', prefer_vendor
+    endif
     assign lr_pool = lr_tier0
   endif
 
   if prefer_type != blank
-    assign lr_tier1 = lr_all | where: 'type', prefer_type
+    if type_source != blank
+      assign lr_tier1 = type_source.products | where: 'available', true | where: 'type', prefer_type
+    else
+      assign lr_tier1 = lr_all | where: 'type', prefer_type
+    endif
     if lr_pool == ''
       assign lr_pool = lr_tier1
     else

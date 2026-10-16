@@ -111,4 +111,14 @@ main > #drop{padding-top:38px!important}
 @media(max-width:767px){
   main > #drop{padding-top:28px!important}
 }
+
+/* ── 4. new pieces BEFORE the category tiles (2026-10-06 funnel fix) ─────────
+   GA4 Sep 8–Oct 5, owner excluded: 458 sessions landed on the homepage and only
+   14% opened a product. At 375×812 the first product sat at 1,473px (1.8
+   screens): hero → category tiles (392px) → marquee → THE DROP. Now: hero →
+   marquee → THE DROP (first product ≈1,080px) → category tiles. The editorial
+   tiles stay exactly as they are, one section lower. Overrides order:0 / order:2
+   in section 2 by coming later at equal specificity — delete to revert. */
+main > #drop{order:1}
+main > .lbcat{order:2}
 </style>

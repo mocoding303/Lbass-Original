@@ -126,6 +126,14 @@
 .lbdr-btn-wa:hover{background:rgba(37,211,102,.2)}
 .lbdr-btn-ghost{background:transparent;color:var(--txt2,#97928A);border:1px solid var(--line,#26262B)}
 .lbdr-btn-ghost:hover{color:var(--cream,#F4EFE6);border-color:var(--gold,#C89A0E)}
+/* 2026-10-11 PDP ONE ACTION: WhatsApp is a small text link under «كمّل التسوّق», never a second
+   big button next to checkout. The button still works and is now counted as whatsapp_click.
+   The token sheet in <head> styles #lbdrWa as a full teal button with !important, so these
+   overrides need the id + !important (higher specificity wins between two !important rules). */
+.lbdr-row2{flex-direction:column;align-items:stretch}
+.lbdr-row2 #lbdrWa.lbdr-btn-wa{order:2;align-self:center;display:inline-flex!important;width:auto!important;min-height:0!important;padding:6px 4px 2px!important;border:0!important;background:none!important;color:var(--txt2,#6B665E)!important;font-weight:700!important;font-size:12.5px!important;text-decoration:underline!important;text-underline-offset:3px}
+.lbdr-row2 #lbdrWa.lbdr-btn-wa::before{width:14px;height:14px;background:#128C7E}
+.lbdr-row2 #lbdrWa.lbdr-btn-wa:hover{background:none!important;color:#128C7E!important}
 .lbdr-cartlink{display:block;margin-top:10px;text-align:center;color:var(--txt3,#5E5A55);font-size:12.5px;font-weight:800;text-decoration:none}
 .lbdr-cartlink:hover{color:var(--gold,#C89A0E)}
 .lbdr-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);z-index:120;background:var(--cream,#F4EFE6);color:var(--ink,#0A0A0B);padding:12px 22px;border-radius:12px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:92vw;text-align:center}
@@ -140,7 +148,7 @@
 
 <div class="lbdr-scrim" id="lbdrScrim" hidden></div>
 
-<aside class="lbdr" id="lbdr" role="dialog" aria-modal="true" aria-label="سلة التسوّق" aria-hidden="true">
+<aside class="lbdr" id="lbdr" role="dialog" aria-modal="true" aria-label="سلة التسوّق" aria-hidden="true" inert>
   <div class="lbdr-head">
     <span class="lbdr-title">السلة <small id="lbdrCount"></small></span>
     <button class="lbdr-x" id="lbdrX" type="button" aria-label="سدّ السلة">✕</button>
@@ -185,7 +193,7 @@
     <p class="lbdr-ship" style="margin:0 0 12px;font-size:11.5px">🚚 20 درهم مراكش · 50 درهم باقي المغرب · مجاني من 500 · 💳 COD أو PayPal</p>
     <a class="lbdr-btn lbdr-btn-g" id="lbdrCheckout" href="/checkout" data-cro-event="checkout_start" data-cro-label="cart_drawer">كمّل الطلب ←</a>
     <div class="lbdr-row2">
-      <button class="lbdr-btn lbdr-btn-wa" id="lbdrWa" type="button">💬 كمّل فالواتساب</button>
+      <button class="lbdr-btn lbdr-btn-wa" id="lbdrWa" type="button" data-cro-label="cart_drawer">💬 كمّل فالواتساب</button>
       <button class="lbdr-btn lbdr-btn-ghost" id="lbdrKeep" type="button">كمّل التسوّق</button>
     </div>
   </div>
@@ -421,7 +429,7 @@
     void scrim.offsetWidth;
     scrim.classList.add('show');
     root.classList.add('open');
-    root.setAttribute('aria-hidden', 'false');
+    root.setAttribute('aria-hidden', 'false'); root.inert = false; /* 2026-10-11 a11y: focusable only while open */
     D.body.style.overflow = 'hidden';
     D.addEventListener('keydown', keyHandler);
     var x = q('lbdrX'); if (x) x.focus();
@@ -431,7 +439,7 @@
     if (!state.open) return;
     state.open = false;
     root.classList.remove('open'); scrim.classList.remove('show');
-    root.setAttribute('aria-hidden', 'true');
+    root.setAttribute('aria-hidden', 'true'); root.inert = true;
     setTimeout(function(){ scrim.hidden = true; }, 320);
     D.body.style.overflow = '';
     D.removeEventListener('keydown', keyHandler);
@@ -640,7 +648,9 @@
     if (!cart || !cart.item_count){ toast('السلة خاوية — زيد شي قطعة أولاً'); return; }
     var lines = cart.items.map(function(it){
       var sz = (it.variant_title && it.variant_title !== 'Default Title') ? ' · ' + it.variant_title : '';
-      return '▸ ' + (it.vendor ? it.vendor + ' ' : '') + stripCode(it.product_title) + sz + ' = ' + (it.final_line_price / 100) + ' درهم';
+      /* 2026-10-12: titles already start with the brand, so prefixing the vendor wrote "Replay Replay …" */
+      var nm = stripCode(it.product_title), vd = (it.vendor && nm.toLowerCase().indexOf(String(it.vendor).toLowerCase()) !== 0) ? it.vendor + ' ' : '';
+      return '▸ ' + vd + nm + sz + ' = ' + (it.final_line_price / 100) + ' درهم';
     }).join('\n');
     /* City is asked for explicitly: Shopify has no Moroccan provinces, so the
        20 / 50 split cannot be resolved automatically at checkout. The WhatsApp

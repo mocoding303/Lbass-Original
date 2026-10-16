@@ -82,17 +82,30 @@
   if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
   {%- endif %}
 
-  var s = document.createElement('script');
-  s.id = 'merchantWidgetScript';
-  s.src = SRC;
-  s.defer = true;
-  s.addEventListener('load', function () {
-    if (typeof merchantwidget === 'undefined') return;
-    merchantwidget.start({
-      position: 'LEFT_BOTTOM'
+  /* 2026-10-11 SPEED 2: the widget script (~290 KB) now loads after the page has loaded and the phone
+     is idle, instead of competing with the page itself. The badge is fixed-position, so nothing moves. */
+  function go () {
+    if (window.merchantwidget || document.querySelector('script[src*="merchantwidget.js"]')) return;
+    var s = document.createElement('script');
+    s.id = 'merchantWidgetScript';
+    s.src = SRC;
+    s.async = true;
+    s.addEventListener('load', function () {
+      if (typeof merchantwidget === 'undefined') return;
+      merchantwidget.start({
+        position: 'LEFT_BOTTOM'
+      });
+      /* accessibility: the widget's iframe ships without a title */
+      var tries = 0, iv = setInterval(function () {
+        var f = document.getElementById('merchantwidgetiframe');
+        if (f) { if (!f.title) f.title = 'تقييم المتجر على Google · Google store rating'; clearInterval(iv); }
+        else if (++tries > 40) clearInterval(iv);
+      }, 250);
     });
-  });
-  document.head.appendChild(s);
+    document.head.appendChild(s);
+  }
+  function later () { (window.requestIdleCallback || function (cb) { setTimeout(cb, 2000); })(go, { timeout: 5000 }); }
+  if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
 })();
 </script>
 {%- endif -%}

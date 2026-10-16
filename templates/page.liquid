@@ -7,7 +7,8 @@
   {% when 'size-guide' %}
     {% capture short_answer %}قياسات second-hand ماخاصكش تعتمد فيها غير على label. قارن الصدر، الطول، الخصر، inseam أو قياس الصباط مع قطعة عندك كاتجيك مزيان. إلا كانت القياسات ناقصة فصفحة المنتج، سولنا فالواتساب قبل ما تطلب.{% endcapture %}
   {% when 'authenticity' %}
-    {% capture short_answer %}Lbass Original كيراجع البراند والتفاصيل الظاهرة قبل ما يعرض القطعة، ولكن ماكنوعدوش بشهادة خارجية إلا إلا كانت مذكورة صراحة. الصور الحقيقية، الكود، الحالة، والتفاصيل القريبة كيساعدوك تشري بثقة وبلا مفاجآت.{% endcapture %}
+    {%- comment -%} 2026-10-05: the published authenticity guarantee (refund policy) added to the short answer. {%- endcomment -%}
+    {% capture short_answer %}Lbass Original كيراجع البراند والتفاصيل الظاهرة قبل ما يعرض القطعة، ولكن ماكنوعدوش بشهادة خارجية إلا إلا كانت مذكورة صراحة. الصور الحقيقية، الكود، الحالة، والتفاصيل القريبة كيساعدوك تشري بثقة وبلا مفاجآت. وإلا بان أن قطعة ماشي أصلية، فلوسك راجعين كاملين، سواء خلصتي بـ PayPal ولا عند الاستلام.{% endcapture %}
   {% when 'shipping-and-payment' %}
     {% capture short_answer %}التوصيل والدفع عند الاستلام مع Lbass Original واضح: 20 درهم داخل مراكش، 50 درهم لباقي المغرب، والخلاص بـ COD ملي توصلك أو PayPal أونلاين. مدة التوصيل كنأكدوها حسب المدينة قبل الإرسال.{% endcapture %}
   {% when 'sell-your-clothes' %}
@@ -19,11 +20,16 @@
     {% assign query_page_h1 = 'القياسات ديال حوايج Second-Hand' %}
     {% capture short_answer %}القياسات ديال second-hand ما خاصكش تعتمد فيها غير على label؛ قارن القياسات بالسنتيمتر مع قطعة عندك كاتجيك مزيان.{% endcapture %}
   {% when 'vetements-second-hand-maroc' %}
-    {% assign query_page_h1 = 'Vêtements Second Hand Maroc' %}
+    {%- comment -%}2026-10-03 (theme "SEO quick wins 20261003"): «vêtements occasion maroc» sits at position 25.6 → 19.2 (Sep) and the H1 lacked "occasion". OLD H1: 'Vêtements Second Hand Maroc'{%- endcomment -%}
+    {% assign query_page_h1 = "Vêtements d'occasion et second hand de marque au Maroc" %}
     {% capture short_answer %}Vêtements second hand Maroc: Lbass Original propose des pièces de marque, sneakers et accessoires sourcés en Allemagne, vérifiés à Marrakech et photographiés individuellement.{% endcapture %}
   {% when 'second-hand-clothing-morocco' %}
     {% assign query_page_h1 = 'Second-Hand Clothing Morocco' %}
     {% capture short_answer %}Second-hand clothing Morocco: Lbass Original sells branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.{% endcapture %}
+  {% when 'ملابس-مستعملة-اصلية-المغرب' %}
+    {%- comment -%}2026-10-03 (SEO plan, batch 2): Arabic landing page. GSC 1 Jul–29 Sep: 14 Arabic second-hand queries (63 Moroccan impr) such as «موقع بيع الملابس المستعملة بالمغرب» land on the FRENCH page. One page per language; this one owns the Arabic intent.{%- endcomment -%}
+    {% assign query_page_h1 = 'ملابس مستعملة أصلية فالمغرب' %}
+    {% capture short_answer %}Lbass Original موقع مغربي أونلاين من مراكش كيبيع ملابس براند مستعملة أصلية: سبادري، جاكيطات، سراويل وتيشرتات. كل قطعة مصورة بصورها الحقيقية والحالة مكتوبة قبل الطلب. التوصيل 20 درهم داخل مراكش و50 درهم لباقي المغرب، مجاني من 500 درهم، والدفع عند الاستلام.{% endcapture %}
   {% when 'second-hand-clothing-marrakech' %}
     {% assign query_page_h1 = 'Friperie Marrakech' %}
     {% capture short_answer %}Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 50 MAD ailleurs au Maroc.{% endcapture %}
@@ -106,7 +112,68 @@
     %}
   {% endif %}
 
+  {% if page.handle == 'ملابس-مستعملة-اصلية-المغرب' %}
+    {%- comment -%}2026-10-03 (SEO plan, batch 2): same live block as the English landing page, in Darija.{%- endcomment -%}
+    {%- assign ar_shoes_available = collections['صبابط'].products | where: 'available', true -%}
+    {%- assign ar_jackets_available = collections['جاكيطات-و-معاطف'].products | where: 'available', true -%}
+    <section class="page-shop-en" aria-labelledby="page-shop-ar-title">
+      <h2 id="page-shop-ar-title">شوف الملابس المستعملة المتوفرة دابا</h2>
+      <p>صور حقيقية ديال نفس القطعة · الحالة والقياس واضحين · الدفع عند الاستلام فكل المغرب.</p>
+      <div class="page-shop-en__links">
+        <a href="{{ routes.all_products_collection_url }}" data-cro-event="available_now_click" data-cro-label="arabic_landing_all">كل القطع المتوفرة</a>
+        {% if ar_shoes_available.size > 0 %}<a href="{{ collections['صبابط'].url }}" data-cro-event="arabic_category_click" data-cro-label="sneakers">صبابط وسبادري</a>{% endif %}
+        {% if ar_jackets_available.size > 0 %}<a href="{{ collections['جاكيطات-و-معاطف'].url }}" data-cro-event="arabic_category_click" data-cro-label="jackets">جاكيطات</a>{% endif %}
+      </div>
+    </section>
+    {% render 'lbass-live-products-rail',
+      heading: 'متوفر دابا',
+      intro: 'قطع متوفرة دابا بالثمن، القياس والحالة، وبصورها الحقيقية.',
+      placement: 'arabic_second_hand_landing',
+      limit: 4
+    %}
+  {% endif %}
+
   <div style="max-width:860px">{{ page.content | replace: '212708336547', '491754264425' | replace: 'كنعطيوك RIB ديالنا', 'كنعطيوك تفاصيل الخلاص أونلاين' | replace: 'PayPal, or by PayPal', 'PayPal' }}</div>
+
+  {%- comment -%}
+    2026-10-02 (theme "SEO fixes 20261002", Task 3): «See also / Voir aussi» row on
+    the two Morocco landing pages Google already ranks well, pointing at the
+    clothing pages that sit on page 1–2 (GSC Morocco, 2026-08-30 → 09-28). Anchor =
+    the search phrase in this page's language; French-only terms keep lang="fr".
+    Rendered after the Admin body (unchanged); existing .entity-links + .chip styles.
+  {%- endcomment -%}
+  {%- comment -%}2026-10-03 (SEO plan, batch 2): the Arabic landing page joins these rows only once it is published (pages[...] is blank before that), so no link ever points at a 404.{%- endcomment -%}
+  {%- assign ar_landing = pages['ملابس-مستعملة-اصلية-المغرب'] -%}
+  {% if page.handle == 'second-hand-clothing-morocco' %}
+    <nav class="entity-links" aria-label="See also" lang="en" dir="ltr">
+      <span style="align-self:center;color:var(--txt2);font-size:13px;font-weight:800">See also:</span>
+      {% if ar_landing.url != blank %}<a class="chip" href="{{ ar_landing.url }}" lang="ar" dir="rtl">ملابس مستعملة أصلية فالمغرب</a>{% endif %}
+      <a class="chip" href="/pages/vetements-second-hand-maroc" lang="fr">Vêtements occasion Maroc</a>
+      <a class="chip" href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc" lang="fr">Friperie en ligne Maroc</a>
+      <a class="chip" href="/pages/streetwear-original-maroc">Streetwear Morocco</a>
+      <a class="chip" href="/collections/brand-carhartt">Carhartt Morocco</a>
+      <a class="chip" href="/pages/second-hand-clothing-marrakech" lang="fr">Friperie Marrakech</a>
+    </nav>
+  {% elsif page.handle == 'vetements-second-hand-maroc' %}
+    <nav class="entity-links" aria-label="Voir aussi" lang="fr" dir="ltr">
+      <span style="align-self:center;color:var(--txt2);font-size:13px;font-weight:800">Voir aussi :</span>
+      {% if ar_landing.url != blank %}<a class="chip" href="{{ ar_landing.url }}" lang="ar" dir="rtl">ملابس مستعملة أصلية فالمغرب</a>{% endif %}
+      <a class="chip" href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc">Friperie en ligne Maroc</a>
+      <a class="chip" href="/pages/streetwear-original-maroc">Streetwear Maroc</a>
+      <a class="chip" href="/collections/brand-carhartt">Carhartt Maroc</a>
+      <a class="chip" href="/pages/second-hand-clothing-marrakech">Friperie Marrakech</a>
+    </nav>
+  {% elsif page.handle == 'ملابس-مستعملة-اصلية-المغرب' %}
+    <nav class="entity-links" aria-label="شوف حتى">
+      <span style="align-self:center;color:var(--txt2);font-size:13px;font-weight:800">شوف حتى:</span>
+      <a class="chip" href="/pages/vetements-second-hand-maroc" lang="fr" dir="ltr">Vêtements occasion Maroc</a>
+      <a class="chip" href="/pages/second-hand-clothing-morocco" lang="en" dir="ltr">Second-hand clothes Morocco</a>
+      <a class="chip" href="/pages/friperie-en-ligne-paiement-a-la-livraison-maroc" lang="fr" dir="ltr">Friperie en ligne Maroc</a>
+      <a class="chip" href="/pages/second-hand-clothing-marrakech" lang="fr" dir="ltr">Friperie Marrakech</a>
+      <a class="chip" href="/collections/nike">سبادري وحوايج نايك</a>
+      <a class="chip" href="/collections/adidas-originals">اديداس اورجينال</a>
+    </nav>
+  {% endif %}
 
 {%- comment -%}
   ═══ NO VISIBLE FAQ IS RENDERED HERE — DELIBERATE, 2026-08-23 ═══
@@ -276,6 +343,8 @@
         <details open><summary>كيفاش كيتراجع البراند؟</summary><p>كنراجع التفاصيل الظاهرة بحال logo، label، الخياطة، الخامة، والكود إذا كان متوفر. بعض البراندات كتحتاج تحقق أعمق.</p></details>
         <details><summary>واش Lbass كيعطي شهادة أصالة؟</summary><p>ماكايناش شهادة خارجية إلا إلا كانت مذكورة صراحة فصفحة المنتج. الفحص العادي هو مراجعة داخلية للتفاصيل المتاحة.</p></details>
         <details><summary>نقدر نطلب صور قريبة؟</summary><p>نعم. طلب صور أو فيديو للـ label، logo، zipper، sole، أو أي تفصيل مهم قبل ما تشري.</p></details>
+        {%- comment -%} 2026-10-05: guarantee question, word for word from the published refund policy; mirrored in the FAQPage schema below. {%- endcomment -%}
+        <details><summary>واش كاين ضمان إلا بان أن القطعة ماشي أصلية؟</summary><p>إيه. إلا بان أن قطعة ماشي أصلية، فلوسك راجعين كاملين — سواء خلصتي بـ PayPal ولا عند الاستلام. صيفط لينا صور القطعة والإتيكيت فالواتساب وغنتكلفو بيها. التفاصيل فـ <a href="/pages/refund-policy">سياسة الإرجاع</a>.</p></details>
       </section>
     {% when 'shipping-and-payment' %}
       <section class="page-faq" aria-labelledby="page-faq-title">
@@ -367,7 +436,8 @@
       {% when 'authenticity' %}
         {"@type":"Question","name":"كيفاش كيتراجع البراند؟","acceptedAnswer":{"@type":"Answer","text":"كنراجع التفاصيل الظاهرة بحال logo، label، الخياطة، الخامة، والكود إذا كان متوفر. بعض البراندات كتحتاج تحقق أعمق."}},
         {"@type":"Question","name":"واش Lbass كيعطي شهادة أصالة؟","acceptedAnswer":{"@type":"Answer","text":"ماكايناش شهادة خارجية إلا إلا كانت مذكورة صراحة فصفحة المنتج. الفحص العادي هو مراجعة داخلية للتفاصيل المتاحة."}},
-        {"@type":"Question","name":"نقدر نطلب صور قريبة؟","acceptedAnswer":{"@type":"Answer","text":"نعم. طلب صور أو فيديو للـ label، logo، zipper، sole، أو أي تفصيل مهم قبل ما تشري."}}
+        {"@type":"Question","name":"نقدر نطلب صور قريبة؟","acceptedAnswer":{"@type":"Answer","text":"نعم. طلب صور أو فيديو للـ label، logo، zipper، sole، أو أي تفصيل مهم قبل ما تشري."}},
+        {"@type":"Question","name":"واش كاين ضمان إلا بان أن القطعة ماشي أصلية؟","acceptedAnswer":{"@type":"Answer","text":"إيه. إلا بان أن قطعة ماشي أصلية، فلوسك راجعين كاملين — سواء خلصتي بـ PayPal ولا عند الاستلام. صيفط لينا صور القطعة والإتيكيت فالواتساب وغنتكلفو بيها."}}
       {% when 'shipping-and-payment' %}
         {"@type":"Question","name":"شنو طرق الخلاص المتوفرة؟","acceptedAnswer":{"@type":"Answer","text":"كتقدر تختار بين COD، يعني كاش ملي توصلك القطعة، أو PayPal أونلاين. كنأكدو معاك الطريقة المناسبة قبل الإرسال."}},
         {"@type":"Question","name":"شحال كيدير التوصيل؟","acceptedAnswer":{"@type":"Answer","text":"المدة كتبدل حسب المدينة وشركة التوصيل. كازا والرباط غالبا أسرع من المدن البعيدة، ولكن التأكيد النهائي كيجي مع الطلب."}},

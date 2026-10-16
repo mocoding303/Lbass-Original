@@ -31,6 +31,15 @@
   index.liquid does render THIS snippet, which makes it the only server-side hook
   available there. The renders at the bottom rely on that.
 {% endcomment %}
+{%- comment -%}
+  2026-10-04 (AI-readiness audit: "description doesn't match the meta
+  description"). Organization and OnlineStore now carry the homepage meta
+  description word for word (templates/index.liquid, top of file): one brand
+  description everywhere. Change all three together.
+  OLD Organization: «Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، كتتشيك وكتتصور فمراكش، وكتتوصل لكل المغرب.»
+  OLD OnlineStore (fr): «Lbass Original est une friperie en ligne basée à Marrakech, spécialisée dans les vêtements de marque second hand, sneakers, accessoires et streetwear sélectionnés en Allemagne, vérifiés et photographiés à Marrakech. Livraison au Maroc: 20 MAD à Marrakech et 50 MAD ailleurs, gratuite dès 500 MAD; COD ou PayPal.»
+{%- endcomment -%}
+{%- assign lb_entity_description = 'Lbass Original متجر second-hand أونلاين من مراكش: حوايج براند، صبابط وstreetwear من ألمانيا، بصور حقيقية وحالة واضحة، COD أو PayPal.' -%}
 <script type="application/ld+json">
 [
   {
@@ -51,7 +60,7 @@
     "alternateName": ["Lbass", "Labas", "Labass", "لباس اوريجينال", "لاباس اوريجينال", "لاباس", "البس", "لباس"],
     "url": {{ shop.url | json }},
     "logo": "https:{{ 'lbass-wordmark-horizontal.svg' | asset_url }}",
-    "description": "Lbass Original هو متجر مغربي من مراكش كيعرض حوايج second-hand أصلية، صبابط، إكسسوارات وstreetwear مختارة من ألمانيا، كتتشيك وكتتصور فمراكش، وكتتوصل لكل المغرب.",
+    "description": {{ lb_entity_description | json }},
     "telephone": "+491754264425",
     "email": "contact@lbassoriginal.com",
     "address": {
@@ -103,7 +112,7 @@
     "name": "Lbass Original",
     "url": {{ shop.url | json }},
     "image": "https:{{ 'lbass-share-1200x630.jpg' | asset_url }}",
-    "description": "Lbass Original est une friperie en ligne basée à Marrakech, spécialisée dans les vêtements de marque second hand, sneakers, accessoires et streetwear sélectionnés en Allemagne, vérifiés et photographiés à Marrakech. Livraison au Maroc: 20 MAD à Marrakech et 50 MAD ailleurs; COD ou PayPal.",
+    "description": {{ lb_entity_description | json }},
     "email": "contact@lbassoriginal.com",
     "currenciesAccepted": "MAD",
     "paymentAccepted": ["Cash on delivery", "PayPal"],

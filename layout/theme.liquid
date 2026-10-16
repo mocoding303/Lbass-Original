@@ -106,11 +106,51 @@
     An explicit global.title_tag still overrides all of this — see the
     seo_title branch above. This is only the fallback.
   {%- endcomment -%}
+  {%- comment -%}
+    2026-10-03 (theme "SEO quick wins 20261003"): two changes to this fallback.
+    1. The hard cap cut the END of long names, which is the Darija half
+       ("… | سبادري جوردان"). Long names now lose words from the English model
+       name instead (the " - Size 43" part is kept), so the Darija half survives.
+    2. " | Lbass" is appended only when the whole title still fits in 60
+       characters. Shopify does not store an Admin SEO title that equals the
+       product name, so pieces whose SEO title IS their name land here; before
+       this change they rendered "<name> | Lbass" at up to 68 characters.
+    OLD:  assign t_base = safe_product_title | strip
+          if t_base.size > 60 → t_base = t_base | truncate: 60, '' | strip
+          safe_page_title = t_base + ' | Lbass'
+  {%- endcomment -%}
   {%- assign t_base = safe_product_title | strip -%}
-  {%- if t_base.size > 60 -%}
+  {%- if t_base.size > 60 and t_base contains ' | ' -%}
+    {%- assign t_parts = t_base | split: ' | ' -%}
+    {%- assign t_ar = t_parts.last | strip -%}
+    {%- assign t_en = t_parts.first | strip -%}
+    {%- assign t_size = '' -%}
+    {%- if t_en contains ' - ' -%}
+      {%- assign t_en_bits = t_en | split: ' - ' -%}
+      {%- assign t_size = ' - ' | append: t_en_bits.last -%}
+      {%- assign t_en = t_en_bits.first | strip -%}
+    {%- endif -%}
+    {%- assign t_budget = 57 | minus: t_ar.size | minus: t_size.size -%}
+    {%- if t_budget >= 12 -%}
+      {%- assign t_words = t_en | split: ' ' -%}
+      {%- assign t_keep = '' -%}
+      {%- for t_w in t_words -%}
+        {%- if t_keep == '' -%}{%- assign t_try = t_w -%}{%- else -%}{%- assign t_try = t_keep | append: ' ' | append: t_w -%}{%- endif -%}
+        {%- if t_try.size > t_budget -%}{%- break -%}{%- endif -%}
+        {%- assign t_keep = t_try -%}
+      {%- endfor -%}
+      {%- assign t_base = t_keep | append: t_size | append: ' | ' | append: t_ar -%}
+    {%- else -%}
+      {%- assign t_base = t_base | truncate: 60, '' | strip -%}
+    {%- endif -%}
+  {%- elsif t_base.size > 60 -%}
     {%- assign t_base = t_base | truncate: 60, '' | strip -%}
   {%- endif -%}
-  {%- capture safe_page_title -%}{{ t_base }} | Lbass{%- endcapture -%}
+  {%- if t_base.size > 52 -%}
+    {%- assign safe_page_title = t_base -%}
+  {%- else -%}
+    {%- capture safe_page_title -%}{{ t_base }} | Lbass{%- endcapture -%}
+  {%- endif -%}
   {% assign title_is_explicit = true %}
 {% elsif collection %}
   {% case collection.handle %}
@@ -262,11 +302,17 @@
     Falls back to a shorter form if the composed string still exceeds 155,
     which can happen with a long size value.
   {%- endcomment -%}
-  {%- assign d_name = safe_product_title | split: ' | ' | first | strip -%}
+  {%- comment -%} 2026-10-12 BUG FIX: d_name straight from product.title (safe_product_title is unset when the product has an
+      Admin SEO title, which made the fallback start with ". "). Delivery clause follows the 500 MAD free rule; fragrance and
+      K-beauty (new, boxed) no longer claim "real photos of the same piece". {%- endcomment -%}
+  {%- assign d_name = product.title | split: ' — LBO-' | first | split: ' - LBO-' | first | split: ' – LBO-' | first | split: ' | ' | first | strip -%}
+  {%- if seo_variant.price >= 50000 -%}{%- assign d_ship = 'التوصيل مجاني لكل المغرب، والدفع عند الاستلام.' -%}{%- assign d_ship_short = 'التوصيل مجاني. الدفع عند الاستلام.' -%}
+  {%- else -%}{%- assign d_ship = 'التوصيل 20 درهم فمراكش و50 خارجها، والدفع عند الاستلام.' -%}{%- assign d_ship_short = 'التوصيل 20 درهم فمراكش، 50 خارجها. الدفع عند الاستلام.' -%}{%- endif -%}
+  {%- if product.type == 'Fragrance' or product.type == 'Cosmetics' -%}{%- assign d_proof = 'أصلي وجديد فالكرطونة.' -%}{%- else -%}{%- assign d_proof = 'صور حقيقية ديال نفس القطعة.' -%}{%- endif -%}
   {%- capture d_size -%}{% unless seo_variant.title == 'Default Title' %}قياس {{ seo_variant.title }}. {% endunless %}{%- endcapture -%}
-  {%- capture safe_page_description -%}{{ d_name }}{% if safe_product_condition != blank %} — {{ safe_product_condition }}{% endif %}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش و50 خارجها، والدفع عند الاستلام.{%- endcapture -%}
+  {%- capture safe_page_description -%}{{ d_name }}{% if safe_product_condition != blank %} — {{ safe_product_condition }}{% endif %}. {{ d_proof }} {{ d_size }}{{ d_ship }}{%- endcapture -%}
   {%- if safe_page_description.size > 155 -%}
-    {%- capture safe_page_description -%}{{ d_name }}. صور حقيقية ديال نفس القطعة. {{ d_size }}التوصيل 20 درهم فمراكش، 50 خارجها. الدفع عند الاستلام.{%- endcapture -%}
+    {%- capture safe_page_description -%}{{ d_name }}. {{ d_proof }} {{ d_size }}{{ d_ship_short }}{%- endcapture -%}
   {%- endif -%}
 {% elsif collection %}
   {% if safe_page_description == blank %}
@@ -306,8 +352,19 @@
 {% if product %}
   {% case product.handle %}
     {% when 'adidas-track-pants-black-red' %}
-      {% assign safe_page_title = 'بنطال تراك أحمر وأسود Adidas | قياس L | Lbass Original' %}
-      {% assign safe_page_description = 'بنطال تراك أحمر وأسود Adidas أصلي، قياس L. صور حقيقية لنفس القطعة، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.' %}
+      {%- comment -%}
+        2026-10-05: «أحمر وأسود» read as a red-and-black pant; the piece is black with red
+        stripes, as its own product title says. The price is read live, never hard-coded.
+        OLD title: 'بنطال تراك أحمر وأسود Adidas | قياس L | Lbass Original'
+        OLD meta:  'بنطال تراك أحمر وأسود Adidas أصلي، قياس L. صور حقيقية لنفس القطعة، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.'
+      {%- endcomment -%}
+      {% assign safe_page_title = 'بنطال تراك Adidas أسود بخطوط حمراء | قياس L | Lbass' %}
+      {%- if product.available -%}
+        {% assign tp_price = product.price | divided_by: 100 %}
+        {% assign safe_page_description = 'بنطال تراك Adidas أصلي أسود بخطوط حمراء، قياس L: ' | append: tp_price | append: ' درهم. صور حقيقية لنفس القطعة، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.' %}
+      {%- else -%}
+        {% assign safe_page_description = 'بنطال تراك Adidas أصلي أسود بخطوط حمراء، قياس L. صور حقيقية لنفس القطعة، الحالة واضحة، التوصيل لكل المغرب والدفع عند الاستلام.' %}
+      {%- endif -%}
       {% assign title_is_explicit = true %}
     {% when 'adidas-black-3-stripes-track-pants-سروال-أديداس' %}
       {% assign safe_page_title = 'بنطال تراك أسود Adidas 3-Stripes | قياس L | Lbass Original' %}
@@ -326,7 +383,8 @@
         " | Lbass Original" suffix anyway. 146 impr at position 6.3 and 4.11%
         CTR — ranking well, so the job here is purely the snippet.
       {%- endcomment -%}
-      {% assign safe_page_title = 'صبابط أصلية فالمغرب | Sneakers Second-Hand Maroc' %}
+      {%- comment -%}2026-10-03 (theme "SEO quick wins 20261003"): «سبادري» added. «صبابط» 41 Moroccan impr at position 4.9 (GSC 1 Jul–29 Sep) and «سبادري نايك» ranks #1 on a sold product page while no collection title used «سبادري». OLD title: 'صبابط أصلية فالمغرب | Sneakers Second-Hand Maroc'. Description unchanged.{%- endcomment -%}
+      {% assign safe_page_title = 'صبابط وسبادري أصلية فالمغرب | Sneakers Second-Hand' %}
       {% assign safe_page_description = 'صبابط second-hand أصلية فالمغرب بصور حقيقية، قياس واضح، وحالة مبيّنة. قطع مختارة من ألمانيا ومفحوصة فمراكش. COD وPayPal متوفرين.' %}
       {% assign title_is_explicit = true %}
     {%- comment -%}
@@ -451,13 +509,54 @@
         endfor
         assign ad_price_mad = ad_min | divided_by: 100
       -%}
+      {%- comment -%}
+        ═══ 2026-10-02 — SNIPPET REWRITE #2 (theme "SEO fixes 20261002", Task 2) ═══
+        GSC Morocco 2026-08-30 → 09-28: the «اديداس اورجينال» cluster still took
+        ~650 impressions at positions 3–10 and 2 clicks after the 2026-08-29
+        rewrite above and the 22 Sep body-copy change. The snippet now says what
+        the shopper gets before the click: SECOND-HAND and original (the old snippet
+        never said second-hand), the live lowest price, and COD across Morocco.
+        The price/type interpolation above is unchanged; only the wording around it.
+
+        OLD in-stock title:       'اديداس اورجينال ملابس فالمغرب | أصلي من ' + price + ' درهم'
+        OLD in-stock description: 'اديداس اورجينال أصلي فالمغرب من ' + price + ' درهم' + types
+                                  + '. صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين، وخلّص عند الاستلام.'
+          rendered on 2026-10-02 as «اديداس اورجينال ملابس فالمغرب | أصلي من 207 درهم» and
+          «اديداس اورجينال أصلي فالمغرب من 207 درهم: شورط، صبابط، جاكيطات، إكسسوارات. صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين، وخلّص عند الاستلام.»
+        OLD no-stock title:       'اديداس اورجينال ملابس فالمغرب | Adidas Originals'
+        OLD no-stock description: 'ملابس اديداس اورجينال أصلية فالمغرب: صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين قبل الطلب، وخلّص عند الاستلام. مختارة من ألمانيا ومفحوصة فمراكش.'
+
+        Lengths: title 56 (57 at a 4-digit price); description 148 as rendered
+        today, 153 with the four longest type labels. «ملابس» stays in the H1
+        (sections/lbass-collection-hero.liquid), so the exact «اديداس اورجينال ملابس»
+        query is still on the page. Re-check GSC 2–3 weeks after publish.
+      {%- endcomment -%}
+      {%- comment -%}
+        ═══ 2026-10-04 — «ملابس» RESTORED (theme "SEO batch 3 20261004") ═══
+        Rewrite #2 above (live 2026-10-02 11:17 UTC, recrawled 14:36 UTC) dropped
+        «ملابس فالمغرب» from the title. GSC Morocco, page /collections/adidas-originals,
+        query «اديداس اورجينال ملابس»: position 2.8–4.7 every day 15 Sep → 1 Oct
+        (3 impr @3.3 on 1 Oct), then 2 impr @7.0 on 2 Oct and 0 impr on 3 Oct, while
+        the site total that day was 148 (normal) and the URL stayed indexed (URL
+        inspection 2026-10-04: PASS, canonical = itself). Stock was not the cause:
+        9 pieces in stock from 207 MAD on 2026-10-04.
+        So the title leads with the exact query again, as it did when it ranked, and
+        keeps rewrite #2's honest «مستعملة» + live price. The meta drops «فكل المغرب»
+        to stay ≤155 with the four longest type labels (149; 145 as rendered today).
+        If impressions are not back ~10 days after publish, go back to the exact
+        2026-08-29 title: 'اديداس اورجينال ملابس فالمغرب | أصلي من ' + price + ' درهم'.
+        OLD (2026-10-02) in-stock title:  'اديداس اورجينال مستعمل أصلي من ' + price + ' درهم | COD لكل المغرب'
+        OLD (2026-10-02) in-stock meta:   'اديداس اورجينال مستعمل أصلي من ' + price + ' درهم' + types + '. صور حقيقية لنفس القطعة، حالة وقياس واضحين، والدفع عند الاستلام فكل المغرب.'
+        OLD (2026-10-02) no-stock title:  'اديداس اورجينال مستعمل أصلي | COD لكل المغرب'
+        OLD (2026-10-02) no-stock meta:   'اديداس اورجينال مستعمل أصلي: صور حقيقية لنفس القطعة، حالة وقياس واضحين قبل الطلب، مختار من ألمانيا ومفحوص فمراكش. الدفع عند الاستلام فكل المغرب.'
+      {%- endcomment -%}
       {%- if ad_min > 0 -%}
-        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | أصلي من ' | append: ad_price_mad | append: ' درهم' %}
+        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | مستعملة أصلية من ' | append: ad_price_mad | append: ' درهم' %}
         {%- capture ad_types_clause -%}{% if ad_type_list != blank %}: {{ ad_type_list }}{% endif %}{%- endcapture -%}
-        {% assign safe_page_description = 'اديداس اورجينال أصلي فالمغرب من ' | append: ad_price_mad | append: ' درهم' | append: ad_types_clause | append: '. صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين، وخلّص عند الاستلام.' %}
+        {% assign safe_page_description = 'اديداس اورجينال ملابس مستعملة أصلية من ' | append: ad_price_mad | append: ' درهم' | append: ad_types_clause | append: '. صور حقيقية لنفس القطعة، حالة وقياس واضحين، والدفع عند الاستلام.' %}
       {%- else -%}
-        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | Adidas Originals' %}
-        {% assign safe_page_description = 'ملابس اديداس اورجينال أصلية فالمغرب: صور حقيقية ديال نفس القطعة، الحالة والقياس واضحين قبل الطلب، وخلّص عند الاستلام. مختارة من ألمانيا ومفحوصة فمراكش.' %}
+        {% assign safe_page_title = 'اديداس اورجينال ملابس فالمغرب | مستعملة أصلية' %}
+        {% assign safe_page_description = 'اديداس اورجينال ملابس مستعملة أصلية: صور حقيقية لنفس القطعة، حالة وقياس واضحين قبل الطلب، مختارة من ألمانيا ومفحوصة فمراكش. الدفع عند الاستلام فكل المغرب.' %}
       {%- endif -%}
       {% assign title_is_explicit = true %}
     {% when 'brand-adidas' %}
@@ -465,7 +564,8 @@
       {% assign safe_page_description = 'كل قطع Adidas second-hand فالمغرب: بناطيل تراك، صبابط، شورط وجاكيطات. صور حقيقية لنفس القطعة، حالة وقياس واضحين، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {% when 'brand-nike', 'nike' %}
-      {% assign safe_page_title = 'Nike Second-Hand Maroc | حوايج Nike أصلية فالمغرب | Lbass Original' %}
+      {%- comment -%}2026-10-03 (theme "SEO quick wins 20261003"): «سبادري نايك» (29 Moroccan impr, position 1.0, 0 clicks) lands on a SOLD P-6000 product page; the collection should own it. Arabic «نايك» matches the query spelling. OLD title: 'Nike Second-Hand Maroc | حوايج Nike أصلية فالمغرب | Lbass Original' (66 chars, cut). Description unchanged.{%- endcomment -%}
+      {% assign safe_page_title = 'سبادري وحوايج نايك أصلية فالمغرب | Nike Maroc | Lbass' %}
       {% assign safe_page_description = 'Nike second-hand Maroc: سبادري، جاكيطات، تيشرتات وإكسسوارات Nike بصور حقيقية، حالة وقياس واضحين. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
     {% when 'إكسسوارات', 'accessories', 'bags' %}
@@ -521,6 +621,17 @@
       {% assign safe_page_title = 'سراويل كارغو Second-Hand فالمغرب | Lbass Original' %}
       {% assign safe_page_description = 'سراويل cargo وjoggers وtrack pants second-hand فالمغرب، بصور حقيقية، قياس وحالة واضحين. مراكش 20 درهم، خارجها 50، COD أو PayPal.' %}
       {% assign title_is_explicit = true %}
+    {%- comment -%}
+      2026-10-02 (theme "SEO fixes 20261002", Task 3): «carhartt maroc» (60 impr,
+      pos 9.3) and «carhartt morocco» (22 impr, pos 8.4), GSC Morocco 2026-08-30 →
+      09-28. The title came from the Admin SEO field and never contained
+      «Carhartt Maroc»: OLD title 'Carhartt Second-Hand Morocco | Workwear | Lbass Original'.
+      The H1 is «Carhartt أصلية، بصورها الحقيقية.» (collection hero), unchanged.
+      TITLE ONLY: the meta description still comes from the Admin SEO field.
+    {%- endcomment -%}
+    {% when 'brand-carhartt' %}
+      {% assign safe_page_title = 'Carhartt Maroc | Workwear Second-Hand Morocco | Lbass' %}
+      {% assign title_is_explicit = true %}
   {% endcase %}
 {% elsif article %}
   {% assign query_article_handle = article.handle | split: '/' | last %}
@@ -545,7 +656,8 @@
       {% assign safe_page_description = 'القياسات ديال الحوايج second-hand كتختلف حسب البراند والموديل. قارن الصدر، الطول، الخصر أو قياس الصباط مع قطعة عندك قبل الطلب.' %}
       {% assign title_is_explicit = true %}
     {% when 'vetements-second-hand-maroc' %}
-      {% assign safe_page_title = 'Vêtements Second Hand Maroc | Marques originales | Lbass Original' %}
+      {%- comment -%}2026-10-02 (theme "SEO fixes 20261002", Task 3): «vêtements occasion maroc» sits at position 21 (GSC Morocco, 2026-08-30 → 09-28) and neither the title nor the H1 contained it. OLD title: 'Vêtements Second Hand Maroc | Marques originales | Lbass Original' (65 chars, cut in the SERP). The H1 keeps «Vêtements Second Hand Maroc», so both phrases stay on the page. Description unchanged.{%- endcomment -%}
+      {% assign safe_page_title = 'Vêtements Occasion Maroc | Second Hand de marque | Lbass' %}
       {% assign safe_page_description = 'Vêtements second hand Maroc: pièces de marque, sneakers et accessoires sourcés en Allemagne, vérifiés à Marrakech et photographiés individuellement.' %}
       {% assign title_is_explicit = true %}
     {% when 'ma3na-thrift-second-hand-vintage-one-of-one' %}
@@ -553,12 +665,14 @@
       {% assign safe_page_description = 'معنى thrift وsecond-hand وvintage وone-of-one بالدارجة مع أمثلة واضحة — دليل Lbass Original لشراء حوايج براند مستعملة فالمغرب.' %}
       {% assign title_is_explicit = true %}
     {% when 'second-hand-clothing-morocco' %}
-      {% assign safe_page_title = 'Second-Hand Clothing Morocco | Branded Streetwear | Lbass Original' %}
-      {% assign safe_page_description = 'Second-hand clothing Morocco: branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.' %}
+      {%- comment -%}2026-10-03 (theme "SEO quick wins 20261003"): «second hand clothes» (15 Moroccan impr, position 4.7 → 3.6 in Sep, 0 clicks) — searchers write "clothes", and the old title ran to 66 chars. OLD title: 'Second-Hand Clothing Morocco | Branded Streetwear | Lbass Original'. OLD description: 'Second-hand clothing Morocco: branded clothing, sneakers and one-of-one streetwear sourced from Germany, checked in Marrakech and photographed item by item.'{%- endcomment -%}
+      {% assign safe_page_title = 'Second-Hand Clothes Morocco | Branded Streetwear | Lbass' %}
+      {% assign safe_page_description = 'Branded second-hand clothes online in Morocco: real photos of each piece, condition stated, cash on delivery. Delivery 20 MAD Marrakech, 50 MAD elsewhere.' %}
       {% assign title_is_explicit = true %}
     {% when 'second-hand-clothing-marrakech' %}
       {% assign safe_page_title = 'Friperie Marrakech | Second-Hand de marque | Lbass Original' %}
-      {% assign safe_page_description = 'Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 50 MAD ailleurs au Maroc.' %}
+      {%- comment -%}2026-10-03 (theme "SEO quick wins 20261003"): «friperie marrakech» 41 Moroccan impr at position 7.9 → 7.2. The meta now adds what the old one lacked (brands, real photos, cash on delivery) and keeps the true 20 MAD Marrakech rate. OLD: 'Friperie Marrakech: Lbass Original est une boutique second-hand en ligne basée à Marrakech; livraison 20 MAD dans Marrakech et 50 MAD ailleurs au Maroc.'{%- endcomment -%}
+      {% assign safe_page_description = 'Friperie Marrakech en ligne: vêtements de marque second hand vérifiés, photos réelles, livraison 20 MAD à Marrakech, paiement à la livraison.' %}
       {% assign title_is_explicit = true %}
     {% when 'about' %}
       {% assign safe_page_title = 'Lbass Original Marrakech | Friperie en ligne Maroc' %}
@@ -603,6 +717,14 @@
 {% endcomment %}
 {%- assign canonical_final = canonical_url -%}
 <link rel="canonical" href="{{ canonical_final }}">
+{%- comment -%}
+  2026-10-04 (AI-readiness audit: "no feed linked in the page head"). Feed
+  autodiscovery. Both URLs answered 200 application/atom+xml on 2026-10-04;
+  new-in lists the newest pieces first. templates/index.liquid (layout none)
+  carries the same two lines.
+{%- endcomment -%}
+<link rel="alternate" type="application/atom+xml" title="Lbass Original — جديد القطع" href="{{ shop.url }}/collections/new-in.atom">
+<link rel="alternate" type="application/atom+xml" title="Lbass Original — أدلة second-hand" href="{{ shop.url }}/blogs/news.atom">
 
 {% comment %}
   ROBOTS — empty collections are noindex,follow.
@@ -768,9 +890,9 @@
 <link rel="apple-touch-icon" href="{{ 'lbass-apple-touch-icon-180.png' | asset_url | split: '?' | first }}" sizes="180x180">
 {% render 'lbass-entity-schema' %}
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
+{%- comment -%} 2026-10-11 SPEED 3: Google Fonts CSS is inlined (snippets/lbass-font-tajawal + lbass-stamp) instead of 2 render-blocking requests to fonts.googleapis.com; its preconnect went with it. {%- endcomment -%}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap">
+{% render 'lbass-font-tajawal' %}
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -869,6 +991,8 @@ strong{color:var(--cream)}
 {% render 'lbass-meta-pixel' %}
 </head>
 <body>
+{%- comment -%} 2026-10-11 SPEED 2: the header + menu (snippets/lbass-menu) is rendered HERE, at the top of <body>. It used to come from snippets/lbass-cro-tracking at the very END of the page and was moved up by JavaScript, so phones showed the old header first and then swapped it (layout jump; ~9 s on the 741 KB homepage on 4G). Its <style> also hides the old header, so that now never paints. {%- endcomment -%}
+{% render 'lbass-menu' %}
 {% comment %} Homepage has its own full nav inside index.liquid — skip the chrome there {% endcomment %}
 {% unless template == 'index' %}
 <!-- ═══ TRUST ANNOUNCEMENT BAR ═══ -->
@@ -1019,6 +1143,7 @@ strong{color:var(--cream)}
 
     <!-- Judge.me Trust Proof -->
     <!-- Start of Judge.me code -->
+    <style>/* 2026-10-11 a11y contrast */ .jdgm-all-reviews-text__text,.jdgm-verified-by__text{color:#0B5F54!important}</style>
     <div class='jdgm-widget jdgm-all-reviews-text' style='text-align:center;margin:18px auto 6px'>
       <a href='javascript:void(0)'>
         <span data-score='{{ shop.metafields.judgeme.all_reviews_rating }}' class='jdgm-all-reviews-rating'></span>
@@ -1028,11 +1153,11 @@ strong{color:var(--cream)}
       </a>
     </div>
     <div style='clear:both'></div>
-    <div style='text-align:center;margin:6px auto 16px'>
-      <a class='jdgm-verified-count-badget' href='javascript:void(0)'>
+    {%- if shop.metafields.judgeme.verified_badge != blank -%}<div style='text-align:center;margin:6px auto 16px'>
+      <a class='jdgm-verified-count-badget' href='javascript:void(0)' aria-label='Judge.me — آراء موثّقة · verified reviews'>
         {{ shop.metafields.judgeme.verified_badge }}
       </a>
-    </div>
+    </div>{%- endif -%}
     <!-- End of Judge.me code -->
 
     <!-- Bottom Bar -->
@@ -1065,21 +1190,25 @@ strong{color:var(--cream)}
 /* ── WhatsApp click tracking — GA4 2026-08-22 ──────────────────
    Fires whatsapp_click on every wa.me link site-wide.
    GA4 showed 0 events before this fix; WA is primary sales channel.
+   2026-10-11: no `value` parameter any more (owner brief), and the two WhatsApp
+   BUTTONS that open wa.me with window.open — the cart drawer «كمّل فالواتساب»
+   (#lbdrWa, label cart_drawer) and the PDP size guide ([data-szguide], label
+   pdp_size_guide) — are now counted too; before this they were invisible.
 ─────────────────────────────────────────────────────────────── */
 (function(){
   function trackWa(e){
-    var el = e.target && e.target.closest ? e.target.closest('a[href*="wa.me"]') : null;
+    var el = e.target && e.target.closest ? e.target.closest('a[href*="wa.me"],#lbdrWa,[data-szguide]') : null;
     if(!el) return;
     if(typeof gtag === 'function'){
       gtag('event','whatsapp_click',{
         event_category:'engagement',
-        event_label: window.location.pathname + ' | ' + (el.getAttribute('aria-label') || el.getAttribute('data-cro-label') || 'wa'),
-        value:1
+        event_label: window.location.pathname + ' | ' + (el.getAttribute('aria-label') || el.getAttribute('data-cro-label') || 'wa')
       });
     }
   }
   document.addEventListener('click', trackWa, {passive:true});
 })();
 </script>
+{% render 'lbass-click-id' %}
 </body>
 </html>
