@@ -2557,6 +2557,7 @@
      /cart/add.js request, so the Google & YouTube pixel sends add_to_cart ONCE, and checkout
      sends begin_checkout ONCE. The 700ms pause lets that event leave before the page unloads.
      The cart permalink is NOT used: it replaces the cart and skips add_to_cart.
+     2026-10-16: checkout also waits (2 s at most) for the Google Ads click ID to reach the cart.
      Desktop and the promo / lower buttons keep the drawer flow (this listener returns early
      for them). ── */
   var lbPhoneMQ = window.matchMedia ? window.matchMedia('(max-width:767px)') : null;
@@ -2609,12 +2610,15 @@
     if (errEl) errEl.hidden = true;
     btns.forEach(function(b){ b.disabled = true; b.setAttribute('aria-busy', 'true'); b.textContent = 'لحظة… كنوجدو الطلب'; });
     function goCheckout(){ window.location.href = '/checkout'; }
+    /* 2026-10-16 click ID → order: write it onto the cart now that the piece is in it, then open checkout
+       (snippets/lbass-click-id, step 4). */
+    function lbCidToCart(){ try { var c = window.lbassClickId; if (c && c.toCart) return c.toCart(); } catch (e5) {} return Promise.resolve(); }
     var vault = currentVaultAttribution();
     fetch('/cart.js', { headers: { 'Accept': 'application/json' } })
       .then(function(r){ return r.json(); })
       .then(function(cart){
         var inCart = cart && cart.items && cart.items.some(function(i){ return i.variant_id === vid; });
-        if (inCart){ goCheckout(); return; }
+        if (inCart){ lbCidToCart().then(goCheckout, goCheckout); return; }
         return fetch('/cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -2627,7 +2631,7 @@
             persistVaultCart(vault);
             publishVault('lbass_vault_add_to_cart', { currency: 'MAD', value: {{ product.price | divided_by: 100.0 | json }}, items_count: 1, source: vault.source || 'vault', category: vault.category || 'unknown', product_id: {{ product.id | json }}, product_name: {{ display_title | json }} });
           }
-          setTimeout(goCheckout, 700);
+          Promise.all([lbCidToCart(), new Promise(function(r){ setTimeout(r, 700); })]).then(goCheckout, goCheckout);
         });
       })
       .catch(function(err){
@@ -2698,6 +2702,10 @@
             num_items: 1
           });
         }
+      /* 2026-10-16 click ID → order: this permalink starts a NEW cart, so the attributes lbass-click-id put on
+         the session cart don't come along. Pass them on the link; Shopify keeps cart-permalink attributes
+         on the order. */
+      try { if (window.lbassClickId) qs += window.lbassClickId.permalinkParams(); } catch (e4) {}
       window.location.href = '/cart/' + vid + ':1?' + qs;
     });
   }

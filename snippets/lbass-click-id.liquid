@@ -9,9 +9,81 @@
      WhatsApp can be matched to the ad click. Covers plain wa.me links (rewritten at tap time) AND the two buttons
      that open WhatsApp from script — cart drawer «كمّل فالواتساب» (#lbdrWa) and PDP size guide ([data-szguide]) —
      by wrapping window.open for WhatsApp URLs only. Nothing is installed for visitors without a stored ID.
+  4. 2026-10-16 CHECKOUT HAND-OFF (orders #1013 and #1014 reached Shopify without the ID). Step 2 runs on page
+     load, often before the cart holds a single item, and nothing wrote the ID again before checkout. The
+     express COD form's cart permalink starts a NEW cart, which drops cart attributes altogether.
+     window.lbassClickId lets every road to checkout carry the ID onto the order:
+       · /checkout (PDP «اطلب دابا» on phones, cart drawer): toCart() writes it onto the cart once the piece is
+         in it, then checkout opens. Waits 2 s at most, so checkout is never held up.
+       · cart permalink (express COD form in product, product.fragrance, product.beauty): permalinkParams()
+         adds &attributes[gclid]=…; Shopify keeps cart-permalink attributes on the order.
+       · the /cart page: hidden attributes[…] fields join the form when it is submitted.
+     It reads the URL first (the ad landing page itself), then the 90-day copy step 1 keeps, so a landing-page
+     order still carries the ID where localStorage is blocked.
   Rendered before </body> in layout/theme.liquid AND templates/index.liquid (the homepage uses layout none).
-  REMOVE: delete the two {% render 'lbass-click-id' %} lines.
+  REMOVE: delete the two {% render 'lbass-click-id' %} lines, then the calls marked «click ID → order» in
+  templates/product*.liquid and snippets/lbass-cart-drawer.liquid (each checks window.lbassClickId first).
 {%- endcomment -%}
+<script>
+/* 4) checkout hand-off — see the header. */
+window.lbassClickId = window.lbassClickId || (function () {
+  var KEYS = ['gclid', 'gbraid', 'wbraid'], MAX_AGE = 90 * 864e5;
+  function ids() {
+    var out = {}, qs = null;
+    try { qs = new URLSearchParams(location.search); } catch (e) {}
+    KEYS.forEach(function (k) {
+      var v = qs ? qs.get(k) : null;
+      if (!v) {
+        try {
+          var s = JSON.parse(localStorage.getItem('lb_' + k) || 'null');
+          if (s && s.v && Date.now() - s.t <= MAX_AGE) v = s.v;
+        } catch (e) {}
+      }
+      if (v) out[k] = String(v);
+    });
+    return out;
+  }
+  /* true when the cart (/cart.js JSON) lacks a stored ID or carries an older one */
+  function missingOn(cart) {
+    var o = ids(), a = (cart && cart.attributes) || {};
+    return Object.keys(o).some(function (k) { return a[k] !== o[k]; });
+  }
+  /* resolves once the cart has the IDs, after 2 s at most, never rejects; nothing to send → resolves at once */
+  function toCart() {
+    var o = ids();
+    if (!Object.keys(o).length) return Promise.resolve();
+    var root = (window.Shopify && Shopify.routes && Shopify.routes.root) || '/';
+    var req = fetch(root + 'cart/update.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ attributes: o }),
+      keepalive: true
+    }).then(function () {}, function () {});
+    return Promise.race([req, new Promise(function (r) { setTimeout(r, 2000); })]);
+  }
+  function permalinkParams() {
+    var o = ids(), s = '';
+    Object.keys(o).forEach(function (k) { s += '&attributes[' + k + ']=' + encodeURIComponent(o[k]); });
+    return s;
+  }
+  /* the /cart page form (POST /cart, «كمّل الطلب ←» submits it with name="checkout") */
+  document.addEventListener('submit', function (e) {
+    var f = e.target, path = '';
+    if (!f || !f.getAttribute || (f.getAttribute('method') || '').toLowerCase() !== 'post') return;
+    try { path = new URL(f.getAttribute('action') || '', location.href).pathname; } catch (x) { return; }
+    if (!/\/cart\/?$/.test(path)) return;
+    var o = ids();
+    Object.keys(o).forEach(function (k) {
+      var n = 'attributes[' + k + ']';
+      if (f.querySelector('input[name="' + n + '"]')) return;
+      var i = document.createElement('input');
+      i.type = 'hidden'; i.name = n; i.value = o[k];
+      f.appendChild(i);
+    });
+  }, true);
+  return { ids: ids, missingOn: missingOn, toCart: toCart, permalinkParams: permalinkParams };
+})();
+</script>
 <script>
 (function () {
   var KEYS = ['gclid', 'gbraid', 'wbraid'], MAX_AGE = 90 * 864e5, now = Date.now();

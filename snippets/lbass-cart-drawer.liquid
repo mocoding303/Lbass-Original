@@ -712,12 +712,16 @@
   D.addEventListener('click', function(e){
     var checkout = e.target.closest('#lbdrCheckout');
     if (checkout){
+      /* 2026-10-16 click ID → order: lbass-click-id wrote it on page load, often before this cart had an
+         item, so make sure the cart carries it before checkout opens (waits 2 s at most). */
+      var cidTodo = false;
+      try { cidTodo = !!(window.lbassClickId && window.lbassClickId.missingOn(state.cart)); } catch(e5){}
       var discoverySelect = q('lbdrDiscoverySource');
       var discoveryValue = discoverySelect ? discoverySelect.value : '';
       var savedValue = state.cart && state.cart.attributes ? (state.cart.attributes['منين عرفتي Lbass Original؟'] || '') : '';
       if (discoveryValue && discoveryValue !== savedValue && window.LbassAiAttribution){
         e.preventDefault();
-        window.LbassAiAttribution.saveAnswer(discoveryValue).then(function(){ location.href = checkout.href; });
+        window.LbassAiAttribution.saveAnswer(discoveryValue).then(function(){ return cidTodo && window.lbassClickId.toCart(); }).then(function(){ location.href = checkout.href; });
         return;
       }
       var vault = vaultAttribution();
@@ -735,6 +739,7 @@
           });
         }
       } catch(e){}
+      if (cidTodo){ e.preventDefault(); window.lbassClickId.toCart().then(function(){ location.href = checkout.href; }); }
       return;
     }
     var upBtn = e.target.closest('[data-lbdr-up]');

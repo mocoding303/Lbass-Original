@@ -2269,6 +2269,10 @@
             num_items: 1
           });
         }
+      /* 2026-10-16 click ID → order: this permalink starts a NEW cart, so the attributes lbass-click-id put on
+         the session cart don't come along. Pass them on the link; Shopify keeps cart-permalink attributes
+         on the order. */
+      try { if (window.lbassClickId) qs += window.lbassClickId.permalinkParams(); } catch (e4) {}
       window.location.href = '/cart/' + vid + ':1?' + qs;
     });
   }

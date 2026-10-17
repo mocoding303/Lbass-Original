@@ -58,5 +58,21 @@ carrying both the markdown badge and the campaign ribbon) at 360px, 390px and
 * no card child overflows its card and the page never scrolls horizontally,
 * `-0%` reaches no surface.
 
+## Google Ads click ID → order
+
+```
+node test/render/test_click_id.js   # every road to checkout carries the gclid onto the order
+```
+
+Lifts the real code out of `snippets/lbass-click-id.liquid`, the PDP one-action
+and express-form handlers in `templates/product*.liquid` and the drawer's
+checkout handler, runs it in Chromium against a mocked Shopify cart, and checks
+what reaches the server: the phone «اطلب دابا» button writes the ID onto the
+cart after the add and before `/checkout`; the express COD permalink carries
+`attributes[gclid]` in all three product templates; the drawer writes it only
+when the cart lacks it; the `/cart` form posts it. Checkout never waits more
+than 2 s, and nothing is sent without an ad click or after 90 days. It cannot
+prove what Shopify does with those requests: confirm with one real order.
+
 The JS tests need `playwright-core`; run `npm i` in this directory first. They
 use the pre-installed Chromium at `/opt/pw-browsers/`.
