@@ -1,5 +1,7 @@
 # Lbass Original: agent notes
 
+> **Archived.** This repo is a snapshot of the old Shopify theme. The live site at www.lbassoriginal.com is now a static site on a Cloudflare Worker (`lbass-site`), built from a Google Sheet by `update.sh` in `~/Lbass/static-site` on the owner's Mac. Orders come through WhatsApp (cash on delivery, `LB-…` numbers stored in Cloudflare). Do not suggest Shopify, Liquid or theme changes for the live site. The notes below describe the old theme and apply only to this snapshot; the brand rules (Arabic RTL, colours, fonts, real photos only) still apply everywhere.
+
 Live Shopify storefront (www.lbassoriginal.com) selling second-hand branded clothing and sneakers in Morocco, mostly one-of-one pieces. This repo is a snapshot of the live theme and is not connected to the store (see `README.md`). Read `docs/ARCHITECTURE-AUDIT.md` before changing theme code.
 
 ## Design work
