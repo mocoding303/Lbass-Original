@@ -5,7 +5,7 @@ How to use the `gsc` (Google Search Console) and `geo-optimizer` tools set up in
 **Two things to keep in mind**
 
 - These tools only work in Claude Code **on the Mac, started from Terminal**. They do not work in the Claude phone app or in web/cloud sessions. The Search Console key lives only on the Mac.
-- Nothing reaches the live store automatically. The store now runs on WordPress + WooCommerce; changes are made in WordPress (or its SEO plugin). Take a backup first.
+- Nothing reaches the live store automatically. The live site is a Cloudflare Worker built from `~/Lbass/static-site` and the products Google Sheet; `update.sh` publishes it. This repo is an old Shopify snapshot.
 
 ## Start a session
 
@@ -26,7 +26,7 @@ End every request with **"and tell me the top 3 actions"**. Add **"don't edit fi
 | Monthly | `run gsc-content-opportunities` | Pages seen in Google but rarely clicked. Rewrite their title and description |
 | Monthly | `run gsc-indexing-audit` | Product pages Google has not indexed. This matters most for one-of-one stock |
 | Monthly | `run gsc-cannibalization-check` | Two pages competing for the same search |
-| Weekly | `run woocommerce-store-pulse` | Orders, cancellations, ageing stock, and the visitor-to-buyer funnel from GA4. Needs a read-only WooCommerce API key (see `README.md`) |
+| Weekly | `run lbass-store-pulse` | WhatsApp orders (LB-…), stock and ageing pieces from the Sheet, visits, newsletter sign-ups. Run on the Mac |
 | Every 2–3 months, or after big site changes | `run a GEO audit on https://www.lbassoriginal.com and give me the top 5 fixes` | Visibility to ChatGPT, Perplexity, Gemini |
 
 Plain questions also work, for example:
@@ -38,8 +38,8 @@ Plain questions also work, for example:
 ## Applying a fix
 
 1. Ask Claude to explain the change first, then to make it in the repo.
-2. Back up the site (your host's backup, or a backup plugin).
-3. Apply the change in WordPress: the page or product editor, or the SEO plugin for titles, descriptions, robots.txt and schema.
+2. Make the change in `~/Lbass/static-site` (or in the Sheet for product text) and check it on the test copy first.
+3. Publish with `update.sh`.
 4. Check the live page on a phone.
 
 GEO-specific rules for this theme (no `geo fix --apply`, edit the existing `assets/llms.txt` and `templates/robots.txt.liquid`, no silent JSON-LD changes) are in `.claude/skills/geo-optimizer/SKILL.md`.
